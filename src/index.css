@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.35), 0 0 12px rgba(250, 204, 21, 0.2); }
+}
+
+.node-pulse {
+  animation: pulse-glow 1.2s ease-in-out infinite;
+}
+
+/* React Flow overrides */
+.react-flow__controls button {
+  background-color: #18181b !important;
+  border-color: #3f3f46 !important;
+  color: #a1a1aa !important;
+}
+.react-flow__controls button:hover {
+  background-color: #27272a !important;
+}

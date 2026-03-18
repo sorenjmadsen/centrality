@@ -1,0 +1,21 @@
+appId: com.claude-vertex.app
+productName: Claude Vertex
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron/*'
+  - '!docs/*'
+  - '!.editorconfig'
+  - '!.*'
+  - '!*.md'
+  - '!**/*.map'
+asarUnpack:
+  - resources/**
+linux:
+  target:
+    - AppImage
+    - deb
+  maintainer: claude-vertex
+  category: Development

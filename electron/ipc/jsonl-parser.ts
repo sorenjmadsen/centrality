@@ -1,0 +1,297 @@
+import * as fs from 'fs'
+import * as path from 'path'
+import * as readline from 'readline'
+import * as os from 'os'
+
+export interface ProjectInfo {
+  encodedName: string
+  projectPath: string
+  displayName: string
+}
+
+export interface SessionInfo {
+  sessionId: string
+  filePath: string
+  mtime: number
+}
+
+export interface ToolCallEntry {
+  id: string
+  toolName: string
+  input: Record<string, unknown>
+  result?: string
+  affectedFiles: string[]
+}
+
+export interface ClaudeAction {
+  id: string
+  sessionId: string
+  timestamp: string
+  type: string
+  filePath?: string
+  toolName: string
+  input: Record<string, unknown>
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  timestamp: string
+  textContent: string
+  toolCalls: ToolCallEntry[]
+  model?: string
+  tokenUsage?: { input: number; output: number }
+}
+
+export interface ChatExchange {
+  id: string
+  userMessage: ChatMessage
+  assistantMessage: ChatMessage
+  actions: ClaudeAction[]
+  affectedNodes: string[]
+}
+
+export interface ParsedSession {
+  actions: ClaudeAction[]
+  exchanges: ChatExchange[]
+  sessionId: string
+}
+
+// Resolve encoded project path (/-separated path stored as --separated string)
+// e.g. -home-user-my-project → tries /home/user/my-project on filesystem
+function resolveProjectPath(encoded: string): string {
+  if (!encoded.startsWith('-')) return encoded.replace(/-/g, '/')
+  const rest = encoded.slice(1) // remove leading dash
+  return tryResolve('/', rest) ?? ('/' + rest.replace(/-/g, '/'))
+}
+
+function tryResolve(base: string, remaining: string): string | null {
+  if (!remaining) return base
+  let searchFrom = 0
+  while (true) {
+    const dashIdx = remaining.indexOf('-', searchFrom)
+    const segment = dashIdx === -1 ? remaining : remaining.slice(0, dashIdx)
+    if (!segment) { searchFrom = dashIdx + 1; if (dashIdx === -1) break; continue }
+    const candidate = path.join(base, segment)
+    if (fs.existsSync(candidate)) {
+      if (dashIdx === -1) return candidate
+      const deeper = tryResolve(candidate, remaining.slice(dashIdx + 1))
+      if (deeper !== null) return deeper
+    }
+    if (dashIdx === -1) break
+    searchFrom = dashIdx + 1
+  }
+  return null
+}
+
+export function listProjects(): ProjectInfo[] {
+  const claudeDir = path.join(os.homedir(), '.claude', 'projects')
+  if (!fs.existsSync(claudeDir)) return []
+
+  return fs
+    .readdirSync(claudeDir, { withFileTypes: true })
+    .filter(e => e.isDirectory())
+    .map(e => {
+      const projectPath = resolveProjectPath(e.name)
+      return { encodedName: e.name, projectPath, displayName: projectPath }
+    })
+}
+
+export function listSessions(encodedName: string): SessionInfo[] {
+  const claudeDir = path.join(os.homedir(), '.claude', 'projects', encodedName)
+  if (!fs.existsSync(claudeDir)) return []
+
+  return fs
+    .readdirSync(claudeDir)
+    .filter(f => f.endsWith('.jsonl'))
+    .map(f => {
+      const filePath = path.join(claudeDir, f)
+      const stat = fs.statSync(filePath)
+      return { sessionId: f.replace('.jsonl', ''), filePath, mtime: stat.mtimeMs }
+    })
+    .sort((a, b) => b.mtime - a.mtime)
+}
+
+function inferActionType(toolName: string, input: Record<string, unknown>): string {
+  switch (toolName) {
+    case 'Read': return 'read'
+    case 'Write': {
+      const content = input['content'] as string | undefined
+      return content !== undefined && content.length === 0 ? 'deleted' : 'created'
+    }
+    case 'Edit':
+    case 'MultiEdit': return 'edited'
+    case 'Bash': {
+      const cmd = (input['command'] as string | undefined) ?? ''
+      if (/\brm\b/.test(cmd)) return 'deleted'
+      if (/\bmv\b/.test(cmd)) return 'edited'
+      if (/\bmkdir\b|\btouch\b/.test(cmd)) return 'created'
+      if (/\bcat\b/.test(cmd)) return 'read'
+      return 'executed'
+    }
+    case 'Glob':
+    case 'Grep':
+    case 'LS': return 'searched'
+    case 'Agent': return 'spawned'
+    default: return 'executed'
+  }
+}
+
+function extractFilePath(toolName: string, input: Record<string, unknown>): string | undefined {
+  if (input['file_path']) return input['file_path'] as string
+  if (toolName === 'LS' && input['path']) return input['path'] as string
+  return undefined
+}
+
+interface RawEntry {
+  type: string
+  uuid?: string
+  parentUuid?: string
+  timestamp?: string
+  sessionId?: string
+  message?: {
+    role?: string
+    model?: string
+    content?: unknown
+    usage?: Record<string, number>
+  }
+}
+
+export async function parseSession(filePath: string): Promise<ParsedSession> {
+  const sessionId = path.basename(filePath, '.jsonl')
+  const actions: ClaudeAction[] = []
+
+  // Read all entries
+  const entries: RawEntry[] = []
+  const rl = readline.createInterface({
+    input: fs.createReadStream(filePath),
+    crlfDelay: Infinity,
+  })
+  for await (const line of rl) {
+    if (!line.trim()) continue
+    try { entries.push(JSON.parse(line)) } catch { /* skip malformed */ }
+  }
+
+  // Only care about user and assistant entries
+  const relevant = entries.filter(e => e.type === 'user' || e.type === 'assistant')
+
+  // Build tool_use id → result map from tool_result user entries
+  const toolResults = new Map<string, string>()
+  for (const e of relevant) {
+    if (e.type !== 'user') continue
+    const content = e.message?.content
+    if (!Array.isArray(content)) continue
+    for (const block of content as Record<string, unknown>[]) {
+      if (block['type'] === 'tool_result') {
+        const id = block['tool_use_id'] as string
+        const result = block['content']
+        toolResults.set(id, typeof result === 'string' ? result : JSON.stringify(result))
+      }
+    }
+  }
+
+  // Group into exchanges: each starts with a human user message (content=string)
+  const exchanges: ChatExchange[] = []
+  let pendingUserMsg: ChatMessage | null = null
+  let pendingAssistantToolCalls: ToolCallEntry[] = []
+  let pendingAssistantText = ''
+  let pendingAssistantModel: string | undefined
+  let pendingAssistantUsage: { input: number; output: number } | undefined
+  let pendingAssistantId = ''
+  let pendingAssistantTs = ''
+
+  function flushExchange() {
+    if (!pendingUserMsg) return
+    const assistantMsg: ChatMessage = {
+      id: pendingAssistantId || pendingUserMsg.id + '-assistant',
+      role: 'assistant',
+      timestamp: pendingAssistantTs || pendingUserMsg.timestamp,
+      textContent: pendingAssistantText.trim(),
+      toolCalls: pendingAssistantToolCalls,
+      model: pendingAssistantModel,
+      tokenUsage: pendingAssistantUsage,
+    }
+    const exchangeActions = pendingAssistantToolCalls
+      .map(tc => {
+        const fp = extractFilePath(tc.toolName, tc.input)
+        const action: ClaudeAction = {
+          id: tc.id,
+          sessionId,
+          timestamp: pendingUserMsg!.timestamp,
+          type: inferActionType(tc.toolName, tc.input),
+          filePath: fp,
+          toolName: tc.toolName,
+          input: tc.input,
+        }
+        return action
+      })
+    actions.push(...exchangeActions)
+    const affectedNodes = Array.from(
+      new Set(exchangeActions.map(a => a.filePath).filter((p): p is string => !!p))
+    )
+    exchanges.push({
+      id: pendingUserMsg.id,
+      userMessage: pendingUserMsg,
+      assistantMessage: assistantMsg,
+      actions: exchangeActions,
+      affectedNodes,
+    })
+    pendingUserMsg = null
+    pendingAssistantToolCalls = []
+    pendingAssistantText = ''
+    pendingAssistantModel = undefined
+    pendingAssistantUsage = undefined
+    pendingAssistantId = ''
+    pendingAssistantTs = ''
+  }
+
+  for (const e of relevant) {
+    const content = e.message?.content
+    const ts = e.timestamp ?? ''
+
+    if (e.type === 'user') {
+      if (typeof content === 'string' && content.trim()) {
+        // Human message — close previous exchange, start new one
+        flushExchange()
+        pendingUserMsg = {
+          id: e.uuid ?? '',
+          role: 'user',
+          timestamp: ts,
+          textContent: content.trim(),
+          toolCalls: [],
+        }
+      }
+      // tool_result entries are already handled in toolResults map above
+    } else if (e.type === 'assistant' && Array.isArray(content)) {
+      for (const block of content as Record<string, unknown>[]) {
+        if (block['type'] === 'text') {
+          pendingAssistantText += (block['text'] as string) ?? ''
+          if (!pendingAssistantId) pendingAssistantId = e.uuid ?? ''
+          if (!pendingAssistantTs) pendingAssistantTs = ts
+        } else if (block['type'] === 'tool_use') {
+          const toolName = block['name'] as string
+          const input = (block['input'] as Record<string, unknown>) ?? {}
+          const id = block['id'] as string
+          const tc: ToolCallEntry = {
+            id, toolName, input,
+            result: toolResults.get(id),
+            affectedFiles: extractFilePath(toolName, input) ? [extractFilePath(toolName, input)!] : [],
+          }
+          pendingAssistantToolCalls.push(tc)
+          if (!pendingAssistantId) pendingAssistantId = e.uuid ?? ''
+          if (!pendingAssistantTs) pendingAssistantTs = ts
+        }
+      }
+      if (e.message?.model) pendingAssistantModel = e.message.model
+      if (e.message?.usage) {
+        pendingAssistantUsage = {
+          input: e.message.usage['input_tokens'] ?? 0,
+          output: e.message.usage['output_tokens'] ?? 0,
+        }
+      }
+    }
+  }
+  flushExchange()
+
+  return { actions, exchanges, sessionId }
+}
