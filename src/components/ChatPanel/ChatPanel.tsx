@@ -1,6 +1,4 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react'
-import { List, useListRef } from 'react-window'
-import type { ListImperativeAPI } from 'react-window'
+import React, { useEffect, useRef, useMemo } from 'react'
 import { useChatStore } from '../../stores/chat-store'
 import { useUiStore } from '../../stores/ui-store'
 import { useGitStore } from '../../stores/git-store'
@@ -37,101 +35,19 @@ function buildTimeline(exchanges: ChatExchange[], commits: GitCommit[]): Timelin
   return items
 }
 
-const COMMIT_HEIGHT = 44
-const EXCHANGE_HEIGHT = 160
-
 function computeCost(exchange: ChatExchange): number {
   const usage = exchange.assistantMessage.tokenUsage
   if (!usage) return 0
   return (usage.input * 3 + usage.output * 15) / 1_000_000
 }
 
-interface RowData {
-  timeline: TimelineItem[]
-  selectedExchangeId: string | null
-  playbackIndex: number | null
-  searchResultIds: Set<string>
-  activeSearchId: string | null
-  setSelectedExchange: (id: string | null) => void
-}
-
-interface RowComponentProps {
-  ariaAttributes: {
-    'aria-posinset': number
-    'aria-setsize': number
-    role: 'listitem'
-  }
-  index: number
-  style: React.CSSProperties
-}
-
-function makeRowComponent(rowData: RowData) {
-  return function RowComponent({ ariaAttributes, index, style }: RowComponentProps) {
-    const { timeline, selectedExchangeId, playbackIndex, searchResultIds, activeSearchId, setSelectedExchange } = rowData
-    const item = timeline[index]
-    if (!item) return null
-
-    if (item.kind === 'commit') {
-      return (
-        <div {...ariaAttributes} style={{ ...style, padding: '4px 12px' }}>
-          <GitCommitMarker commit={item.commit} />
-        </div>
-      )
-    }
-
-    const { exchange, idx } = item
-    const isPlaybackCurrent = playbackIndex !== null && idx === playbackIndex
-    const isPlaybackFuture = playbackIndex !== null && idx > playbackIndex
-    const isSelected = exchange.id === selectedExchangeId
-    const isSearchMatch = searchResultIds.has(exchange.id)
-    const isActiveSearch = exchange.id === activeSearchId
-
-    const cost = computeCost(exchange)
-    const usage = exchange.assistantMessage.tokenUsage
-
-    return (
-      <div {...ariaAttributes} style={{ ...style, padding: '4px 12px' }}>
-        <div
-          className={`rounded-lg border p-2 cursor-pointer transition-all h-full box-border
-            ${isPlaybackFuture ? 'opacity-25 pointer-events-none' : ''}
-            ${isActiveSearch ? 'ring-2 ring-yellow-400/60' : isSearchMatch ? 'ring-1 ring-yellow-600/40' : ''}
-            ${isPlaybackCurrent
-              ? 'border-yellow-600/60 bg-yellow-950/20 shadow-sm shadow-yellow-900/20'
-              : isSelected
-                ? 'border-zinc-600 bg-zinc-800/60'
-                : 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50'
-            }
-          `}
-          onClick={() => {
-            if (isPlaybackFuture) return
-            const newId = exchange.id === selectedExchangeId ? null : exchange.id
-            setSelectedExchange(newId)
-          }}
-        >
-          <ChatMessageBubble message={exchange.userMessage} />
-          <div className="my-2 border-t border-zinc-800" />
-          <ChatMessageBubble message={exchange.assistantMessage} isHighlighted={isPlaybackCurrent || isSelected} />
-          {usage && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-zinc-600">
-              <span>{usage.input.toLocaleString()}↓</span>
-              <span>{usage.output.toLocaleString()}↑</span>
-              <span className="text-zinc-500">~${cost.toFixed(4)}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-}
-
 export function ChatPanel() {
   const { exchanges } = useChatStore()
   const { commits } = useGitStore()
-  const { selectedExchangeId, playbackIndex, setSelectedExchange } = useUiStore()
+  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const { results, activeIdx } = useSearchStore()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const listRef = useListRef()
-  const [containerHeight, setContainerHeight] = useState(400)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   const timeline = useMemo(() => buildTimeline(exchanges, commits), [exchanges, commits])
 
@@ -141,50 +57,16 @@ export function ChatPanel() {
   )
   const activeSearchId = results[activeIdx]?.exchangeId ?? null
 
-  // Measure container height
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    setContainerHeight(el.clientHeight)
-    const ro = new ResizeObserver(entries => {
-      const entry = entries[0]
-      if (entry) setContainerHeight(entry.contentRect.height)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  // Find active timeline index to scroll to
+  // Scroll to active item
   const activeId = playbackIndex !== null
     ? exchanges[playbackIndex]?.id
     : activeSearchId ?? selectedExchangeId
 
   useEffect(() => {
-    if (!activeId || !listRef.current) return
-    const idx = timeline.findIndex(
-      item => item.kind === 'exchange' && item.exchange.id === activeId
-    )
-    if (idx >= 0) {
-      listRef.current.scrollToRow({ index: idx, align: 'smart' })
-    }
-  }, [activeId, timeline])
-
-  const rowData: RowData = useMemo(() => ({
-    timeline,
-    selectedExchangeId,
-    playbackIndex,
-    searchResultIds,
-    activeSearchId,
-    setSelectedExchange,
-  }), [timeline, selectedExchangeId, playbackIndex, searchResultIds, activeSearchId, setSelectedExchange])
-
-  const RowComponent = useMemo(() => makeRowComponent(rowData), [rowData])
-
-  const rowHeight = (index: number) => {
-    const item = timeline[index]
-    if (!item) return EXCHANGE_HEIGHT
-    return item.kind === 'commit' ? COMMIT_HEIGHT : EXCHANGE_HEIGHT
-  }
+    if (!activeId) return
+    const el = itemRefs.current.get(activeId)
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [activeId])
 
   if (exchanges.length === 0) {
     return (
@@ -195,16 +77,63 @@ export function ChatPanel() {
   }
 
   return (
-    <div ref={containerRef} className="h-full">
-      <List
-        listRef={listRef}
-        rowComponent={RowComponent}
-        rowProps={{}}
-        rowCount={timeline.length}
-        rowHeight={rowHeight}
-        style={{ height: containerHeight }}
-        overscanCount={5}
-      />
+    <div ref={scrollRef} className="h-full overflow-y-auto">
+      <div className="flex flex-col gap-1 p-2">
+        {timeline.map((item, i) => {
+          if (item.kind === 'commit') {
+            return (
+              <div key={`commit-${item.commit.hash}`} className="px-1">
+                <GitCommitMarker commit={item.commit} />
+              </div>
+            )
+          }
+
+          const { exchange, idx } = item
+          const isPlaybackCurrent = playbackIndex !== null && idx === playbackIndex
+          const isPlaybackFuture = playbackIndex !== null && idx > playbackIndex
+          const isSelected = exchange.id === selectedExchangeId
+          const isSearchMatch = searchResultIds.has(exchange.id)
+          const isActiveSearch = exchange.id === activeSearchId
+          const cost = computeCost(exchange)
+          const usage = exchange.assistantMessage.tokenUsage
+
+          return (
+            <div
+              key={exchange.id}
+              ref={el => {
+                if (el) itemRefs.current.set(exchange.id, el)
+                else itemRefs.current.delete(exchange.id)
+              }}
+              className={`rounded-lg border p-2 cursor-pointer transition-all
+                ${isPlaybackFuture ? 'opacity-25' : ''}
+                ${isActiveSearch ? 'ring-2 ring-yellow-400/60' : isSearchMatch ? 'ring-1 ring-yellow-600/40' : ''}
+                ${isPlaybackCurrent
+                  ? 'border-yellow-600/60 bg-yellow-950/20 shadow-sm shadow-yellow-900/20'
+                  : isSelected
+                    ? 'border-zinc-600 bg-zinc-800/60'
+                    : 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50'
+                }
+              `}
+              onClick={() => {
+                const isDeselect = exchange.id === selectedExchangeId
+                setSelectedExchange(isDeselect ? null : exchange.id)
+                setPlaybackIndex(isDeselect ? null : idx)
+              }}
+            >
+              <ChatMessageBubble message={exchange.userMessage} />
+              <div className="my-2 border-t border-zinc-800" />
+              <ChatMessageBubble message={exchange.assistantMessage} isHighlighted={isPlaybackCurrent || isSelected} />
+              {usage && (
+                <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-zinc-600">
+                  <span>{usage.input.toLocaleString()}↓</span>
+                  <span>{usage.output.toLocaleString()}↑</span>
+                  <span className="text-zinc-500">~${cost.toFixed(4)}</span>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

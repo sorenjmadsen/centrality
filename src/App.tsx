@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 import { SessionPicker } from './components/TopBar/SessionPicker'
 import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
@@ -9,8 +9,43 @@ import { PlaybackControls } from './components/ChatPanel/PlaybackControls'
 import { useGraphSync } from './lib/use-graph-sync'
 import { GranularityControl } from './components/Controls/GranularityControl'
 
+const MIN_CHAT_WIDTH = 280
+const MAX_CHAT_WIDTH = 800
+const DEFAULT_CHAT_WIDTH = 400
+
 function AppInner(): React.ReactElement {
   useGraphSync()
+
+  const [chatWidth, setChatWidth] = useState(DEFAULT_CHAT_WIDTH)
+  const chatPanelRef = useRef<HTMLDivElement>(null)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const startX = e.clientX
+    const startWidth = chatWidth
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    const onMouseMove = (e: MouseEvent) => {
+      const delta = startX - e.clientX
+      const next = Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, startWidth + delta))
+      if (chatPanelRef.current) {
+        chatPanelRef.current.style.width = `${next}px`
+      }
+    }
+
+    const onMouseUp = (e: MouseEvent) => {
+      const delta = startX - e.clientX
+      const next = Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, startWidth + delta))
+      setChatWidth(next)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }, [chatWidth])
 
   return (
     <div className="flex flex-col h-screen w-screen bg-zinc-950 text-zinc-100 overflow-hidden">
@@ -35,8 +70,18 @@ function AppInner(): React.ReactElement {
           <CodebaseGraph />
         </div>
 
+        {/* Resize handle */}
+        <div
+          className="w-1 shrink-0 cursor-col-resize bg-zinc-800 hover:bg-zinc-600 active:bg-zinc-500 transition-colors"
+          onMouseDown={onMouseDown}
+        />
+
         {/* Chat panel */}
-        <div className="w-[400px] shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden">
+        <div
+          ref={chatPanelRef}
+          className="shrink-0 bg-zinc-950 flex flex-col overflow-hidden"
+          style={{ width: chatWidth }}
+        >
           <div className="px-3 py-1.5 border-b border-zinc-800 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide shrink-0">
             Conversation
           </div>

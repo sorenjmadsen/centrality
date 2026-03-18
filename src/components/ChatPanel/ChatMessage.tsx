@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ChatMessage as ChatMessageType } from '../../types/chat'
 import { ToolCallBlock } from './ToolCallBlock'
+
+const COLLAPSE_THRESHOLD = 300 // chars
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -11,6 +13,12 @@ interface ChatMessageProps {
 
 export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) {
   const isUser = message.role === 'user'
+  const isLong = (message.textContent?.length ?? 0) > COLLAPSE_THRESHOLD
+  const [expanded, setExpanded] = useState(false)
+
+  const displayText = isLong && !expanded
+    ? message.textContent!.slice(0, COLLAPSE_THRESHOLD) + '…'
+    : message.textContent
 
   return (
     <div className={`text-sm ${isHighlighted ? 'bg-zinc-800/50 rounded-lg p-1 -mx-1' : ''}`}>
@@ -30,13 +38,23 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
         )}
       </div>
 
-      {message.textContent && (
-        <div className={`prose prose-invert prose-sm max-w-none text-zinc-300
-          prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
-          prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-          prose-headings:text-zinc-200
-        `}>
-          <Markdown remarkPlugins={[remarkGfm]}>{message.textContent}</Markdown>
+      {displayText && (
+        <div>
+          <div className={`prose prose-invert prose-sm max-w-none text-zinc-300
+            prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
+            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
+            prose-headings:text-zinc-200
+          `}>
+            <Markdown remarkPlugins={[remarkGfm]}>{displayText}</Markdown>
+          </div>
+          {isLong && (
+            <button
+              className="text-[10px] text-zinc-500 hover:text-zinc-300 mt-0.5"
+              onClick={e => { e.stopPropagation(); setExpanded(x => !x) }}
+            >
+              {expanded ? 'Show less' : 'Show more'}
+            </button>
+          )}
         </div>
       )}
 

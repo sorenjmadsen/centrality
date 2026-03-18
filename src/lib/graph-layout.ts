@@ -15,6 +15,7 @@ export interface NodeData extends Record<string, unknown> {
   nodeType: CodebaseNode['type']
   actions: CodebaseNode['actions']
   dominantAction: string | null
+  activeAction: string | null   // dominant action from the current exchange only
   isPulsing: boolean
   isCompare?: boolean
   language?: string
@@ -55,6 +56,7 @@ export function buildGraphFromNodes(
       nodeType: node.type,
       actions: node.actions,
       dominantAction: dominantActionType(node.actions),
+      activeAction: null,
       isPulsing: pulsingNodeIds.has(id),
       isCompare: compareNodeIds.has(id),
       language: node.language,

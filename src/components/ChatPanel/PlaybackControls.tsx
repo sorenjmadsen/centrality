@@ -61,7 +61,7 @@ export function PlaybackControls() {
   const { exchanges } = useChatStore()
   const {
     playbackIndex, isPlaying, playbackSpeed,
-    setPlaybackIndex, setPlaying, setPlaybackSpeed,
+    setPlaybackIndex, setPlaying, setPlaybackSpeed, setSelectedExchange,
     stepForward, stepBack,
   } = useUiStore()
 
@@ -79,7 +79,7 @@ export function PlaybackControls() {
       const nextIdx = idx === null ? 0 : idx + 1
       if (nextIdx > maxIndex) {
         useUiStore.getState().setPlaying(false)
-        useUiStore.getState().setPlaybackIndex(null)
+        useUiStore.getState().setPlaybackIndex(maxIndex)
       } else {
         useUiStore.getState().setPlaybackIndex(nextIdx)
       }
@@ -118,7 +118,7 @@ export function PlaybackControls() {
           className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors" title="Reset">
           <ChevronFirst size={14} />
         </button>
-        <button onClick={() => stepBack()}
+        <button onClick={() => stepBack(maxIndex)}
           className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors" title="Step back">
           <SkipBack size={14} />
         </button>
@@ -132,8 +132,8 @@ export function PlaybackControls() {
           className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors" title="Step forward">
           <SkipForward size={14} />
         </button>
-        <button onClick={() => { setPlaybackIndex(null); setPlaying(false) }}
-          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors" title="Show all">
+        <button onClick={() => { setPlaybackIndex(maxIndex); setSelectedExchange(exchanges[maxIndex]?.id ?? null); setPlaying(false) }}
+          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors" title="Go to last">
           <ChevronLast size={14} />
         </button>
 

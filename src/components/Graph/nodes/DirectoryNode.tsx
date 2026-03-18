@@ -6,10 +6,10 @@ import { ACTION_BORDER } from '../overlays/ActionBadge'
 
 export function DirectoryNode({ data, selected }: NodeProps) {
   const d = data as NodeData
-  const borderColor = d.dominantAction
-    ? ACTION_BORDER[d.dominantAction]
-    : d.isCompare
-      ? 'border-orange-600'
+  const borderColor = d.isCompare
+    ? 'border-orange-600'
+    : d.activeAction
+      ? ACTION_BORDER[d.activeAction]
       : 'border-zinc-700'
 
   return (

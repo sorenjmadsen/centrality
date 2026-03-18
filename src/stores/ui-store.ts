@@ -32,7 +32,7 @@ interface UiStore {
   setPlaybackSpeed(s: 1 | 2 | 4): void
   setActiveNodeIds(ids: Set<string>): void
   stepForward(maxIndex: number): void
-  stepBack(): void
+  stepBack(maxIndex: number): void
 
   toggleActionTypeFilter(type: string): void
   clearActionTypeFilter(): void
@@ -83,9 +83,12 @@ export const useUiStore = create<UiStore>((set, get) => ({
     set({ playbackIndex: next })
   },
 
-  stepBack: () => {
+  stepBack: (maxIndex) => {
     const { playbackIndex } = get()
-    if (playbackIndex === null) return
+    if (playbackIndex === null) {
+      set({ playbackIndex: maxIndex })
+      return
+    }
     const prev = Math.max(playbackIndex - 1, 0)
     set({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev })
   },
