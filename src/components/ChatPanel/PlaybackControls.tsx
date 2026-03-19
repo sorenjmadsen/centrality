@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react'
 import { Play, Pause, SkipBack, SkipForward, ChevronFirst, ChevronLast } from 'lucide-react'
-import { useUiStore } from '../../stores/ui-store'
-import { useChatStore } from '../../stores/chat-store'
+import { useUiStore, useChatStore } from '../../stores/tab-stores'
 
 const SPARKLINE_H = 20
 const SPARKLINE_COLOR = '#a1a1aa'

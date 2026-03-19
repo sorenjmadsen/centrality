@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUiStore } from '../../stores/ui-store'
+import { useUiStore } from '../../stores/tab-stores'
 
 export function GranularityControl() {
   const { granularity, setGranularity } = useUiStore()

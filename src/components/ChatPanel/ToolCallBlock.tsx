@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import type { ToolCallEntry } from '../../types/session'
-import { useUiStore } from '../../stores/ui-store'
+import { useUiStore } from '../../stores/tab-stores'
 import { DiffViewer } from '../Diff/DiffViewer'
 
 const TOOL_COLORS: Record<string, string> = {

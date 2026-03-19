@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Download } from 'lucide-react'
-import { useChatStore } from '../../stores/chat-store'
-import { useUiStore } from '../../stores/ui-store'
+import { useChatStore, useUiStore } from '../../stores/tab-stores'
 
 export function ExportMenu() {
   const { exchanges } = useChatStore()

@@ -632,6 +632,7 @@ svg.react-flow__connectionline {
       --tw-skew-x: initial;
       --tw-skew-y: initial;
       --tw-space-y-reverse: 0;
+      --tw-divide-y-reverse: 0;
       --tw-border-style: solid;
       --tw-leading: initial;
       --tw-font-weight: initial;
@@ -668,6 +669,7 @@ svg.react-flow__connectionline {
       --tw-drop-shadow-color: initial;
       --tw-drop-shadow-alpha: 100%;
       --tw-drop-shadow-size: initial;
+      --tw-content: "";
     }
   }
 }
@@ -704,6 +706,7 @@ svg.react-flow__connectionline {
     --color-cyan-800: oklch(45% .085 224.283);
     --color-cyan-900: oklch(39.8% .07 227.392);
     --color-sky-400: oklch(74.6% .16 232.661);
+    --color-blue-300: oklch(80.9% .105 251.813);
     --color-blue-400: oklch(70.7% .165 254.624);
     --color-blue-500: oklch(62.3% .214 259.815);
     --color-blue-800: oklch(42.4% .199 265.638);
@@ -730,14 +733,20 @@ svg.react-flow__connectionline {
     --color-zinc-950: oklch(14.1% .005 285.823);
     --color-white: #fff;
     --spacing: .25rem;
+    --container-3xl: 48rem;
     --text-xs: .75rem;
     --text-xs--line-height: calc(1 / .75);
     --text-sm: .875rem;
     --text-sm--line-height: calc(1.25 / .875);
+    --text-lg: 1.125rem;
+    --text-lg--line-height: calc(1.75 / 1.125);
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+    --tracking-tight: -.025em;
     --tracking-wide: .025em;
+    --tracking-wider: .05em;
+    --leading-snug: 1.375;
     --radius-md: .375rem;
     --radius-lg: .5rem;
     --animate-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
@@ -998,10 +1007,6 @@ svg.react-flow__connectionline {
 @layer components;
 
 @layer utilities {
-  .pointer-events-none {
-    pointer-events: none;
-  }
-
   .visible {
     visibility: visible;
   }
@@ -1092,12 +1097,20 @@ svg.react-flow__connectionline {
     margin-inline: calc(var(--spacing) * 1);
   }
 
+  .mx-auto {
+    margin-inline: auto;
+  }
+
   .my-1 {
     margin-block: calc(var(--spacing) * 1);
   }
 
   .my-2 {
     margin-block: calc(var(--spacing) * 2);
+  }
+
+  .mt-0\.5 {
+    margin-top: calc(var(--spacing) * .5);
   }
 
   .mt-1 {
@@ -1120,16 +1133,28 @@ svg.react-flow__connectionline {
     margin-bottom: calc(var(--spacing) * 1.5);
   }
 
+  .mb-3 {
+    margin-bottom: calc(var(--spacing) * 3);
+  }
+
+  .mb-8 {
+    margin-bottom: calc(var(--spacing) * 8);
+  }
+
+  .mb-10 {
+    margin-bottom: calc(var(--spacing) * 10);
+  }
+
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
   }
 
-  .ml-auto {
-    margin-left: auto;
+  .ml-\[26px\] {
+    margin-left: 26px;
   }
 
-  .box-border {
-    box-sizing: border-box;
+  .ml-auto {
+    margin-left: auto;
   }
 
   .block {
@@ -1176,6 +1201,10 @@ svg.react-flow__connectionline {
     height: calc(var(--spacing) * 5);
   }
 
+  .h-9 {
+    height: calc(var(--spacing) * 9);
+  }
+
   .h-full {
     height: 100%;
   }
@@ -1192,8 +1221,16 @@ svg.react-flow__connectionline {
     max-height: calc(var(--spacing) * 72);
   }
 
+  .w-1 {
+    width: calc(var(--spacing) * 1);
+  }
+
   .w-3 {
     width: calc(var(--spacing) * 3);
+  }
+
+  .w-4 {
+    width: calc(var(--spacing) * 4);
   }
 
   .w-14 {
@@ -1202,10 +1239,6 @@ svg.react-flow__connectionline {
 
   .w-\[200px\] {
     width: 200px;
-  }
-
-  .w-\[400px\] {
-    width: 400px;
   }
 
   .w-full {
@@ -1218,6 +1251,10 @@ svg.react-flow__connectionline {
 
   .w-screen {
     width: 100vw;
+  }
+
+  .max-w-3xl {
+    max-width: var(--container-3xl);
   }
 
   .max-w-\[160px\] {
@@ -1260,6 +1297,10 @@ svg.react-flow__connectionline {
     animation: var(--animate-pulse);
   }
 
+  .cursor-col-resize {
+    cursor: col-resize;
+  }
+
   .cursor-default {
     cursor: default;
   }
@@ -1272,6 +1313,10 @@ svg.react-flow__connectionline {
     resize: both;
   }
 
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .flex-col {
     flex-direction: column;
   }
@@ -1282,6 +1327,14 @@ svg.react-flow__connectionline {
 
   .items-center {
     align-items: center;
+  }
+
+  .items-start {
+    align-items: flex-start;
+  }
+
+  .items-stretch {
+    align-items: stretch;
   }
 
   .justify-center {
@@ -1304,8 +1357,12 @@ svg.react-flow__connectionline {
     gap: calc(var(--spacing) * 2);
   }
 
-  .gap-4 {
-    gap: calc(var(--spacing) * 4);
+  .gap-2\.5 {
+    gap: calc(var(--spacing) * 2.5);
+  }
+
+  .gap-3 {
+    gap: calc(var(--spacing) * 3);
   }
 
   :where(.space-y-0\.5 > :not(:last-child)) {
@@ -1324,6 +1381,24 @@ svg.react-flow__connectionline {
     --tw-space-y-reverse: 0;
     margin-block-start: calc(calc(var(--spacing) * 1.5) * var(--tw-space-y-reverse));
     margin-block-end: calc(calc(var(--spacing) * 1.5) * calc(1 - var(--tw-space-y-reverse)));
+  }
+
+  :where(.divide-y > :not(:last-child)) {
+    --tw-divide-y-reverse: 0;
+    border-bottom-style: var(--tw-border-style);
+    border-top-style: var(--tw-border-style);
+    border-top-width: calc(1px * var(--tw-divide-y-reverse));
+    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  }
+
+  :where(.divide-zinc-800\/40 > :not(:last-child)) {
+    border-color: #27272a66;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    :where(.divide-zinc-800\/40 > :not(:last-child)) {
+      border-color: color-mix(in oklab, var(--color-zinc-800) 40%, transparent);
+    }
   }
 
   .truncate {
@@ -1366,14 +1441,14 @@ svg.react-flow__connectionline {
     border-top-width: 1px;
   }
 
+  .border-r {
+    border-right-style: var(--tw-border-style);
+    border-right-width: 1px;
+  }
+
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
-  }
-
-  .border-l {
-    border-left-style: var(--tw-border-style);
-    border-left-width: 1px;
   }
 
   .border-blue-500 {
@@ -1462,6 +1537,16 @@ svg.react-flow__connectionline {
 
   .border-zinc-800 {
     border-color: var(--color-zinc-800);
+  }
+
+  .border-zinc-800\/80 {
+    border-color: #27272acc;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-zinc-800\/80 {
+      border-color: color-mix(in oklab, var(--color-zinc-800) 80%, transparent);
+    }
   }
 
   .bg-blue-900\/80 {
@@ -1664,6 +1749,10 @@ svg.react-flow__connectionline {
     padding: calc(var(--spacing) * 2);
   }
 
+  .p-3\.5 {
+    padding: calc(var(--spacing) * 3.5);
+  }
+
   .px-1 {
     padding-inline: calc(var(--spacing) * 1);
   }
@@ -1678,6 +1767,18 @@ svg.react-flow__connectionline {
 
   .px-3 {
     padding-inline: calc(var(--spacing) * 3);
+  }
+
+  .px-4 {
+    padding-inline: calc(var(--spacing) * 4);
+  }
+
+  .px-8 {
+    padding-inline: calc(var(--spacing) * 8);
+  }
+
+  .px-10 {
+    padding-inline: calc(var(--spacing) * 10);
   }
 
   .py-0\.5 {
@@ -1696,8 +1797,40 @@ svg.react-flow__connectionline {
     padding-block: calc(var(--spacing) * 2);
   }
 
+  .py-2\.5 {
+    padding-block: calc(var(--spacing) * 2.5);
+  }
+
+  .py-3 {
+    padding-block: calc(var(--spacing) * 3);
+  }
+
+  .py-4 {
+    padding-block: calc(var(--spacing) * 4);
+  }
+
+  .py-10 {
+    padding-block: calc(var(--spacing) * 10);
+  }
+
   .pt-1 {
     padding-top: calc(var(--spacing) * 1);
+  }
+
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
+  }
+
+  .pr-4 {
+    padding-right: calc(var(--spacing) * 4);
+  }
+
+  .pl-4 {
+    padding-left: calc(var(--spacing) * 4);
+  }
+
+  .pl-10 {
+    padding-left: calc(var(--spacing) * 10);
   }
 
   .text-left {
@@ -1706,6 +1839,11 @@ svg.react-flow__connectionline {
 
   .font-mono {
     font-family: var(--font-mono);
+  }
+
+  .text-lg {
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
   }
 
   .text-sm {
@@ -1740,6 +1878,11 @@ svg.react-flow__connectionline {
     line-height: 1;
   }
 
+  .leading-snug {
+    --tw-leading: var(--leading-snug);
+    line-height: var(--leading-snug);
+  }
+
   .font-bold {
     --tw-font-weight: var(--font-weight-bold);
     font-weight: var(--font-weight-bold);
@@ -1755,9 +1898,19 @@ svg.react-flow__connectionline {
     font-weight: var(--font-weight-semibold);
   }
 
+  .tracking-tight {
+    --tw-tracking: var(--tracking-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
   .tracking-wide {
     --tw-tracking: var(--tracking-wide);
     letter-spacing: var(--tracking-wide);
+  }
+
+  .tracking-wider {
+    --tw-tracking: var(--tracking-wider);
+    letter-spacing: var(--tracking-wider);
   }
 
   .break-all {
@@ -1818,6 +1971,10 @@ svg.react-flow__connectionline {
 
   .text-sky-400 {
     color: var(--color-sky-400);
+  }
+
+  .text-transparent {
+    color: #0000;
   }
 
   .text-violet-300 {
@@ -2012,11 +2169,63 @@ svg.react-flow__connectionline {
     user-select: none;
   }
 
+  .\[scrollbar-width\:none\] {
+    scrollbar-width: none;
+  }
+
+  @media (hover: hover) {
+    .group-hover\:text-blue-300:is(:where(.group):hover *) {
+      color: var(--color-blue-300);
+    }
+
+    .group-hover\:text-zinc-200:is(:where(.group):hover *) {
+      color: var(--color-zinc-200);
+    }
+
+    .group-hover\:text-zinc-500:is(:where(.group):hover *) {
+      color: var(--color-zinc-500);
+    }
+  }
+
+  .after\:absolute:after {
+    content: var(--tw-content);
+    position: absolute;
+  }
+
+  .after\:right-0:after {
+    content: var(--tw-content);
+    right: calc(var(--spacing) * 0);
+  }
+
+  .after\:bottom-0:after {
+    content: var(--tw-content);
+    bottom: calc(var(--spacing) * 0);
+  }
+
+  .after\:left-0:after {
+    content: var(--tw-content);
+    left: calc(var(--spacing) * 0);
+  }
+
+  .after\:h-\[2px\]:after {
+    content: var(--tw-content);
+    height: 2px;
+  }
+
+  .after\:bg-blue-500:after {
+    content: var(--tw-content);
+    background-color: var(--color-blue-500);
+  }
+
   .focus-within\:border-zinc-500:focus-within {
     border-color: var(--color-zinc-500);
   }
 
   @media (hover: hover) {
+    .hover\:border-zinc-600:hover {
+      border-color: var(--color-zinc-600);
+    }
+
     .hover\:border-zinc-700:hover {
       border-color: var(--color-zinc-700);
     }
@@ -2031,6 +2240,20 @@ svg.react-flow__connectionline {
 
     .hover\:bg-zinc-800:hover {
       background-color: var(--color-zinc-800);
+    }
+
+    .hover\:bg-zinc-800\/60:hover {
+      background-color: #27272a99;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-zinc-800\/60:hover {
+        background-color: color-mix(in oklab, var(--color-zinc-800) 60%, transparent);
+      }
+    }
+
+    .hover\:bg-zinc-900:hover {
+      background-color: var(--color-zinc-900);
     }
 
     .hover\:bg-zinc-900\/40:hover {
@@ -2051,6 +2274,20 @@ svg.react-flow__connectionline {
       .hover\:bg-zinc-900\/50:hover {
         background-color: color-mix(in oklab, var(--color-zinc-900) 50%, transparent);
       }
+    }
+
+    .hover\:bg-zinc-900\/60:hover {
+      background-color: #18181b99;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-zinc-900\/60:hover {
+        background-color: color-mix(in oklab, var(--color-zinc-900) 60%, transparent);
+      }
+    }
+
+    .hover\:\!text-zinc-200:hover {
+      color: var(--color-zinc-200) !important;
     }
 
     .hover\:text-zinc-100:hover {
@@ -2077,6 +2314,14 @@ svg.react-flow__connectionline {
   .focus\:outline-none:focus {
     --tw-outline-style: none;
     outline-style: none;
+  }
+
+  .active\:bg-zinc-500:active {
+    background-color: var(--color-zinc-500);
+  }
+
+  .\[\&\:\:-webkit-scrollbar\]\:hidden::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -2130,6 +2375,12 @@ svg.react-flow__connectionline {
 }
 
 @property --tw-space-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --tw-divide-y-reverse {
   syntax: "*";
   inherits: false;
   initial-value: 0;
@@ -2324,6 +2575,12 @@ svg.react-flow__connectionline {
 @property --tw-drop-shadow-size {
   syntax: "*";
   inherits: false
+}
+
+@property --tw-content {
+  syntax: "*";
+  inherits: false;
+  initial-value: "";
 }
 
 @keyframes pulse {

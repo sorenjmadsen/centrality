@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { GitCommit as GitCommitIcon, ChevronRight, ChevronDown } from 'lucide-react'
 import type { GitCommit } from '../../types/git'
-import { useGitStore } from '../../stores/git-store'
-import { useUiStore } from '../../stores/ui-store'
+import { useGitStore, useUiStore } from '../../stores/tab-stores'
 import { DiffViewer } from '../Diff/DiffViewer'
 
 interface GitCommitMarkerProps {

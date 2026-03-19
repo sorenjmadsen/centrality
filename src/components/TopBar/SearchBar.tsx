@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Search, X, ChevronUp, ChevronDown } from 'lucide-react'
-import { useSearchStore } from '../../stores/search-store'
-import { useChatStore } from '../../stores/chat-store'
-import { useUiStore } from '../../stores/ui-store'
+import { useSearchStore, useChatStore, useUiStore } from '../../stores/tab-stores'
 
 export function SearchBar() {
   const { exchanges } = useChatStore()

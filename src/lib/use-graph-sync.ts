@@ -1,11 +1,15 @@
 import { useEffect, useRef } from 'react'
-import { useSessionStore } from '../stores/session-store'
-import { useChatStore } from '../stores/chat-store'
-import { useCodebaseStore } from '../stores/codebase-store'
-import { useGraphStore } from '../stores/graph-store'
-import { useUiStore } from '../stores/ui-store'
-import { useGitStore } from '../stores/git-store'
-import { useCompareStore } from '../stores/compare-store'
+import { useTabCacheStore } from '../stores/tab-cache-store'
+import {
+  useSessionStore,
+  useChatStore,
+  useCodebaseStore,
+  useGraphStore,
+  useUiStore,
+  useGitStore,
+  useCompareStore,
+  useTabStores,
+} from '../stores/tab-stores'
 import { mapActionsToNodes, dominantActionType } from './action-mapper'
 import { buildGraphFromNodes } from './graph-layout'
 import type { NodeData } from './graph-layout'
@@ -73,6 +77,7 @@ export function useGraphSync() {
   const { setGraph, depEdges, setDepEdges } = useGraphStore()
   const {
     selectedProjectPath,
+    selectedSessionPath,
     playbackIndex,
     actionTypeFilter,
     granularity,
@@ -81,18 +86,25 @@ export function useGraphSync() {
   const { highlightedFiles } = useGitStore()
   const { compareNodeIds } = useCompareStore()
 
+  // Raw store instances for imperative getState()/setState() calls inside effects
+  const { codebase: codebaseStore, graph: graphStore } = useTabStores()
+
   // Track playbackIndex in a ref so Effect 1 can read it without depending on it
   const playbackIndexRef = useRef(playbackIndex)
   playbackIndexRef.current = playbackIndex
 
-  // Scan dependency edges when codebase changes
+  // Scan dependency edges when codebase changes (skip if restored from cache)
   useEffect(() => {
     if (codebaseNodes.size === 0 || !selectedProjectPath) return
+    if (codebaseStore.getState().restoredFromCache) return
     const filePaths = Array.from(codebaseNodes.keys()).filter(id =>
       codebaseNodes.get(id)?.type === 'file'
     )
     window.api.depScan(selectedProjectPath, filePaths).then(result => {
-      setDepEdges(result as DepEdge[])
+      const edges = result as DepEdge[]
+      setDepEdges(edges)
+      const sessionPath = selectedSessionPath
+      if (sessionPath) useTabCacheStore.getState().patch(sessionPath, { depEdges: edges })
     }).catch(() => {})
   }, [codebaseNodes, selectedProjectPath])
 
@@ -101,6 +113,14 @@ export function useGraphSync() {
   // action set changes, which is infrequent.
   useEffect(() => {
     if (codebaseNodes.size === 0) return
+
+    // Skip rebuild if this render cycle is a cache restore — the graph store
+    // already has the correct layout. Clear the flag so future changes rebuild normally.
+    if (codebaseStore.getState().restoredFromCache) {
+      codebaseStore.setState({ restoredFromCache: false })
+      return
+    }
+
     const projectPath = selectedProjectPath ?? ''
     const filtered = actionTypeFilter.size > 0
       ? actions.filter(a => actionTypeFilter.has(a.type))
@@ -110,17 +130,22 @@ export function useGraphSync() {
       decorated, rootIds, new Set(highlightedFiles), granularity, depEdges, compareNodeIds
     )
     // If playback is active, don't override the playback view — Effect 2 owns it.
-    // Effect 2 will re-run on next playbackIndex change and pick up the new structure.
     if (playbackIndexRef.current === null) {
       setGraph(rfNodes, rfEdges)
       setActiveNodeIds(new Set())
+      if (selectedSessionPath) {
+        useTabCacheStore.getState().patch(selectedSessionPath, {
+          graphNodes: rfNodes,
+          graphEdges: rfEdges,
+        })
+      }
     }
   }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds])
 
   // Effect 2: fast playback overlay — only updates node data, never rebuilds edges.
   // Runs on every playback step but skips the expensive codebaseNodes clone.
   useEffect(() => {
-    const { nodes: rfNodes, edges: rfEdges } = useGraphStore.getState()
+    const { nodes: rfNodes, edges: rfEdges } = graphStore.getState()
 
     if (playbackIndex === null) {
       // Exiting playback: restore full action view by re-applying the full action map
