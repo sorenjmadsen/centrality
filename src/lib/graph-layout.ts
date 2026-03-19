@@ -98,24 +98,5 @@ export function buildGraphFromNodes(
     layoutNode(id, 0)
   }
 
-  // Add dashed dependency edges between rendered file nodes
-  for (const dep of depEdges) {
-    if (renderedIds.has(dep.source) && renderedIds.has(dep.target)) {
-      rfEdges.push({
-        id: `dep:${dep.source}→${dep.target}`,
-        source: dep.source,
-        target: dep.target,
-        type: 'smoothstep',
-        style: {
-          stroke: '#52525b',
-          strokeWidth: 1,
-          strokeDasharray: '4 2',
-        },
-        animated: false,
-        label: '',
-      })
-    }
-  }
-
   return { nodes: rfNodes, edges: rfEdges }
 }

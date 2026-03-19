@@ -16,11 +16,16 @@ import { useTabsStore } from '../../stores/tabs-store'
 import { DirectoryNode } from './nodes/DirectoryNode'
 import { FileNode } from './nodes/FileNode'
 import { SymbolNode } from './nodes/SymbolNode'
+import { DependencyEdge } from './edges/DependencyEdge'
 
 const nodeTypes = {
   directoryNode: DirectoryNode,
   fileNode: FileNode,
   symbolNode: SymbolNode,
+}
+
+const edgeTypes = {
+  dependency: DependencyEdge,
 }
 
 function GraphCanvas() {
@@ -64,6 +69,7 @@ function GraphCanvas() {
         nodes={nodes.map(n => ({ ...n, selected: n.id === selectedNodeId }))}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodeClick={onNodeClick}
         onNodesChange={() => {}}
         onEdgesChange={() => {}}

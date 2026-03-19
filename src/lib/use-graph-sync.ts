@@ -87,7 +87,7 @@ export function useGraphSync() {
   const { compareNodeIds } = useCompareStore()
 
   // Raw store instances for imperative getState()/setState() calls inside effects
-  const { codebase: codebaseStore, graph: graphStore } = useTabStores()
+  const { codebase: codebaseStore, graph: graphStore, chat: chatStore } = useTabStores()
 
   // Track playbackIndex in a ref so Effect 1 can read it without depending on it
   const playbackIndexRef = useRef(playbackIndex)
@@ -129,16 +129,42 @@ export function useGraphSync() {
     const { nodes: rfNodes, edges: rfEdges } = buildGraphFromNodes(
       decorated, rootIds, new Set(highlightedFiles), granularity, depEdges, compareNodeIds
     )
-    // If playback is active, don't override the playback view — Effect 2 owns it.
-    if (playbackIndexRef.current === null) {
+
+    const currentPlayback = playbackIndexRef.current
+    if (currentPlayback === null) {
+      // No playback — set graph directly
       setGraph(rfNodes, rfEdges)
       setActiveNodeIds(new Set())
-      if (selectedSessionPath) {
-        useTabCacheStore.getState().patch(selectedSessionPath, {
-          graphNodes: rfNodes,
-          graphEdges: rfEdges,
-        })
+    } else {
+      // Playback active — rebuild structure with new granularity, then re-apply
+      // the playback overlay so we don't flash the full-actions view.
+      const currentExchanges = chatStore.getState().exchanges
+      if (currentExchanges.length > 0) {
+        const clampedIndex = Math.min(currentPlayback, currentExchanges.length - 1)
+        const visibleActions = currentExchanges.slice(0, clampedIndex + 1).flatMap(e => e.actions)
+        const actionsByNode = buildActionMap(visibleActions, projectPath, actionTypeFilter)
+        const currentExchange = currentExchanges[clampedIndex]
+        const pulsingIds = currentExchange
+          ? toRelativeIds(currentExchange.affectedNodes, projectPath)
+          : new Set<string>()
+        const currentActionsByNode = currentExchange
+          ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter)
+          : new Map<string, ClaudeAction[]>()
+        const combinedPulsing = new Set<string>(pulsingIds)
+        for (const f of highlightedFiles) combinedPulsing.add(f)
+        setActiveNodeIds(pulsingIds)
+        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode), rfEdges)
+      } else {
+        setGraph(rfNodes, rfEdges)
+        setActiveNodeIds(new Set())
       }
+    }
+
+    if (selectedSessionPath && currentPlayback === null) {
+      useTabCacheStore.getState().patch(selectedSessionPath, {
+        graphNodes: rfNodes,
+        graphEdges: rfEdges,
+      })
     }
   }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds])
 

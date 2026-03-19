@@ -25,7 +25,7 @@ export const useCodebaseStore = create<CodebaseStore>(set => ({
       const raw = await window.api.scanCodebase(projectPath) as CodebaseNode[]
       const nodes = new Map(raw.map(n => [n.id, n]))
       // Root nodes are those with no parent
-      const rootIds = raw.filter(n => n.parent === undefined || n.parent === '').map(n => n.id)
+      const rootIds = raw.filter(n => n.parent == null).map(n => n.id)
       set({ nodes, rootIds })
     } finally {
       set({ isLoading: false })
