@@ -3,12 +3,12 @@ import type { CodebaseNode } from '../types/codebase'
 import type { DepEdge } from '../stores/graph-store'
 import { dominantActionType } from './action-mapper'
 
-const FILE_WIDTH = 170
+const FILE_WIDTH = 230
 const FILE_HEIGHT = 68
 const DIR_HEIGHT = 48
 const SYMBOL_HEIGHT = 46
-const V_GAP = 6
-const INDENT_X = 220
+const V_GAP = 10
+const INDENT_X = 320
 
 export interface NodeData extends Record<string, unknown> {
   label: string
@@ -17,13 +17,14 @@ export interface NodeData extends Record<string, unknown> {
   dominantAction: string | null
   activeAction: string | null   // dominant action from the current exchange only
   isPulsing: boolean
+  pulseDelay: number   // ms offset to synchronise all pulsing nodes to the same phase
   isCompare?: boolean
   language?: string
   startLine?: number
   endLine?: number
 }
 
-const SYMBOL_TYPES = new Set(['class', 'function', 'method', 'type', 'enum', 'interface', 'struct'])
+export const SYMBOL_TYPES = new Set(['class', 'function', 'method', 'type', 'enum', 'interface', 'struct'])
 
 export function buildGraphFromNodes(
   nodes: Map<string, CodebaseNode>,
@@ -58,6 +59,7 @@ export function buildGraphFromNodes(
       dominantAction: dominantActionType(node.actions),
       activeAction: null,
       isPulsing: pulsingNodeIds.has(id),
+      pulseDelay: 0,
       isCompare: compareNodeIds.has(id),
       language: node.language,
       startLine: node.startLine,
@@ -96,25 +98,6 @@ export function buildGraphFromNodes(
 
   for (const id of rootIds) {
     layoutNode(id, 0)
-  }
-
-  // Add dashed dependency edges between rendered file nodes
-  for (const dep of depEdges) {
-    if (renderedIds.has(dep.source) && renderedIds.has(dep.target)) {
-      rfEdges.push({
-        id: `dep:${dep.source}→${dep.target}`,
-        source: dep.source,
-        target: dep.target,
-        type: 'smoothstep',
-        style: {
-          stroke: '#52525b',
-          strokeWidth: 1,
-          strokeDasharray: '4 2',
-        },
-        animated: false,
-        label: '',
-      })
-    }
   }
 
   return { nodes: rfNodes, edges: rfEdges }

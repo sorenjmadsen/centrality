@@ -20,13 +20,13 @@ export function FileNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`rounded-md border px-2 py-1.5 text-base bg-zinc-900 text-zinc-300
+      className={`relative overflow-visible rounded-md border px-2 py-1.5 text-base bg-zinc-900 text-zinc-300
         transition-colors cursor-default
         ${selected ? 'ring-1 ring-white/30' : ''}
-        ${d.isPulsing ? 'node-pulse' : ''}
         ${borderColor}
       `}
     >
+      {d.isPulsing && <div className="pulse-ring" style={{ animationDelay: `${d.pulseDelay}ms` }} />}
       <div className="flex items-center gap-1.5">
         <FileText size={15} className="text-zinc-500 shrink-0" />
         <span className="truncate flex-1">{d.label}</span>
@@ -38,8 +38,8 @@ export function FileNode({ data, selected }: NodeProps) {
           ))}
         </div>
       )}
-      <Handle type="target" position={Position.Top} className="opacity-0" />
-      <Handle type="source" position={Position.Bottom} className="opacity-0" />
+      <Handle type="target" position={Position.Left} className="opacity-0" />
+      <Handle type="source" position={Position.Right} className="opacity-0" />
     </div>
   )
 }

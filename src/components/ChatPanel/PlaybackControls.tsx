@@ -37,7 +37,7 @@ function TokenSparkline({ exchanges }: { exchanges: { assistantMessage: { tokenU
 
   return (
     <div className="flex items-center gap-2 mb-1">
-      <span className="text-[10px] text-zinc-600 shrink-0 w-14">~${totalCost}</span>
+      <span className="text-xs text-zinc-600 shrink-0 w-14">~${totalCost}</span>
       <svg
         viewBox={`0 0 ${W} ${SPARKLINE_H}`}
         preserveAspectRatio="none"
@@ -97,7 +97,7 @@ export function PlaybackControls() {
 
       {/* Scrubber */}
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-[10px] text-zinc-600 tabular-nums w-14 shrink-0">
+        <span className="text-xs text-zinc-600 tabular-nums w-14 shrink-0">
           {currentDisplay}/{exchanges.length}
         </span>
         <input
@@ -140,7 +140,7 @@ export function PlaybackControls() {
         <div className="ml-auto flex items-center gap-0.5">
           {([1, 2, 4] as const).map(s => (
             <button key={s} onClick={() => setPlaybackSpeed(s)}
-              className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors
+              className={`px-1.5 py-0.5 rounded text-xs font-mono transition-colors
                 ${playbackSpeed === s ? 'bg-zinc-600 text-zinc-200' : 'text-zinc-600 hover:text-zinc-400'}`}>
               {s}×
             </button>

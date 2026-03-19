@@ -1,12 +1,18 @@
 @import "tailwindcss";
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
-  50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.35), 0 0 12px rgba(250, 204, 21, 0.2); }
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
-.node-pulse {
-  animation: pulse-glow 1.2s ease-in-out infinite;
+.pulse-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 7px;
+  border: 2px solid rgba(250, 204, 21, 0.85);
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.55), 0 0 24px rgba(250, 204, 21, 0.3);
+  pointer-events: none;
+  animation: pulse-opacity 1.2s ease-in-out infinite;
 }
 
 /* React Flow overrides */

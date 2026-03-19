@@ -11,9 +11,10 @@ import {
   useTabStores,
 } from '../stores/tab-stores'
 import { mapActionsToNodes, dominantActionType } from './action-mapper'
-import { buildGraphFromNodes } from './graph-layout'
+import { buildGraphFromNodes, SYMBOL_TYPES } from './graph-layout'
 import type { NodeData } from './graph-layout'
 import type { ClaudeAction } from '../types/actions'
+import type { CodebaseNode } from '../types/codebase'
 import type { DepEdge } from '../stores/graph-store'
 import type { Node } from '@xyflow/react'
 
@@ -44,11 +45,82 @@ function buildActionMap(
   return map
 }
 
+// Regex to detect a symbol definition at the start of a string (TS/JS/Python/Rust)
+const SYMBOL_DEF_RE = /^(?:export\s+)?(?:default\s+)?(?:async\s+)?function[*]?\s+(\w+)|^(?:export\s+)?(?:abstract\s+)?class\s+(\w+)|^(?:export\s+)?(?:const|let|var)\s+(\w+)\s*[=:][^=].*(?:=>|\bfunction\b)|^(?:pub\s+)?(?:async\s+)?fn\s+(\w+)|^struct\s+(\w+)|^enum\s+(\w+)|^impl\s+(\w+)|^(?:export\s+)?interface\s+(\w+)|^(?:export\s+)?type\s+(\w+)\s*=|^def\s+(\w+)|^class\s+(\w+)/m
+
+function symbolNameFromStr(str: string): string | null {
+  const m = SYMBOL_DEF_RE.exec(str.trimStart())
+  return m ? (m.slice(1).find(Boolean) ?? null) : null
+}
+
+// Returns symbol node IDs specifically affected by the current exchange's actions.
+// Uses line-range overlap for Read actions and definition-pattern matching for Edit actions.
+function findAffectedSymbolIds(
+  actions: ClaudeAction[],
+  pulsingFileIds: Set<string>,
+  cbNodes: Map<string, CodebaseNode>,
+  projectPath: string
+): Set<string> {
+  const result = new Set<string>()
+
+  for (const action of actions) {
+    if (!action.filePath) continue
+    let rel = action.filePath
+    if (rel.startsWith(projectPath)) rel = rel.slice(projectPath.length).replace(/^\//, '')
+    if (!pulsingFileIds.has(rel)) continue
+
+    const fileSymbols: [string, CodebaseNode][] = []
+    for (const [id, node] of cbNodes) {
+      if (SYMBOL_TYPES.has(node.type) && node.path === rel) fileSymbols.push([id, node])
+    }
+    if (fileSymbols.length === 0) continue
+
+    const inp = action.input as Record<string, unknown>
+
+    // Read: overlap with start_line / num_lines (or offset / limit)
+    const startLine = (inp.start_line ?? inp.offset) as number | undefined
+    if (startLine !== undefined) {
+      const numLines = (inp.num_lines ?? inp.limit) as number | undefined
+      const endLine = numLines !== undefined ? startLine + numLines - 1 : Infinity
+      for (const [id, node] of fileSymbols) {
+        if (node.startLine !== undefined && node.endLine !== undefined &&
+            node.startLine <= endLine && node.endLine >= startLine) {
+          result.add(id)
+        }
+      }
+      continue
+    }
+
+    // Edit / Write: match symbol definition in old_string or new_string
+    const strs = [String(inp.old_string ?? ''), String(inp.new_string ?? '')]
+    // MultiEdit: also check sub-edits
+    if (Array.isArray(inp.edits)) {
+      for (const e of inp.edits as { old_string?: string; new_string?: string }[]) {
+        strs.push(String(e.old_string ?? ''), String(e.new_string ?? ''))
+      }
+    }
+    for (const s of strs) {
+      const name = symbolNameFromStr(s)
+      if (name) {
+        for (const [id, node] of fileSymbols) {
+          if (node.name === name) { result.add(id); break }
+        }
+        break
+      }
+    }
+  }
+
+  return result
+}
+
+const PULSE_DURATION = 1200 // ms — must match animation duration in index.css
+
 function applyActionMap(
   nodes: Node[],
   actionsByNode: Map<string, ClaudeAction[]>,
   pulsingIds: Set<string>,
-  activeActionsByNode: Map<string, ClaudeAction[]> = new Map()
+  activeActionsByNode: Map<string, ClaudeAction[]> = new Map(),
+  pulseDelay = 0
 ): Node[] {
   return nodes.map(n => {
     const nodeActions = actionsByNode.get(n.id) ?? []
@@ -65,6 +137,7 @@ function applyActionMap(
         dominantAction: dominantActionType(nodeActions),
         activeAction: newActiveAction,
         isPulsing: newPulsing,
+        pulseDelay: newPulsing ? pulseDelay : 0,
       },
     }
   })
@@ -87,7 +160,7 @@ export function useGraphSync() {
   const { compareNodeIds } = useCompareStore()
 
   // Raw store instances for imperative getState()/setState() calls inside effects
-  const { codebase: codebaseStore, graph: graphStore } = useTabStores()
+  const { codebase: codebaseStore, graph: graphStore, chat: chatStore } = useTabStores()
 
   // Track playbackIndex in a ref so Effect 1 can read it without depending on it
   const playbackIndexRef = useRef(playbackIndex)
@@ -129,16 +202,43 @@ export function useGraphSync() {
     const { nodes: rfNodes, edges: rfEdges } = buildGraphFromNodes(
       decorated, rootIds, new Set(highlightedFiles), granularity, depEdges, compareNodeIds
     )
-    // If playback is active, don't override the playback view — Effect 2 owns it.
-    if (playbackIndexRef.current === null) {
+
+    const currentPlayback = playbackIndexRef.current
+    if (currentPlayback === null) {
+      // No playback — set graph directly
       setGraph(rfNodes, rfEdges)
       setActiveNodeIds(new Set())
-      if (selectedSessionPath) {
-        useTabCacheStore.getState().patch(selectedSessionPath, {
-          graphNodes: rfNodes,
-          graphEdges: rfEdges,
-        })
+    } else {
+      // Playback active — rebuild structure with new granularity, then re-apply
+      // the playback overlay so we don't flash the full-actions view.
+      const currentExchanges = chatStore.getState().exchanges
+      if (currentExchanges.length > 0) {
+        const clampedIndex = Math.min(currentPlayback, currentExchanges.length - 1)
+        const visibleActions = currentExchanges.slice(0, clampedIndex + 1).flatMap(e => e.actions)
+        const actionsByNode = buildActionMap(visibleActions, projectPath, actionTypeFilter)
+        const currentExchange = currentExchanges[clampedIndex]
+        const pulsingIds = currentExchange
+          ? toRelativeIds(currentExchange.affectedNodes, projectPath)
+          : new Set<string>()
+        const currentActionsByNode = currentExchange
+          ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter)
+          : new Map<string, ClaudeAction[]>()
+        const combinedPulsing = new Set<string>(pulsingIds)
+        for (const f of highlightedFiles) combinedPulsing.add(f)
+        for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id)
+        setActiveNodeIds(pulsingIds)
+        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
+      } else {
+        setGraph(rfNodes, rfEdges)
+        setActiveNodeIds(new Set())
       }
+    }
+
+    if (selectedSessionPath && currentPlayback === null) {
+      useTabCacheStore.getState().patch(selectedSessionPath, {
+        graphNodes: rfNodes,
+        graphEdges: rfEdges,
+      })
     }
   }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds])
 
@@ -176,8 +276,11 @@ export function useGraphSync() {
 
     const combinedPulsing = new Set<string>(pulsingIds)
     for (const f of highlightedFiles) combinedPulsing.add(f)
+    if (currentExchange) {
+      for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id)
+    }
 
     setActiveNodeIds(pulsingIds)
-    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode), rfEdges)
+    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
   }, [playbackIndex, exchanges, actions, actionTypeFilter, selectedProjectPath, highlightedFiles])
 }

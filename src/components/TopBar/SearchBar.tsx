@@ -38,7 +38,7 @@ export function SearchBar() {
     <div className="flex items-center gap-1 w-[200px] relative">
       <div className="flex items-center gap-1 flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1
         focus-within:border-zinc-500 transition-colors">
-        <Search size={11} className="text-zinc-500 shrink-0" />
+        <Search size={13} className="text-zinc-500 shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -46,11 +46,11 @@ export function SearchBar() {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Search…"
-          className="flex-1 bg-transparent text-xs text-zinc-200 placeholder-zinc-600
+          className="flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600
             focus:outline-none min-w-0"
         />
         {hasQuery && (
-          <span className="text-[10px] text-zinc-500 tabular-nums shrink-0">
+          <span className="text-xs text-zinc-500 tabular-nums shrink-0">
             {hasResults ? `${activeIdx + 1}/${results.length}` : '0'}
           </span>
         )}
@@ -59,7 +59,7 @@ export function SearchBar() {
             onClick={() => clearSearch()}
             className="text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
           >
-            <X size={11} />
+            <X size={13} />
           </button>
         )}
       </div>

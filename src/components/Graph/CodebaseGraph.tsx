@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -16,11 +16,16 @@ import { useTabsStore } from '../../stores/tabs-store'
 import { DirectoryNode } from './nodes/DirectoryNode'
 import { FileNode } from './nodes/FileNode'
 import { SymbolNode } from './nodes/SymbolNode'
+import { DependencyEdge } from './edges/DependencyEdge'
 
 const nodeTypes = {
   directoryNode: DirectoryNode,
   fileNode: FileNode,
   symbolNode: SymbolNode,
+}
+
+const edgeTypes = {
+  dependency: DependencyEdge,
 }
 
 function GraphCanvas() {
@@ -45,6 +50,11 @@ function GraphCanvas() {
     saveTabViewState(tabId, { graphViewport: viewport })
   }, [tabId, saveTabViewState])
 
+  const mappedNodes = useMemo(
+    () => nodes.map(n => ({ ...n, selected: n.id === selectedNodeId })),
+    [nodes, selectedNodeId]
+  )
+
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     const newId = node.id === selectedNodeId ? null : node.id
     setSelectedNode(newId)
@@ -61,13 +71,15 @@ function GraphCanvas() {
   return (
     <div className="flex-1 h-full">
       <ReactFlow
-        nodes={nodes.map(n => ({ ...n, selected: n.id === selectedNodeId }))}
+        nodes={mappedNodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodeClick={onNodeClick}
         onNodesChange={() => {}}
         onEdgesChange={() => {}}
         onMoveEnd={onMoveEnd}
+        nodesDraggable={false}
         minZoom={0.05}
         maxZoom={3}
         proOptions={{ hideAttribution: true }}
