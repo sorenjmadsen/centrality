@@ -34,12 +34,12 @@ export function SymbolNode({ data }: NodeProps) {
 
   return (
     <div
-      className={`flex items-center gap-1.5 px-2 rounded text-[10px] bg-zinc-900 border${d.isPulsing ? ' node-pulse' : ''}`}
-      style={{ borderColor, height: 26 }}
+      className={`flex items-center gap-1.5 px-2 rounded text-sm bg-zinc-900 border${d.isPulsing ? ' node-pulse' : ''}`}
+      style={{ borderColor, height: 34 }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
 
-      <span className={`font-bold font-mono text-[9px] w-3 shrink-0 ${iconColor}`}>{icon}</span>
+      <span className={`font-bold font-mono text-xs w-3 shrink-0 ${iconColor}`}>{icon}</span>
       <span className="truncate text-zinc-300 leading-none">{d.label}</span>
 
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />

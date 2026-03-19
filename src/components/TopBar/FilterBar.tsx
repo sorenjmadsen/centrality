@@ -10,7 +10,7 @@ export function FilterBar() {
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-zinc-600 uppercase tracking-wide shrink-0">Filter</span>
+      <span className="text-sm text-zinc-600 uppercase tracking-wide shrink-0">Filter</span>
       {ACTION_TYPES.map(type => {
         const active = actionTypeFilter.size === 0 || actionTypeFilter.has(type)
         return (
@@ -27,7 +27,7 @@ export function FilterBar() {
       {isFiltered && (
         <button
           onClick={clearActionTypeFilter}
-          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors ml-1"
+          className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors ml-1"
         >
           clear
         </button>

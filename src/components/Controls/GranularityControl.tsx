@@ -10,7 +10,7 @@ export function GranularityControl() {
         <button
           key={g}
           onClick={() => setGranularity(g)}
-          className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+          className={`px-2 py-0.5 rounded text-sm font-medium transition-colors ${
             granularity === g
               ? 'bg-zinc-600 text-zinc-100'
               : 'text-zinc-400 hover:text-zinc-200'

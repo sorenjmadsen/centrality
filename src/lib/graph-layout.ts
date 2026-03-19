@@ -4,9 +4,9 @@ import type { DepEdge } from '../stores/graph-store'
 import { dominantActionType } from './action-mapper'
 
 const FILE_WIDTH = 170
-const FILE_HEIGHT = 38
-const DIR_HEIGHT = 36
-const SYMBOL_HEIGHT = 28
+const FILE_HEIGHT = 68
+const DIR_HEIGHT = 48
+const SYMBOL_HEIGHT = 38
 const V_GAP = 6
 const INDENT_X = 220
 

@@ -61,7 +61,7 @@ function SessionView(): React.ReactElement {
         {/* Compare session picker */}
         {selectedProjectPath && sessions.length > 0 && (
           <>
-            <span className="text-[10px] text-zinc-600 shrink-0">Compare:</span>
+            <span className="text-sm text-zinc-600 shrink-0">Compare:</span>
             <select
               className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200
                 focus:outline-none focus:border-zinc-500 max-w-[160px]"
@@ -111,7 +111,7 @@ function SessionView(): React.ReactElement {
           className="shrink-0 bg-zinc-950 flex flex-col overflow-hidden"
           style={{ width: chatWidth }}
         >
-          <div className="px-3 py-1.5 border-b border-zinc-800 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide shrink-0">
+          <div className="px-3 py-1.5 border-b border-zinc-800 text-sm font-semibold text-zinc-500 uppercase tracking-wide shrink-0">
             Conversation
           </div>
           <div className="flex-1 overflow-hidden">
