@@ -1,16 +1,18 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   BackgroundVariant,
+  useReactFlow,
   type NodeMouseHandler,
+  type Viewport,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useGraphStore } from '../../stores/graph-store'
-import { useUiStore } from '../../stores/ui-store'
-import { useChatStore } from '../../stores/chat-store'
+import { useGraphStore, useUiStore, useChatStore, useTabId } from '../../stores/tab-stores'
+import { useTabsStore } from '../../stores/tabs-store'
 import { DirectoryNode } from './nodes/DirectoryNode'
 import { FileNode } from './nodes/FileNode'
 import { SymbolNode } from './nodes/SymbolNode'
@@ -21,17 +23,33 @@ const nodeTypes = {
   symbolNode: SymbolNode,
 }
 
-export function CodebaseGraph() {
+function GraphCanvas() {
   const { nodes, edges } = useGraphStore()
   const { selectedNodeId, selectedProjectPath, setSelectedNode, setSelectedExchange } = useUiStore()
   const { exchanges } = useChatStore()
+  const tabId = useTabId()
+  const saveTabViewState = useTabsStore(s => s.saveTabViewState)
+  const { setViewport, fitView } = useReactFlow()
+
+  // Restore saved viewport or fit on first mount
+  useEffect(() => {
+    const saved = useTabsStore.getState().tabViewState[tabId]?.graphViewport
+    if (saved) {
+      setViewport(saved, { duration: 0 })
+    } else {
+      fitView({ padding: 0.15 })
+    }
+  }, [])
+
+  const onMoveEnd = useCallback((_: unknown, viewport: Viewport) => {
+    saveTabViewState(tabId, { graphViewport: viewport })
+  }, [tabId, saveTabViewState])
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     const newId = node.id === selectedNodeId ? null : node.id
     setSelectedNode(newId)
 
     if (newId && selectedProjectPath) {
-      // Find the first exchange that touched this node
       const absPath = selectedProjectPath.replace(/\/$/, '') + '/' + newId
       const exchange = exchanges.find(ex =>
         ex.affectedNodes.some(n => n === absPath || n === newId || n.endsWith('/' + newId))
@@ -39,14 +57,6 @@ export function CodebaseGraph() {
       if (exchange) setSelectedExchange(exchange.id)
     }
   }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange])
-
-  if (nodes.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
-        Select a project and session to visualize
-      </div>
-    )
-  }
 
   return (
     <div className="flex-1 h-full">
@@ -57,8 +67,7 @@ export function CodebaseGraph() {
         onNodeClick={onNodeClick}
         onNodesChange={() => {}}
         onEdgesChange={() => {}}
-        fitView
-        fitViewOptions={{ padding: 0.15 }}
+        onMoveEnd={onMoveEnd}
         minZoom={0.05}
         maxZoom={3}
         proOptions={{ hideAttribution: true }}
@@ -79,5 +88,23 @@ export function CodebaseGraph() {
         />
       </ReactFlow>
     </div>
+  )
+}
+
+export function CodebaseGraph() {
+  const { nodes } = useGraphStore()
+
+  if (nodes.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
+        Select a project and session to visualize
+      </div>
+    )
+  }
+
+  return (
+    <ReactFlowProvider>
+      <GraphCanvas />
+    </ReactFlowProvider>
   )
 }

@@ -12538,310 +12538,278 @@ const createImpl = (createState2) => {
   return useBoundStore;
 };
 const create$2 = ((createState2) => createState2 ? createImpl(createState2) : createImpl);
-const useSessionStore = create$2((set2) => ({
-  projects: [],
-  sessions: [],
-  actions: [],
-  isLoadingProjects: false,
-  isLoadingSession: false,
-  loadProjects: async () => {
-    set2({ isLoadingProjects: true });
-    try {
-      const projects = await window.api.listProjects();
-      set2({ projects });
-    } finally {
-      set2({ isLoadingProjects: false });
-    }
-  },
-  loadSessions: async (encodedName) => {
-    const sessions = await window.api.listSessions(encodedName);
-    set2({ sessions });
-  },
-  loadSession: async (filePath) => {
-    set2({ isLoadingSession: true, actions: [] });
-    try {
-      const result = await window.api.loadSession(filePath);
-      set2({ actions: result.actions });
-    } finally {
-      set2({ isLoadingSession: false });
-    }
-  }
-}));
-const useChatStore = create$2((set2) => ({
-  exchanges: [],
-  isLoading: false,
-  setExchanges: (exchanges) => set2({ exchanges }),
-  clear: () => set2({ exchanges: [] })
-}));
-const useCodebaseStore = create$2((set2) => ({
-  nodes: /* @__PURE__ */ new Map(),
-  rootIds: [],
-  isLoading: false,
-  scanProject: async (projectPath) => {
-    set2({ isLoading: true, nodes: /* @__PURE__ */ new Map(), rootIds: [] });
-    try {
-      const raw = await window.api.scanCodebase(projectPath);
-      const nodes = new Map(raw.map((n) => [n.id, n]));
-      const rootIds = raw.filter((n) => n.parent === void 0 || n.parent === "").map((n) => n.id);
-      set2({ nodes, rootIds });
-    } finally {
-      set2({ isLoading: false });
-    }
-  },
-  clear: () => set2({ nodes: /* @__PURE__ */ new Map(), rootIds: [] })
-}));
-const useUiStore = create$2((set2, get2) => ({
-  selectedProjectEncoded: null,
-  selectedProjectPath: null,
-  selectedSessionPath: null,
-  selectedNodeId: null,
-  selectedExchangeId: null,
-  playbackIndex: null,
-  isPlaying: false,
-  playbackSpeed: 1,
-  activeNodeIds: /* @__PURE__ */ new Set(),
-  actionTypeFilter: /* @__PURE__ */ new Set(),
-  granularity: "files",
-  setSelectedProject: (encoded, projectPath) => set2({
-    selectedProjectEncoded: encoded,
-    selectedProjectPath: projectPath,
+function makeUiStore() {
+  return createStore$2((set2, get2) => ({
+    selectedProjectEncoded: null,
+    selectedProjectPath: null,
     selectedSessionPath: null,
     selectedNodeId: null,
     selectedExchangeId: null,
     playbackIndex: null,
     isPlaying: false,
-    activeNodeIds: /* @__PURE__ */ new Set()
-  }),
-  setSelectedSession: (path2) => set2({
-    selectedSessionPath: path2,
-    playbackIndex: null,
-    isPlaying: false,
-    activeNodeIds: /* @__PURE__ */ new Set()
-  }),
-  setSelectedNode: (id2) => set2({ selectedNodeId: id2 }),
-  setSelectedExchange: (id2) => set2({ selectedExchangeId: id2 }),
-  setPlaybackIndex: (i) => set2({ playbackIndex: i }),
-  setPlaying: (v) => set2({ isPlaying: v }),
-  setPlaybackSpeed: (s) => set2({ playbackSpeed: s }),
-  setActiveNodeIds: (ids) => set2({ activeNodeIds: ids }),
-  stepForward: (maxIndex) => {
-    const { playbackIndex } = get2();
-    const next = playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex);
-    set2({ playbackIndex: next });
-  },
-  stepBack: () => {
-    const { playbackIndex } = get2();
-    if (playbackIndex === null) return;
-    const prev = Math.max(playbackIndex - 1, 0);
-    set2({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev });
-  },
-  toggleActionTypeFilter: (type) => set2((s) => {
-    const next = new Set(s.actionTypeFilter);
-    if (next.has(type)) next.delete(type);
-    else next.add(type);
-    return { actionTypeFilter: next };
-  }),
-  clearActionTypeFilter: () => set2({ actionTypeFilter: /* @__PURE__ */ new Set() }),
-  setGranularity: (g) => set2({ granularity: g })
-}));
-const useGitStore = create$2((set2, get2) => ({
-  commits: [],
-  isLoading: false,
-  selectedCommitHash: null,
-  commitDiffs: /* @__PURE__ */ new Map(),
-  highlightedFiles: /* @__PURE__ */ new Set(),
-  loadCommits: async (projectPath) => {
-    set2({ isLoading: true });
-    try {
-      const raw = await window.api.gitLog(projectPath);
-      set2({ commits: raw });
-    } finally {
-      set2({ isLoading: false });
-    }
-  },
-  selectCommit: async (hash, projectPath) => {
-    if (!hash) {
-      set2({ selectedCommitHash: null, highlightedFiles: /* @__PURE__ */ new Set() });
-      return;
-    }
-    const { commits, commitDiffs } = get2();
-    const commit = commits.find((c) => c.hash === hash);
-    set2({
-      selectedCommitHash: hash,
-      highlightedFiles: new Set(commit?.changedFiles ?? [])
-    });
-    if (!commitDiffs.has(hash)) {
-      try {
-        const diff = await window.api.gitDiff(projectPath, hash);
-        const next = new Map(get2().commitDiffs);
-        next.set(hash, diff);
-        set2({ commitDiffs: next });
-      } catch {
+    playbackSpeed: 1,
+    activeNodeIds: /* @__PURE__ */ new Set(),
+    actionTypeFilter: /* @__PURE__ */ new Set(),
+    granularity: "files",
+    setSelectedProject: (encoded, projectPath) => set2({
+      selectedProjectEncoded: encoded,
+      selectedProjectPath: projectPath,
+      selectedSessionPath: null,
+      selectedNodeId: null,
+      selectedExchangeId: null,
+      playbackIndex: null,
+      isPlaying: false,
+      activeNodeIds: /* @__PURE__ */ new Set()
+    }),
+    setSelectedSession: (path2) => set2({
+      selectedSessionPath: path2,
+      playbackIndex: null,
+      isPlaying: false,
+      activeNodeIds: /* @__PURE__ */ new Set()
+    }),
+    setSelectedNode: (id2) => set2({ selectedNodeId: id2 }),
+    setSelectedExchange: (id2) => set2({ selectedExchangeId: id2 }),
+    setPlaybackIndex: (i) => set2({ playbackIndex: i }),
+    setPlaying: (v) => set2({ isPlaying: v }),
+    setPlaybackSpeed: (s) => set2({ playbackSpeed: s }),
+    setActiveNodeIds: (ids) => set2({ activeNodeIds: ids }),
+    stepForward: (maxIndex) => {
+      const { playbackIndex } = get2();
+      set2({ playbackIndex: playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex) });
+    },
+    stepBack: (maxIndex) => {
+      const { playbackIndex } = get2();
+      if (playbackIndex === null) {
+        set2({ playbackIndex: maxIndex });
+        return;
       }
-    }
-  },
-  setCommits: (commits) => set2({ commits }),
-  clear: () => set2({
+      const prev = Math.max(playbackIndex - 1, 0);
+      set2({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev });
+    },
+    toggleActionTypeFilter: (type) => set2((s) => {
+      const next = new Set(s.actionTypeFilter);
+      next.has(type) ? next.delete(type) : next.add(type);
+      return { actionTypeFilter: next };
+    }),
+    clearActionTypeFilter: () => set2({ actionTypeFilter: /* @__PURE__ */ new Set() }),
+    setGranularity: (g) => set2({ granularity: g })
+  }));
+}
+function makeChatStore() {
+  return createStore$2((set2) => ({
+    exchanges: [],
+    isLoading: false,
+    setExchanges: (exchanges) => set2({ exchanges }),
+    clear: () => set2({ exchanges: [] })
+  }));
+}
+function makeSessionStore() {
+  return createStore$2(() => ({
+    sessions: [],
+    actions: [],
+    isLoadingSession: false
+  }));
+}
+function makeCodebaseStore() {
+  return createStore$2((set2) => ({
+    nodes: /* @__PURE__ */ new Map(),
+    rootIds: [],
+    isLoading: false,
+    restoredFromCache: false,
+    scanProject: async (projectPath) => {
+      set2({ isLoading: true, nodes: /* @__PURE__ */ new Map(), rootIds: [] });
+      try {
+        const raw = await window.api.scanCodebase(projectPath);
+        const nodes = new Map(raw.map((n) => [n.id, n]));
+        const rootIds = raw.filter((n) => !n.parent).map((n) => n.id);
+        set2({ nodes, rootIds });
+      } finally {
+        set2({ isLoading: false });
+      }
+    },
+    clear: () => set2({ nodes: /* @__PURE__ */ new Map(), rootIds: [], restoredFromCache: false })
+  }));
+}
+function makeGraphStore() {
+  return createStore$2((set2) => ({
+    nodes: [],
+    edges: [],
+    depEdges: [],
+    setNodes: (nodes) => set2({ nodes }),
+    setEdges: (edges) => set2({ edges }),
+    setGraph: (nodes, edges) => set2({ nodes, edges }),
+    setDepEdges: (depEdges) => set2({ depEdges })
+  }));
+}
+function makeGitStore() {
+  return createStore$2((set2, get2) => ({
     commits: [],
+    isLoading: false,
     selectedCommitHash: null,
     commitDiffs: /* @__PURE__ */ new Map(),
-    highlightedFiles: /* @__PURE__ */ new Set()
-  })
-}));
-function toRelative(absolutePath, projectPath) {
-  if (absolutePath.startsWith(projectPath)) {
-    return absolutePath.slice(projectPath.length).replace(/^\//, "");
-  }
-  return absolutePath;
-}
-const useCompareStore = create$2((set2) => ({
-  compareSessionPath: null,
-  compareExchanges: [],
-  compareActions: [],
-  compareNodeIds: /* @__PURE__ */ new Set(),
-  async setCompareSession(path2, projectPath) {
-    if (!path2) {
-      set2({
-        compareSessionPath: null,
-        compareExchanges: [],
-        compareActions: [],
-        compareNodeIds: /* @__PURE__ */ new Set()
-      });
-      return;
-    }
-    const result = await window.api.loadSession(path2);
-    const nodeIds = /* @__PURE__ */ new Set();
-    for (const ex of result.exchanges) {
-      for (const node2 of ex.affectedNodes) {
-        nodeIds.add(toRelative(node2, projectPath));
+    highlightedFiles: /* @__PURE__ */ new Set(),
+    loadCommits: async (projectPath) => {
+      set2({ isLoading: true });
+      try {
+        set2({ commits: await window.api.gitLog(projectPath) });
+      } finally {
+        set2({ isLoading: false });
       }
-    }
-    set2({
-      compareSessionPath: path2,
-      compareExchanges: result.exchanges,
-      compareActions: result.actions,
-      compareNodeIds: nodeIds
-    });
-  },
-  clear() {
-    set2({
-      compareSessionPath: null,
-      compareExchanges: [],
-      compareActions: [],
-      compareNodeIds: /* @__PURE__ */ new Set()
-    });
-  }
-}));
-function SessionPicker() {
-  const { projects, sessions, loadProjects, loadSessions, isLoadingSession, loadSession } = useSessionStore();
-  const { setExchanges } = useChatStore();
-  const { scanProject } = useCodebaseStore();
-  const { loadCommits, setCommits, clear: clearGit } = useGitStore();
-  const compareStore = useCompareStore();
-  const {
-    selectedProjectEncoded,
-    selectedProjectPath,
-    selectedSessionPath,
-    setSelectedProject,
-    setSelectedSession
-  } = useUiStore();
-  reactExports.useEffect(() => {
-    loadProjects();
-  }, []);
-  reactExports.useEffect(() => {
-    if (!selectedProjectEncoded || !selectedProjectPath) return;
-    loadSessions(selectedProjectEncoded);
-    scanProject(selectedProjectPath);
-    clearGit();
-    loadCommits(selectedProjectPath);
-    window.api.gitWatch(selectedProjectPath);
-    compareStore.clear();
-  }, [selectedProjectEncoded, selectedProjectPath]);
-  reactExports.useEffect(() => {
-    if (!selectedSessionPath) return;
-    loadSession(selectedSessionPath);
-    window.api.loadSession(selectedSessionPath).then((result) => {
-      const r = result;
-      setExchanges(r.exchanges);
-    });
-  }, [selectedSessionPath]);
-  reactExports.useEffect(() => {
-    const cleanup = window.api.onGitHeadChanged((data) => {
-      setCommits(data);
-    });
-    return cleanup;
-  }, []);
-  reactExports.useEffect(() => {
-    const cleanup = window.api.onSessionUpdate((data) => {
-      const d = data;
-      if (d.filePath === selectedSessionPath) {
-        setExchanges(d.exchanges);
-        loadSession(selectedSessionPath);
+    },
+    selectCommit: async (hash, projectPath) => {
+      if (!hash) {
+        set2({ selectedCommitHash: null, highlightedFiles: /* @__PURE__ */ new Set() });
+        return;
       }
-    });
-    return cleanup;
-  }, [selectedSessionPath]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "select",
-      {
-        className: "bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200\n          focus:outline-none focus:border-zinc-500 max-w-[220px]",
-        value: selectedProjectEncoded ?? "",
-        onChange: (e) => {
-          const encoded = e.target.value;
-          if (!encoded) return;
-          const project = projects.find((p) => p.encodedName === encoded);
-          if (project) setSelectedProject(encoded, project.projectPath);
-        },
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: "Select project…" }),
-          projects.map((p) => /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: p.encodedName, children: p.displayName.split("/").slice(-2).join("/") }, p.encodedName))
-        ]
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "select",
-      {
-        className: "bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200\n          focus:outline-none focus:border-zinc-500 max-w-[200px]",
-        value: selectedSessionPath ?? "",
-        onChange: (e) => {
-          if (e.target.value) setSelectedSession(e.target.value);
-        },
-        disabled: sessions.length === 0,
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: "Select session…" }),
-          sessions.map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs("option", { value: s.filePath, children: [
-            s.sessionId.slice(0, 8),
-            "… ",
-            new Date(s.mtime).toLocaleDateString()
-          ] }, s.sessionId))
-        ]
-      }
-    ),
-    selectedProjectPath && sessions.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-600 shrink-0", children: "Compare:" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "select",
-        {
-          className: "bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200\n              focus:outline-none focus:border-zinc-500 max-w-[160px]",
-          value: compareStore.compareSessionPath ?? "",
-          onChange: (e) => {
-            const val = e.target.value;
-            compareStore.setCompareSession(val || null, selectedProjectPath);
-          },
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: "None" }),
-            sessions.filter((s) => s.filePath !== selectedSessionPath).map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs("option", { value: s.filePath, children: [
-              s.sessionId.slice(0, 8),
-              "… ",
-              new Date(s.mtime).toLocaleDateString()
-            ] }, s.sessionId))
-          ]
+      const { commits, commitDiffs } = get2();
+      const commit = commits.find((c) => c.hash === hash);
+      set2({ selectedCommitHash: hash, highlightedFiles: new Set(commit?.changedFiles ?? []) });
+      if (!commitDiffs.has(hash)) {
+        try {
+          const diff = await window.api.gitDiff(projectPath, hash);
+          const next = new Map(get2().commitDiffs);
+          next.set(hash, diff);
+          set2({ commitDiffs: next });
+        } catch {
         }
-      )
-    ] }),
-    isLoadingSession && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-500 animate-pulse", children: "Loading…" })
-  ] });
+      }
+    },
+    setCommits: (commits) => set2({ commits }),
+    clear: () => set2({ commits: [], selectedCommitHash: null, commitDiffs: /* @__PURE__ */ new Map(), highlightedFiles: /* @__PURE__ */ new Set() })
+  }));
+}
+function makeCompareStore() {
+  return createStore$2((set2) => ({
+    compareSessionPath: null,
+    compareExchanges: [],
+    compareActions: [],
+    compareNodeIds: /* @__PURE__ */ new Set(),
+    async setCompareSession(path2, projectPath) {
+      if (!path2) {
+        set2({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: /* @__PURE__ */ new Set() });
+        return;
+      }
+      const result = await window.api.loadSession(path2);
+      const nodeIds = /* @__PURE__ */ new Set();
+      for (const ex of result.exchanges) {
+        for (const node2 of ex.affectedNodes) {
+          nodeIds.add(node2.startsWith(projectPath) ? node2.slice(projectPath.length).replace(/^\//, "") : node2);
+        }
+      }
+      set2({ compareSessionPath: path2, compareExchanges: result.exchanges, compareActions: result.actions, compareNodeIds: nodeIds });
+    },
+    clear() {
+      set2({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: /* @__PURE__ */ new Set() });
+    }
+  }));
+}
+function getSnippet(text2, query, maxLen = 80) {
+  const lower2 = text2.toLowerCase();
+  const idx = lower2.indexOf(query.toLowerCase());
+  if (idx === -1) return text2.slice(0, maxLen);
+  const start2 = Math.max(0, idx - 20);
+  const end = Math.min(text2.length, idx + query.length + 40);
+  return (start2 > 0 ? "…" : "") + text2.slice(start2, end) + (end < text2.length ? "…" : "");
+}
+function makeSearchStore() {
+  return createStore$2((set2, get2) => ({
+    query: "",
+    results: [],
+    activeIdx: 0,
+    search(q, exchanges) {
+      if (!q.trim()) {
+        set2({ query: q, results: [], activeIdx: 0 });
+        return;
+      }
+      const lower2 = q.toLowerCase();
+      const results = [];
+      for (const ex of exchanges) {
+        const userText = ex.userMessage.textContent;
+        const assistantText = ex.assistantMessage.textContent;
+        const toolInputs = ex.assistantMessage.toolCalls.map((tc) => JSON.stringify(tc.input)).join(" ");
+        const combined = `${userText} ${assistantText} ${toolInputs}`;
+        if (combined.toLowerCase().includes(lower2)) {
+          let snippet = "";
+          if (userText.toLowerCase().includes(lower2)) snippet = getSnippet(userText, q);
+          else if (assistantText.toLowerCase().includes(lower2)) snippet = getSnippet(assistantText, q);
+          else snippet = getSnippet(toolInputs, q);
+          results.push({ exchangeId: ex.id, snippet });
+        }
+      }
+      set2({ query: q, results, activeIdx: 0 });
+    },
+    nextResult() {
+      const { results, activeIdx } = get2();
+      if (results.length > 0) set2({ activeIdx: (activeIdx + 1) % results.length });
+    },
+    prevResult() {
+      const { results, activeIdx } = get2();
+      if (results.length > 0) set2({ activeIdx: (activeIdx - 1 + results.length) % results.length });
+    },
+    clearSearch() {
+      set2({ query: "", results: [], activeIdx: 0 });
+    }
+  }));
+}
+function createTabStores() {
+  return {
+    ui: makeUiStore(),
+    chat: makeChatStore(),
+    session: makeSessionStore(),
+    codebase: makeCodebaseStore(),
+    graph: makeGraphStore(),
+    git: makeGitStore(),
+    compare: makeCompareStore(),
+    search: makeSearchStore()
+  };
+}
+const tabStoreMap = /* @__PURE__ */ new Map();
+const TabStoresContext = reactExports.createContext(null);
+function useTabCtx() {
+  const ctx = reactExports.useContext(TabStoresContext);
+  if (!ctx) throw new Error("Tab store hook called outside <TabStoresProvider>");
+  return ctx;
+}
+function TabStoresProvider({ tabId, children: children2 }) {
+  const stores = reactExports.useMemo(() => {
+    if (!tabStoreMap.has(tabId)) tabStoreMap.set(tabId, createTabStores());
+    return tabStoreMap.get(tabId);
+  }, [tabId]);
+  const ctx = reactExports.useMemo(() => ({ tabId, stores }), [tabId, stores]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(TabStoresContext.Provider, { value: ctx, children: children2 });
+}
+function useTabStores() {
+  return useTabCtx().stores;
+}
+function useTabId() {
+  return useTabCtx().tabId;
+}
+function sel(store, selector2) {
+  return useStore$1(store, selector2 ?? ((s) => s));
+}
+function useUiStore(selector2) {
+  return sel(useTabCtx().stores.ui, selector2);
+}
+function useChatStore(selector2) {
+  return sel(useTabCtx().stores.chat, selector2);
+}
+function useSessionStore$1(selector2) {
+  return sel(useTabCtx().stores.session, selector2);
+}
+function useCodebaseStore(selector2) {
+  return sel(useTabCtx().stores.codebase, selector2);
+}
+function useGraphStore(selector2) {
+  return sel(useTabCtx().stores.graph, selector2);
+}
+function useGitStore(selector2) {
+  return sel(useTabCtx().stores.git, selector2);
+}
+function useCompareStore(selector2) {
+  return sel(useTabCtx().stores.compare, selector2);
+}
+function useSearchStore(selector2) {
+  return sel(useTabCtx().stores.search, selector2);
 }
 /**
  * @license lucide-react v0.511.0 - ISC
@@ -12948,7 +12916,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [
+const __iconNode$o = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -12956,15 +12924,53 @@ const __iconNode$k = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$k);
+const Bot = createLucideIcon("bot", __iconNode$o);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$j = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$j);
+const __iconNode$n = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
+  ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
+  ["path", { d: "M7 6v12", key: "1p53r6" }]
+];
+const ChevronFirst = createLucideIcon("chevron-first", __iconNode$m);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$l = [
+  ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
+  ["path", { d: "M17 6v12", key: "1o0aio" }]
+];
+const ChevronLast = createLucideIcon("chevron-last", __iconNode$l);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$k);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$j);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12972,10 +12978,10 @@ const ChevronDown = createLucideIcon("chevron-down", __iconNode$j);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$i = [
-  ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
-  ["path", { d: "M7 6v12", key: "1p53r6" }]
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const ChevronFirst = createLucideIcon("chevron-first", __iconNode$i);
+const Clock = createLucideIcon("clock", __iconNode$i);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12983,45 +12989,18 @@ const ChevronFirst = createLucideIcon("chevron-first", __iconNode$i);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$h = [
-  ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
-  ["path", { d: "M17 6v12", key: "1o0aio" }]
-];
-const ChevronLast = createLucideIcon("chevron-last", __iconNode$h);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$g = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$g);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$f = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$f);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$e = [
   ["path", { d: "M12 15V3", key: "m9g1x1" }],
   ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
   ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
 ];
-const Download = createLucideIcon("download", __iconNode$e);
+const Download = createLucideIcon("download", __iconNode$h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$d = [
+const __iconNode$g = [
   [
     "path",
     {
@@ -13031,14 +13010,14 @@ const __iconNode$d = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$d);
+const Eye = createLucideIcon("eye", __iconNode$g);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$c = [
+const __iconNode$f = [
   ["path", { d: "M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5", key: "1couwa" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   [
@@ -13049,7 +13028,50 @@ const __iconNode$c = [
     }
   ]
 ];
-const FilePen = createLucideIcon("file-pen", __iconNode$c);
+const FilePen = createLucideIcon("file-pen", __iconNode$f);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$e = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M9 15h6", key: "cctwl0" }],
+  ["path", { d: "M12 18v-6", key: "17g6i2" }]
+];
+const FilePlus = createLucideIcon("file-plus", __iconNode$e);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$d = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M10 9H8", key: "b1mrlr" }],
+  ["path", { d: "M16 13H8", key: "t4e002" }],
+  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+];
+const FileText = createLucideIcon("file-text", __iconNode$d);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  [
+    "path",
+    {
+      d: "m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2",
+      key: "usdka0"
+    }
+  ]
+];
+const FolderOpen = createLucideIcon("folder-open", __iconNode$c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13057,33 +13079,6 @@ const FilePen = createLucideIcon("file-pen", __iconNode$c);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$b = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M9 15h6", key: "cctwl0" }],
-  ["path", { d: "M12 18v-6", key: "17g6i2" }]
-];
-const FilePlus = createLucideIcon("file-plus", __iconNode$b);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$a = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M10 9H8", key: "b1mrlr" }],
-  ["path", { d: "M16 13H8", key: "t4e002" }],
-  ["path", { d: "M16 17H8", key: "z1uh3a" }]
-];
-const FileText = createLucideIcon("file-text", __iconNode$a);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
   [
     "path",
     {
@@ -13092,7 +13087,32 @@ const __iconNode$9 = [
     }
   ]
 ];
-const Folder = createLucideIcon("folder", __iconNode$9);
+const Folder = createLucideIcon("folder", __iconNode$b);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$a = [
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
+  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+];
+const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$a);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+];
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$9);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13100,30 +13120,29 @@ const Folder = createLucideIcon("folder", __iconNode$9);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$8 = [
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
-  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
-  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
-];
-const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$8);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$7 = [
   ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
   ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
 ];
-const Pause = createLucideIcon("pause", __iconNode$7);
+const Pause = createLucideIcon("pause", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$6 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$6);
+const __iconNode$7 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$7);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$6 = [
+  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
+  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+];
+const Search = createLucideIcon("search", __iconNode$6);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13131,10 +13150,10 @@ const Play = createLucideIcon("play", __iconNode$6);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$5 = [
-  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
-  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+  ["polygon", { points: "19 20 9 12 19 4 19 20", key: "o2sva" }],
+  ["line", { x1: "5", x2: "5", y1: "19", y2: "5", key: "1ocqjk" }]
 ];
-const Search = createLucideIcon("search", __iconNode$5);
+const SkipBack = createLucideIcon("skip-back", __iconNode$5);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13142,10 +13161,10 @@ const Search = createLucideIcon("search", __iconNode$5);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$4 = [
-  ["polygon", { points: "19 20 9 12 19 4 19 20", key: "o2sva" }],
-  ["line", { x1: "5", x2: "5", y1: "19", y2: "5", key: "1ocqjk" }]
+  ["polygon", { points: "5 4 15 12 5 20 5 4", key: "16p6eg" }],
+  ["line", { x1: "19", x2: "19", y1: "5", y2: "19", key: "futhcm" }]
 ];
-const SkipBack = createLucideIcon("skip-back", __iconNode$4);
+const SkipForward = createLucideIcon("skip-forward", __iconNode$4);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13153,10 +13172,10 @@ const SkipBack = createLucideIcon("skip-back", __iconNode$4);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$3 = [
-  ["polygon", { points: "5 4 15 12 5 20 5 4", key: "16p6eg" }],
-  ["line", { x1: "19", x2: "19", y1: "5", y2: "19", key: "futhcm" }]
+  ["path", { d: "M12 19h8", key: "baeox8" }],
+  ["path", { d: "m4 17 6-6-6-6", key: "1yngyt" }]
 ];
-const SkipForward = createLucideIcon("skip-forward", __iconNode$3);
+const Terminal = createLucideIcon("terminal", __iconNode$3);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13164,10 +13183,13 @@ const SkipForward = createLucideIcon("skip-forward", __iconNode$3);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$2 = [
-  ["path", { d: "M12 19h8", key: "baeox8" }],
-  ["path", { d: "m4 17 6-6-6-6", key: "1yngyt" }]
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
 ];
-const Terminal = createLucideIcon("terminal", __iconNode$2);
+const Trash2 = createLucideIcon("trash-2", __iconNode$2);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13175,13 +13197,10 @@ const Terminal = createLucideIcon("terminal", __iconNode$2);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1 = [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
-  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
-  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+  ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
+  ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
 ];
-const Trash2 = createLucideIcon("trash-2", __iconNode$1);
+const X = createLucideIcon("x", __iconNode$1);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13189,10 +13208,15 @@ const Trash2 = createLucideIcon("trash-2", __iconNode$1);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode = [
-  ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
-  ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
+  [
+    "path",
+    {
+      d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
+      key: "1xq2db"
+    }
+  ]
 ];
-const X = createLucideIcon("x", __iconNode);
+const Zap = createLucideIcon("zap", __iconNode);
 const ACTION_CONFIG = {
   read: { Icon: Eye, color: "text-blue-400", bg: "bg-blue-900/80" },
   created: { Icon: FilePlus, color: "text-green-400", bg: "bg-green-900/80" },
@@ -13249,58 +13273,6 @@ function FilterBar() {
     )
   ] });
 }
-function getSnippet(text2, query, maxLen = 80) {
-  const lower2 = text2.toLowerCase();
-  const idx = lower2.indexOf(query.toLowerCase());
-  if (idx === -1) return text2.slice(0, maxLen);
-  const start2 = Math.max(0, idx - 20);
-  const end = Math.min(text2.length, idx + query.length + 40);
-  return (start2 > 0 ? "…" : "") + text2.slice(start2, end) + (end < text2.length ? "…" : "");
-}
-const useSearchStore = create$2((set2, get2) => ({
-  query: "",
-  results: [],
-  activeIdx: 0,
-  search(q2, exchanges) {
-    if (!q2.trim()) {
-      set2({ query: q2, results: [], activeIdx: 0 });
-      return;
-    }
-    const lower2 = q2.toLowerCase();
-    const results = [];
-    for (const ex of exchanges) {
-      const userText = ex.userMessage.textContent;
-      const assistantText = ex.assistantMessage.textContent;
-      const toolInputs = ex.assistantMessage.toolCalls.map((tc) => JSON.stringify(tc.input)).join(" ");
-      const combined = `${userText} ${assistantText} ${toolInputs}`;
-      if (combined.toLowerCase().includes(lower2)) {
-        let snippet = "";
-        if (userText.toLowerCase().includes(lower2)) {
-          snippet = getSnippet(userText, q2);
-        } else if (assistantText.toLowerCase().includes(lower2)) {
-          snippet = getSnippet(assistantText, q2);
-        } else {
-          snippet = getSnippet(toolInputs, q2);
-        }
-        results.push({ exchangeId: ex.id, snippet });
-      }
-    }
-    set2({ query: q2, results, activeIdx: 0 });
-  },
-  nextResult() {
-    const { results, activeIdx } = get2();
-    if (results.length === 0) return;
-    set2({ activeIdx: (activeIdx + 1) % results.length });
-  },
-  prevResult() {
-    const { results, activeIdx } = get2();
-    if (results.length === 0) return;
-    set2({ activeIdx: (activeIdx - 1 + results.length) % results.length });
-  },
-  clearSearch() {
-    set2({ query: "", results: [], activeIdx: 0 });
-  }
-}));
 function SearchBar() {
   const { exchanges } = useChatStore();
   const { setSelectedExchange } = useUiStore();
@@ -14894,7 +14866,7 @@ function one$2(b) {
   };
 }
 function interpolateString(a, b) {
-  var bi = reA.lastIndex = reB.lastIndex = 0, am, bm, bs, i = -1, s = [], q2 = [];
+  var bi = reA.lastIndex = reB.lastIndex = 0, am, bm, bs, i = -1, s = [], q = [];
   a = a + "", b = b + "";
   while ((am = reA.exec(a)) && (bm = reB.exec(b))) {
     if ((bs = bm.index) > bi) {
@@ -14907,7 +14879,7 @@ function interpolateString(a, b) {
       else s[++i] = bm;
     } else {
       s[++i] = null;
-      q2.push({ i, x: interpolateNumber(am, bm) });
+      q.push({ i, x: interpolateNumber(am, bm) });
     }
     bi = reB.lastIndex;
   }
@@ -14916,8 +14888,8 @@ function interpolateString(a, b) {
     if (s[i]) s[i] += bs;
     else s[++i] = bs;
   }
-  return s.length < 2 ? q2[0] ? one$2(q2[0].x) : zero(b) : (b = q2.length, function(t) {
-    for (var i2 = 0, o; i2 < b; ++i2) s[(o = q2[i2]).i] = o.x(t);
+  return s.length < 2 ? q[0] ? one$2(q[0].x) : zero(b) : (b = q.length, function(t) {
+    for (var i2 = 0, o; i2 < b; ++i2) s[(o = q[i2]).i] = o.x(t);
     return s.join("");
   });
 }
@@ -14966,49 +14938,49 @@ function interpolateTransform(parse2, pxComma, pxParen, degParen) {
   function pop(s) {
     return s.length ? s.pop() + " " : "";
   }
-  function translate(xa, ya, xb, yb, s, q2) {
+  function translate(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push("translate(", null, pxComma, null, pxParen);
-      q2.push({ i: i - 4, x: interpolateNumber(xa, xb) }, { i: i - 2, x: interpolateNumber(ya, yb) });
+      q.push({ i: i - 4, x: interpolateNumber(xa, xb) }, { i: i - 2, x: interpolateNumber(ya, yb) });
     } else if (xb || yb) {
       s.push("translate(" + xb + pxComma + yb + pxParen);
     }
   }
-  function rotate(a, b, s, q2) {
+  function rotate(a, b, s, q) {
     if (a !== b) {
       if (a - b > 180) b += 360;
       else if (b - a > 180) a += 360;
-      q2.push({ i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: interpolateNumber(a, b) });
+      q.push({ i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: interpolateNumber(a, b) });
     } else if (b) {
       s.push(pop(s) + "rotate(" + b + degParen);
     }
   }
-  function skewX(a, b, s, q2) {
+  function skewX(a, b, s, q) {
     if (a !== b) {
-      q2.push({ i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: interpolateNumber(a, b) });
+      q.push({ i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: interpolateNumber(a, b) });
     } else if (b) {
       s.push(pop(s) + "skewX(" + b + degParen);
     }
   }
-  function scale(xa, ya, xb, yb, s, q2) {
+  function scale(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-      q2.push({ i: i - 4, x: interpolateNumber(xa, xb) }, { i: i - 2, x: interpolateNumber(ya, yb) });
+      q.push({ i: i - 4, x: interpolateNumber(xa, xb) }, { i: i - 2, x: interpolateNumber(ya, yb) });
     } else if (xb !== 1 || yb !== 1) {
       s.push(pop(s) + "scale(" + xb + "," + yb + ")");
     }
   }
   return function(a, b) {
-    var s = [], q2 = [];
+    var s = [], q = [];
     a = parse2(a), b = parse2(b);
-    translate(a.translateX, a.translateY, b.translateX, b.translateY, s, q2);
-    rotate(a.rotate, b.rotate, s, q2);
-    skewX(a.skewX, b.skewX, s, q2);
-    scale(a.scaleX, a.scaleY, b.scaleX, b.scaleY, s, q2);
+    translate(a.translateX, a.translateY, b.translateX, b.translateY, s, q);
+    rotate(a.rotate, b.rotate, s, q);
+    skewX(a.skewX, b.skewX, s, q);
+    scale(a.scaleX, a.scaleY, b.scaleX, b.scaleY, s, q);
     a = b = null;
     return function(t) {
-      var i = -1, n = q2.length, o;
-      while (++i < n) s[(o = q2[i]).i] = o.x(t);
+      var i = -1, n = q.length, o;
+      while (++i < n) s[(o = q[i]).i] = o.x(t);
       return s.join("");
     };
   };
@@ -22090,18 +22062,59 @@ function ResizeControl({ nodeId, position: position2, variant = ResizeControlVar
   }, children: children2 });
 }
 reactExports.memo(ResizeControl);
-const useGraphStore = create$2((set2) => ({
-  nodes: [],
-  edges: [],
-  depEdges: [],
-  setNodes: (nodes) => set2({ nodes }),
-  setEdges: (edges) => set2({ edges }),
-  setGraph: (nodes, edges) => set2({ nodes, edges }),
-  setDepEdges: (depEdges) => set2({ depEdges })
+const STORAGE_KEY = "claude-vertex:recent-projects";
+const MAX_RECENT = 10;
+function loadRecent() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+function saveRecent(projects) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+}
+let _seq = 0;
+const useTabsStore = create$2((set2, get2) => ({
+  tabs: [],
+  activeTabId: null,
+  recentProjects: loadRecent(),
+  tabViewState: {},
+  setActiveTab: (id2) => set2({ activeTabId: id2 }),
+  openTab: (data) => {
+    const { tabs } = get2();
+    const existing = tabs.find((t) => t.sessionPath === data.sessionPath);
+    if (existing) {
+      set2({ activeTabId: existing.id });
+      return existing.id;
+    }
+    const id2 = `tab-${++_seq}`;
+    set2({ tabs: [...tabs, { ...data, id: id2 }], activeTabId: id2 });
+    return id2;
+  },
+  closeTab: (id2) => {
+    set2((state) => ({ tabs: state.tabs.filter((t) => t.id !== id2) }));
+  },
+  saveTabViewState: (id2, patch2) => {
+    set2((state) => ({
+      tabViewState: {
+        ...state.tabViewState,
+        [id2]: { ...state.tabViewState[id2], ...patch2 }
+      }
+    }));
+  },
+  recordRecentProject: (project) => {
+    const recent = loadRecent();
+    const filtered = recent.filter((r) => r.encodedName !== project.encodedName);
+    const updated = [{ ...project, lastOpened: Date.now() }, ...filtered].slice(0, MAX_RECENT);
+    saveRecent(updated);
+    set2({ recentProjects: updated });
+  }
 }));
 function DirectoryNode({ data, selected: selected2 }) {
   const d = data;
-  const borderColor = d.dominantAction ? ACTION_BORDER[d.dominantAction] : d.isCompare ? "border-orange-600" : "border-zinc-700";
+  const borderColor = d.isCompare ? "border-orange-600" : d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
@@ -22122,7 +22135,7 @@ function DirectoryNode({ data, selected: selected2 }) {
 }
 function FileNode({ data, selected: selected2 }) {
   const d = data;
-  const borderColor = d.dominantAction ? ACTION_BORDER[d.dominantAction] : d.isCompare ? "border-orange-600" : "border-zinc-700";
+  const borderColor = d.isCompare ? "border-orange-600" : d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
   const counts = {};
   for (const a of d.actions) {
     counts[a.type] = (counts[a.type] ?? 0) + 1;
@@ -22192,10 +22205,24 @@ const nodeTypes = {
   fileNode: FileNode,
   symbolNode: SymbolNode
 };
-function CodebaseGraph() {
+function GraphCanvas() {
   const { nodes, edges } = useGraphStore();
   const { selectedNodeId, selectedProjectPath, setSelectedNode, setSelectedExchange } = useUiStore();
   const { exchanges } = useChatStore();
+  const tabId = useTabId();
+  const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
+  const { setViewport, fitView } = useReactFlow();
+  reactExports.useEffect(() => {
+    const saved = useTabsStore.getState().tabViewState[tabId]?.graphViewport;
+    if (saved) {
+      setViewport(saved, { duration: 0 });
+    } else {
+      fitView({ padding: 0.15 });
+    }
+  }, []);
+  const onMoveEnd = reactExports.useCallback((_, viewport) => {
+    saveTabViewState(tabId, { graphViewport: viewport });
+  }, [tabId, saveTabViewState]);
   const onNodeClick = reactExports.useCallback((_event, node2) => {
     const newId2 = node2.id === selectedNodeId ? null : node2.id;
     setSelectedNode(newId2);
@@ -22207,9 +22234,6 @@ function CodebaseGraph() {
       if (exchange) setSelectedExchange(exchange.id);
     }
   }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange]);
-  if (nodes.length === 0) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center text-zinc-600 text-sm", children: "Select a project and session to visualize" });
-  }
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
     index$1,
     {
@@ -22221,8 +22245,7 @@ function CodebaseGraph() {
       },
       onEdgesChange: () => {
       },
-      fitView: true,
-      fitViewOptions: { padding: 0.15 },
+      onMoveEnd,
       minZoom: 0.05,
       maxZoom: 3,
       proOptions: { hideAttribution: true },
@@ -22252,607 +22275,13 @@ function CodebaseGraph() {
     }
   ) });
 }
-const q = typeof window < "u" ? reactExports.useLayoutEffect : reactExports.useEffect;
-function ie(e) {
-  if (e !== void 0)
-    switch (typeof e) {
-      case "number":
-        return e;
-      case "string": {
-        if (e.endsWith("px"))
-          return parseFloat(e);
-        break;
-      }
-    }
-}
-function be({
-  box: e,
-  defaultHeight: t,
-  defaultWidth: s,
-  disabled: r,
-  element: n,
-  mode: o,
-  style: i
-}) {
-  const { styleHeight: f, styleWidth: l } = reactExports.useMemo(
-    () => ({
-      styleHeight: ie(i?.height),
-      styleWidth: ie(i?.width)
-    }),
-    [i?.height, i?.width]
-  ), [c, d] = reactExports.useState({
-    height: t,
-    width: s
-  }), a = r || f !== void 0 || o === "only-width" || f !== void 0 && l !== void 0;
-  return q(() => {
-    if (n === null || a)
-      return;
-    const h = new ResizeObserver((p) => {
-      for (const I of p) {
-        const { contentRect: u, target: w } = I;
-        n === w && d((m) => m.height === u.height && m.width === u.width ? m : {
-          height: u.height,
-          width: u.width
-        });
-      }
-    });
-    return h.observe(n, { box: e }), () => {
-      h?.unobserve(n);
-    };
-  }, [e, a, n, f, l]), reactExports.useMemo(
-    () => ({
-      height: f ?? c.height,
-      width: l ?? c.width
-    }),
-    [c, f, l]
-  );
-}
-function ae(e) {
-  const t = reactExports.useRef(() => {
-    throw new Error("Cannot call during render.");
-  });
-  return q(() => {
-    t.current = e;
-  }, [e]), reactExports.useCallback((s) => t.current?.(s), [t]);
-}
-function Z({
-  containerElement: e,
-  direction: t,
-  isRtl: s,
-  scrollOffset: r
-}) {
-  return r;
-}
-function L(e, t = "Assertion error") {
-  if (!e)
-    throw console.error(t), Error(t);
-}
-function Y(e, t) {
-  if (e === t)
-    return true;
-  if (!!e != !!t || (L(e !== void 0), L(t !== void 0), Object.keys(e).length !== Object.keys(t).length))
-    return false;
-  for (const s in e)
-    if (!Object.is(t[s], e[s]))
-      return false;
-  return true;
-}
-function fe({
-  cachedBounds: e,
-  itemCount: t,
-  itemSize: s
-}) {
-  if (t === 0)
-    return 0;
-  if (typeof s == "number")
-    return t * s;
-  {
-    const r = e.get(
-      e.size === 0 ? 0 : e.size - 1
-    );
-    L(r !== void 0, "Unexpected bounds cache miss");
-    const n = (r.scrollOffset + r.size) / e.size;
-    return t * n;
+function CodebaseGraph() {
+  const { nodes } = useGraphStore();
+  if (nodes.length === 0) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center text-zinc-600 text-sm", children: "Select a project and session to visualize" });
   }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ReactFlowProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(GraphCanvas, {}) });
 }
-function we({
-  align: e,
-  cachedBounds: t,
-  index: s,
-  itemCount: r,
-  itemSize: n,
-  containerScrollOffset: o,
-  containerSize: i
-}) {
-  if (s < 0 || s >= r)
-    throw RangeError(`Invalid index specified: ${s}`, {
-      cause: `Index ${s} is not within the range of 0 - ${r - 1}`
-    });
-  const f = fe({
-    cachedBounds: t,
-    itemCount: r,
-    itemSize: n
-  }), l = t.get(s), c = Math.max(
-    0,
-    Math.min(f - i, l.scrollOffset)
-  ), d = Math.max(
-    0,
-    l.scrollOffset - i + l.size
-  );
-  switch (e === "smart" && (o >= d && o <= c ? e = "auto" : e = "center"), e) {
-    case "start":
-      return c;
-    case "end":
-      return d;
-    case "center":
-      return l.scrollOffset <= i / 2 ? 0 : l.scrollOffset + l.size / 2 >= f - i / 2 ? f - i : l.scrollOffset + l.size / 2 - i / 2;
-    case "auto":
-    default:
-      return o >= d && o <= c ? o : o < d ? d : c;
-  }
-}
-function P({
-  cachedBounds: e,
-  containerScrollOffset: t,
-  containerSize: s,
-  itemCount: r,
-  overscanCount: n
-}) {
-  const o = r - 1;
-  let i = 0, f = -1, l = 0, c = -1, d = 0;
-  for (; d < o; ) {
-    const a = e.get(d);
-    if (a.scrollOffset + a.size > t)
-      break;
-    d++;
-  }
-  for (i = d, l = Math.max(0, i - n); d < o; ) {
-    const a = e.get(d);
-    if (a.scrollOffset + a.size >= t + s)
-      break;
-    d++;
-  }
-  return f = Math.min(o, d), c = Math.min(r - 1, f + n), i < 0 && (i = 0, f = -1, l = 0, c = -1), {
-    startIndexVisible: i,
-    stopIndexVisible: f,
-    startIndexOverscan: l,
-    stopIndexOverscan: c
-  };
-}
-function me({
-  itemCount: e,
-  itemProps: t,
-  itemSize: s
-}) {
-  const r = /* @__PURE__ */ new Map();
-  return {
-    get(n) {
-      for (L(n < e, `Invalid index ${n}`); r.size - 1 < n; ) {
-        const i = r.size;
-        let f;
-        switch (typeof s) {
-          case "function": {
-            f = s(i, t);
-            break;
-          }
-          case "number": {
-            f = s;
-            break;
-          }
-        }
-        if (i === 0)
-          r.set(i, {
-            size: f,
-            scrollOffset: 0
-          });
-        else {
-          const l = r.get(i - 1);
-          L(
-            l !== void 0,
-            `Unexpected bounds cache miss for index ${n}`
-          ), r.set(i, {
-            scrollOffset: l.scrollOffset + l.size,
-            size: f
-          });
-        }
-      }
-      const o = r.get(n);
-      return L(
-        o !== void 0,
-        `Unexpected bounds cache miss for index ${n}`
-      ), o;
-    },
-    set(n, o) {
-      r.set(n, o);
-    },
-    get size() {
-      return r.size;
-    }
-  };
-}
-function Oe({
-  itemCount: e,
-  itemProps: t,
-  itemSize: s
-}) {
-  return reactExports.useMemo(
-    () => me({
-      itemCount: e,
-      itemProps: t,
-      itemSize: s
-    }),
-    [e, t, s]
-  );
-}
-function ye({
-  containerSize: e,
-  itemSize: t
-}) {
-  let s;
-  switch (typeof t) {
-    case "string": {
-      L(
-        t.endsWith("%"),
-        `Invalid item size: "${t}"; string values must be percentages (e.g. "100%")`
-      ), L(
-        e !== void 0,
-        "Container size must be defined if a percentage item size is specified"
-      ), s = e * parseInt(t) / 100;
-      break;
-    }
-    default: {
-      s = t;
-      break;
-    }
-  }
-  return s;
-}
-function te({
-  containerElement: e,
-  containerStyle: t,
-  defaultContainerSize: s = 0,
-  direction: r,
-  isRtl: n = false,
-  itemCount: o,
-  itemProps: i,
-  itemSize: f,
-  onResize: l,
-  overscanCount: c
-}) {
-  const { height: d = s, width: a = s } = be({
-    defaultHeight: s,
-    defaultWidth: void 0,
-    element: e,
-    mode: "only-height",
-    style: t
-  }), h = reactExports.useRef({
-    height: 0,
-    width: 0
-  }), p = d, I = ye({ containerSize: p, itemSize: f });
-  reactExports.useLayoutEffect(() => {
-    if (typeof l == "function") {
-      const g = h.current;
-      (g.height !== d || g.width !== a) && (l({ height: d, width: a }, { ...g }), g.height = d, g.width = a);
-    }
-  }, [d, l, a]);
-  const u = Oe({
-    itemCount: o,
-    itemProps: i,
-    itemSize: I
-  }), w = reactExports.useCallback(
-    (g) => u.get(g),
-    [u]
-  ), [m, O] = reactExports.useState(
-    () => P({
-      cachedBounds: u,
-      // TODO Potentially support a defaultScrollOffset prop?
-      containerScrollOffset: 0,
-      containerSize: p,
-      itemCount: o,
-      overscanCount: c
-    })
-  ), {
-    startIndexVisible: G,
-    startIndexOverscan: x,
-    stopIndexVisible: F,
-    stopIndexOverscan: V
-  } = {
-    startIndexVisible: Math.min(o - 1, m.startIndexVisible),
-    startIndexOverscan: Math.min(o - 1, m.startIndexOverscan),
-    stopIndexVisible: Math.min(o - 1, m.stopIndexVisible),
-    stopIndexOverscan: Math.min(o - 1, m.stopIndexOverscan)
-  }, z = reactExports.useCallback(
-    () => fe({
-      cachedBounds: u,
-      itemCount: o,
-      itemSize: I
-    }),
-    [u, o, I]
-  ), $ = reactExports.useCallback(
-    (g) => {
-      const S = Z({
-        containerElement: e,
-        direction: r,
-        isRtl: n,
-        scrollOffset: g
-      });
-      return P({
-        cachedBounds: u,
-        containerScrollOffset: S,
-        containerSize: p,
-        itemCount: o,
-        overscanCount: c
-      });
-    },
-    [
-      u,
-      e,
-      p,
-      r,
-      n,
-      o,
-      c
-    ]
-  );
-  q(() => {
-    const g = e?.scrollTop ?? 0;
-    O($(g));
-  }, [e, r, $]), q(() => {
-    if (!e)
-      return;
-    const g = () => {
-      O((S) => {
-        const { scrollLeft: E, scrollTop: b } = e, v = Z({
-          containerElement: e,
-          direction: r,
-          isRtl: n,
-          scrollOffset: b
-        }), R = P({
-          cachedBounds: u,
-          containerScrollOffset: v,
-          containerSize: p,
-          itemCount: o,
-          overscanCount: c
-        });
-        return Y(R, S) ? S : R;
-      });
-    };
-    return e.addEventListener("scroll", g), () => {
-      e.removeEventListener("scroll", g);
-    };
-  }, [
-    u,
-    e,
-    p,
-    r,
-    o,
-    c
-  ]);
-  const y = ae(
-    ({
-      align: g = "auto",
-      containerScrollOffset: S,
-      index: E
-    }) => {
-      let b = we({
-        align: g,
-        cachedBounds: u,
-        containerScrollOffset: S,
-        containerSize: p,
-        index: E,
-        itemCount: o,
-        itemSize: I
-      });
-      if (e) {
-        if (b = Z({
-          containerElement: e,
-          direction: r,
-          isRtl: n,
-          scrollOffset: b
-        }), typeof e.scrollTo != "function") {
-          const v = $(b);
-          Y(m, v) || O(v);
-        }
-        return b;
-      }
-    }
-  );
-  return {
-    getCellBounds: w,
-    getEstimatedSize: z,
-    scrollToIndex: y,
-    startIndexOverscan: x,
-    startIndexVisible: G,
-    stopIndexOverscan: V,
-    stopIndexVisible: F
-  };
-}
-function de(e) {
-  return reactExports.useMemo(() => e, Object.values(e));
-}
-function ue(e, t) {
-  const {
-    ariaAttributes: s,
-    style: r,
-    ...n
-  } = e, {
-    ariaAttributes: o,
-    style: i,
-    ...f
-  } = t;
-  return Y(s, o) && Y(r, i) && Y(n, f);
-}
-function ze(e) {
-  return e != null && typeof e == "object" && "getAverageRowHeight" in e && typeof e.getAverageRowHeight == "function";
-}
-const se = "data-react-window-index";
-function Ae({
-  children: e,
-  className: t,
-  defaultHeight: s = 0,
-  listRef: r,
-  onResize: n,
-  onRowsRendered: o,
-  overscanCount: i = 3,
-  rowComponent: f,
-  rowCount: l,
-  rowHeight: c,
-  rowProps: d,
-  tagName: a = "div",
-  style: h,
-  ...p
-}) {
-  const I = de(d), u = reactExports.useMemo(
-    () => reactExports.memo(f, ue),
-    [f]
-  ), [w, m] = reactExports.useState(null), O = ze(c), G = reactExports.useMemo(() => O ? (b) => c.getRowHeight(b) ?? c.getAverageRowHeight() : c, [O, c]), {
-    getCellBounds: x,
-    getEstimatedSize: F,
-    scrollToIndex: V,
-    startIndexOverscan: z,
-    startIndexVisible: $,
-    stopIndexOverscan: y,
-    stopIndexVisible: g
-  } = te({
-    containerElement: w,
-    containerStyle: h,
-    defaultContainerSize: s,
-    direction: "vertical",
-    itemCount: l,
-    itemProps: I,
-    itemSize: G,
-    onResize: n,
-    overscanCount: i
-  });
-  reactExports.useImperativeHandle(
-    r,
-    () => ({
-      get element() {
-        return w;
-      },
-      scrollToRow({
-        align: b = "auto",
-        behavior: v = "auto",
-        index: R
-      }) {
-        const k = V({
-          align: b,
-          containerScrollOffset: w?.scrollTop ?? 0,
-          index: R
-        });
-        typeof w?.scrollTo == "function" && w.scrollTo({
-          behavior: v,
-          top: k
-        });
-      }
-    }),
-    [w, V]
-  ), q(() => {
-    if (!w)
-      return;
-    const b = Array.from(w.children).filter((v, R) => {
-      if (v.hasAttribute("aria-hidden"))
-        return false;
-      const k = `${z + R}`;
-      return v.setAttribute(se, k), true;
-    });
-    if (O)
-      return c.observeRowElements(b);
-  }, [
-    w,
-    O,
-    c,
-    z,
-    y
-  ]), reactExports.useEffect(() => {
-    z >= 0 && y >= 0 && o && o(
-      {
-        startIndex: $,
-        stopIndex: g
-      },
-      {
-        startIndex: z,
-        stopIndex: y
-      }
-    );
-  }, [
-    o,
-    z,
-    $,
-    y,
-    g
-  ]);
-  const S = reactExports.useMemo(() => {
-    const b = [];
-    if (l > 0)
-      for (let v = z; v <= y; v++) {
-        const R = x(v);
-        b.push(
-          /* @__PURE__ */ reactExports.createElement(
-            u,
-            {
-              ...I,
-              ariaAttributes: {
-                "aria-posinset": v + 1,
-                "aria-setsize": l,
-                role: "listitem"
-              },
-              key: v,
-              index: v,
-              style: {
-                position: "absolute",
-                left: 0,
-                transform: `translateY(${R.scrollOffset}px)`,
-                // In case of dynamic row heights, don't specify a height style
-                // otherwise a default/estimated height would mask the actual height
-                height: O ? void 0 : R.size,
-                width: "100%"
-              }
-            }
-          )
-        );
-      }
-    return b;
-  }, [
-    u,
-    x,
-    O,
-    l,
-    I,
-    z,
-    y
-  ]), E = /* @__PURE__ */ jsxRuntimeExports.jsx(
-    "div",
-    {
-      "aria-hidden": true,
-      style: {
-        height: F(),
-        width: "100%",
-        zIndex: -1
-      }
-    }
-  );
-  return reactExports.createElement(
-    a,
-    {
-      role: "list",
-      ...p,
-      className: t,
-      ref: m,
-      style: {
-        position: "relative",
-        maxHeight: "100%",
-        flexGrow: 1,
-        overflowY: "auto",
-        ...h
-      }
-    },
-    S,
-    e,
-    E
-  );
-}
-const Me = reactExports.useRef;
 function ok$1() {
 }
 function unreachable() {
@@ -35544,8 +34973,12 @@ function ToolCallBlock({ toolCall }) {
     ] })
   ] });
 }
+const COLLAPSE_THRESHOLD = 300;
 function ChatMessageBubble({ message, isHighlighted }) {
   const isUser = message.role === "user";
+  const isLong = (message.textContent?.length ?? 0) > COLLAPSE_THRESHOLD;
+  const [expanded, setExpanded] = reactExports.useState(false);
+  const displayText = isLong && !expanded ? message.textContent.slice(0, COLLAPSE_THRESHOLD) + "…" : message.textContent;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-sm ${isHighlighted ? "bg-zinc-800/50 rounded-lg p-1 -mx-1" : ""}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 mb-1", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `text-[10px] font-semibold uppercase tracking-wide ${isUser ? "text-zinc-500" : "text-zinc-400"}`, children: isUser ? "User" : message.model?.split("-").slice(0, 2).join("-") ?? "Claude" }),
@@ -35557,11 +34990,24 @@ function ChatMessageBubble({ message, isHighlighted }) {
         " tok"
       ] })
     ] }),
-    message.textContent && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `prose prose-invert prose-sm max-w-none text-zinc-300
-          prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
-          prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-          prose-headings:text-zinc-200
-        `, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { remarkPlugins: [remarkGfm], children: message.textContent }) }),
+    displayText && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `prose prose-invert prose-sm max-w-none text-zinc-300
+            prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
+            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
+            prose-headings:text-zinc-200
+          `, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { remarkPlugins: [remarkGfm], children: displayText }) }),
+      isLong && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          className: "text-[10px] text-zinc-500 hover:text-zinc-300 mt-0.5",
+          onClick: (e) => {
+            e.stopPropagation();
+            setExpanded((x) => !x);
+          },
+          children: expanded ? "Show less" : "Show more"
+        }
+      )
+    ] }),
     message.toolCalls.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1.5 space-y-0.5", children: message.toolCalls.map((tc) => /* @__PURE__ */ jsxRuntimeExports.jsx(ToolCallBlock, { toolCall: tc }, tc.id)) })
   ] });
 }
@@ -35643,20 +35089,48 @@ function buildTimeline(exchanges, commits) {
   });
   return items;
 }
-const COMMIT_HEIGHT = 44;
-const EXCHANGE_HEIGHT = 160;
 function computeCost(exchange) {
   const usage = exchange.assistantMessage.tokenUsage;
   if (!usage) return 0;
   return (usage.input * 3 + usage.output * 15) / 1e6;
 }
-function makeRowComponent(rowData) {
-  return function RowComponent({ ariaAttributes, index: index2, style: style2 }) {
-    const { timeline, selectedExchangeId, playbackIndex, searchResultIds, activeSearchId, setSelectedExchange } = rowData;
-    const item = timeline[index2];
-    if (!item) return null;
+function ChatPanel() {
+  const { exchanges } = useChatStore();
+  const { commits } = useGitStore();
+  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore();
+  const { results, activeIdx } = useSearchStore();
+  const tabId = useTabId();
+  const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
+  const scrollRef = reactExports.useRef(null);
+  const itemRefs = reactExports.useRef(/* @__PURE__ */ new Map());
+  const timeline = reactExports.useMemo(() => buildTimeline(exchanges, commits), [exchanges, commits]);
+  const searchResultIds = reactExports.useMemo(
+    () => new Set(results.map((r) => r.exchangeId)),
+    [results]
+  );
+  const activeSearchId = results[activeIdx]?.exchangeId ?? null;
+  reactExports.useEffect(() => {
+    if (exchanges.length === 0 || !scrollRef.current || !tabId) return;
+    const saved = useTabsStore.getState().tabViewState[tabId]?.chatScrollTop;
+    if (saved !== void 0) scrollRef.current.scrollTop = saved;
+  }, [exchanges.length === 0 ? 0 : 1]);
+  const activeId = playbackIndex !== null ? exchanges[playbackIndex]?.id : activeSearchId ?? selectedExchangeId;
+  reactExports.useEffect(() => {
+    if (!activeId) return;
+    const el = itemRefs.current.get(activeId);
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeId]);
+  if (exchanges.length === 0) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center h-full text-zinc-600 text-sm", children: "No session loaded" });
+  }
+  const handleScroll = () => {
+    if (scrollRef.current && tabId) {
+      saveTabViewState(tabId, { chatScrollTop: scrollRef.current.scrollTop });
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: scrollRef, className: "h-full overflow-y-auto", onScroll: handleScroll, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-1 p-2", children: timeline.map((item, i) => {
     if (item.kind === "commit") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ...ariaAttributes, style: { ...style2, padding: "4px 12px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(GitCommitMarker, { commit: item.commit }) });
+      return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(GitCommitMarker, { commit: item.commit }) }, `commit-${item.commit.hash}`);
     }
     const { exchange, idx } = item;
     const isPlaybackCurrent = playbackIndex !== null && idx === playbackIndex;
@@ -35666,18 +35140,22 @@ function makeRowComponent(rowData) {
     const isActiveSearch = exchange.id === activeSearchId;
     const cost = computeCost(exchange);
     const usage = exchange.assistantMessage.tokenUsage;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ...ariaAttributes, style: { ...style2, padding: "4px 12px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
-        className: `rounded-lg border p-2 cursor-pointer transition-all h-full box-border
-            ${isPlaybackFuture ? "opacity-25 pointer-events-none" : ""}
-            ${isActiveSearch ? "ring-2 ring-yellow-400/60" : isSearchMatch ? "ring-1 ring-yellow-600/40" : ""}
-            ${isPlaybackCurrent ? "border-yellow-600/60 bg-yellow-950/20 shadow-sm shadow-yellow-900/20" : isSelected ? "border-zinc-600 bg-zinc-800/60" : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"}
-          `,
+        ref: (el) => {
+          if (el) itemRefs.current.set(exchange.id, el);
+          else itemRefs.current.delete(exchange.id);
+        },
+        className: `rounded-lg border p-2 cursor-pointer transition-all
+                ${isPlaybackFuture ? "opacity-25" : ""}
+                ${isActiveSearch ? "ring-2 ring-yellow-400/60" : isSearchMatch ? "ring-1 ring-yellow-600/40" : ""}
+                ${isPlaybackCurrent ? "border-yellow-600/60 bg-yellow-950/20 shadow-sm shadow-yellow-900/20" : isSelected ? "border-zinc-600 bg-zinc-800/60" : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50"}
+              `,
         onClick: () => {
-          if (isPlaybackFuture) return;
-          const newId2 = exchange.id === selectedExchangeId ? null : exchange.id;
-          setSelectedExchange(newId2);
+          const isDeselect = exchange.id === selectedExchangeId;
+          setSelectedExchange(isDeselect ? null : exchange.id);
+          setPlaybackIndex(isDeselect ? null : idx);
         },
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.userMessage }),
@@ -35698,74 +35176,10 @@ function makeRowComponent(rowData) {
             ] })
           ] })
         ]
-      }
-    ) });
-  };
-}
-function ChatPanel() {
-  const { exchanges } = useChatStore();
-  const { commits } = useGitStore();
-  const { selectedExchangeId, playbackIndex, setSelectedExchange } = useUiStore();
-  const { results, activeIdx } = useSearchStore();
-  const containerRef = reactExports.useRef(null);
-  const listRef = Me();
-  const [containerHeight, setContainerHeight] = reactExports.useState(400);
-  const timeline = reactExports.useMemo(() => buildTimeline(exchanges, commits), [exchanges, commits]);
-  const searchResultIds = reactExports.useMemo(
-    () => new Set(results.map((r) => r.exchangeId)),
-    [results]
-  );
-  const activeSearchId = results[activeIdx]?.exchangeId ?? null;
-  reactExports.useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    setContainerHeight(el.clientHeight);
-    const ro = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) setContainerHeight(entry.contentRect.height);
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  const activeId = playbackIndex !== null ? exchanges[playbackIndex]?.id : activeSearchId ?? selectedExchangeId;
-  reactExports.useEffect(() => {
-    if (!activeId || !listRef.current) return;
-    const idx = timeline.findIndex(
-      (item) => item.kind === "exchange" && item.exchange.id === activeId
+      },
+      exchange.id
     );
-    if (idx >= 0) {
-      listRef.current.scrollToRow({ index: idx, align: "smart" });
-    }
-  }, [activeId, timeline]);
-  const rowData = reactExports.useMemo(() => ({
-    timeline,
-    selectedExchangeId,
-    playbackIndex,
-    searchResultIds,
-    activeSearchId,
-    setSelectedExchange
-  }), [timeline, selectedExchangeId, playbackIndex, searchResultIds, activeSearchId, setSelectedExchange]);
-  const RowComponent = reactExports.useMemo(() => makeRowComponent(rowData), [rowData]);
-  const rowHeight = (index2) => {
-    const item = timeline[index2];
-    if (!item) return EXCHANGE_HEIGHT;
-    return item.kind === "commit" ? COMMIT_HEIGHT : EXCHANGE_HEIGHT;
-  };
-  if (exchanges.length === 0) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center h-full text-zinc-600 text-sm", children: "No session loaded" });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: containerRef, className: "h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Ae,
-    {
-      listRef,
-      rowComponent: RowComponent,
-      rowProps: {},
-      rowCount: timeline.length,
-      rowHeight,
-      style: { height: containerHeight },
-      overscanCount: 5
-    }
-  ) });
+  }) }) });
 }
 const SPARKLINE_H = 20;
 const SPARKLINE_COLOR = "#a1a1aa";
@@ -35826,6 +35240,7 @@ function PlaybackControls() {
     setPlaybackIndex,
     setPlaying,
     setPlaybackSpeed,
+    setSelectedExchange,
     stepForward,
     stepBack
   } = useUiStore();
@@ -35841,7 +35256,7 @@ function PlaybackControls() {
       const nextIdx = idx === null ? 0 : idx + 1;
       if (nextIdx > maxIndex) {
         useUiStore.getState().setPlaying(false);
-        useUiStore.getState().setPlaybackIndex(null);
+        useUiStore.getState().setPlaybackIndex(maxIndex);
       } else {
         useUiStore.getState().setPlaybackIndex(nextIdx);
       }
@@ -35892,7 +35307,7 @@ function PlaybackControls() {
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
-          onClick: () => stepBack(),
+          onClick: () => stepBack(maxIndex),
           className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
           title: "Step back",
           children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipBack, { size: 14 })
@@ -35919,11 +35334,12 @@ function PlaybackControls() {
         "button",
         {
           onClick: () => {
-            setPlaybackIndex(null);
+            setPlaybackIndex(maxIndex);
+            setSelectedExchange(exchanges[maxIndex]?.id ?? null);
             setPlaying(false);
           },
           className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
-          title: "Show all",
+          title: "Go to last",
           children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLast, { size: 14 })
         }
       ),
@@ -35943,6 +35359,24 @@ function PlaybackControls() {
     ] })
   ] });
 }
+const useTabCacheStore = create$2((set2, get2) => ({
+  cache: /* @__PURE__ */ new Map(),
+  patch: (sessionPath, data) => {
+    set2((state) => {
+      const next = new Map(state.cache);
+      next.set(sessionPath, { ...next.get(sessionPath), ...data });
+      return { cache: next };
+    });
+  },
+  get: (sessionPath) => get2().cache.get(sessionPath),
+  delete: (sessionPath) => {
+    set2((state) => {
+      const next = new Map(state.cache);
+      next.delete(sessionPath);
+      return { cache: next };
+    });
+  }
+}));
 function mapActionsToNodes(actions, nodes, projectPath) {
   const updated = /* @__PURE__ */ new Map();
   for (const [id2, node2] of nodes) {
@@ -36001,6 +35435,7 @@ function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ ne
       nodeType: node2.type,
       actions: node2.actions,
       dominantAction: dominantActionType(node2.actions),
+      activeAction: null,
       isPulsing: pulsingNodeIds.has(id2),
       isCompare: compareNodeIds.has(id2),
       language: node2.language,
@@ -36055,21 +35490,50 @@ function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ ne
 }
 function toRelativeIds(absolutePaths, projectPath) {
   return new Set(
-    absolutePaths.map((p) => {
-      if (p.startsWith(projectPath)) {
-        return p.slice(projectPath.length).replace(/^\//, "");
-      }
-      return p;
-    })
+    absolutePaths.map(
+      (p) => p.startsWith(projectPath) ? p.slice(projectPath.length).replace(/^\//, "") : p
+    )
   );
 }
+function buildActionMap(actions, projectPath, filter2) {
+  const filtered = filter2.size > 0 ? actions.filter((a) => filter2.has(a.type)) : actions;
+  const map2 = /* @__PURE__ */ new Map();
+  for (const action of filtered) {
+    if (!action.filePath) continue;
+    let rel = action.filePath;
+    if (rel.startsWith(projectPath)) rel = rel.slice(projectPath.length).replace(/^\//, "");
+    const existing = map2.get(rel);
+    if (existing) existing.push(action);
+    else map2.set(rel, [action]);
+  }
+  return map2;
+}
+function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = /* @__PURE__ */ new Map()) {
+  return nodes.map((n) => {
+    const nodeActions = actionsByNode.get(n.id) ?? [];
+    const data = n.data;
+    const newPulsing = pulsingIds.has(n.id);
+    const newActiveAction = newPulsing ? dominantActionType(activeActionsByNode.get(n.id) ?? []) : null;
+    return {
+      ...n,
+      data: {
+        ...data,
+        actions: nodeActions,
+        dominantAction: dominantActionType(nodeActions),
+        activeAction: newActiveAction,
+        isPulsing: newPulsing
+      }
+    };
+  });
+}
 function useGraphSync() {
-  const { actions } = useSessionStore();
+  const { actions } = useSessionStore$1();
   const { exchanges } = useChatStore();
   const { nodes: codebaseNodes, rootIds } = useCodebaseStore();
   const { setGraph, depEdges, setDepEdges } = useGraphStore();
   const {
     selectedProjectPath,
+    selectedSessionPath,
     playbackIndex,
     actionTypeFilter,
     granularity,
@@ -36077,49 +35541,75 @@ function useGraphSync() {
   } = useUiStore();
   const { highlightedFiles } = useGitStore();
   const { compareNodeIds } = useCompareStore();
+  const { codebase: codebaseStore, graph: graphStore } = useTabStores();
+  const playbackIndexRef = reactExports.useRef(playbackIndex);
+  playbackIndexRef.current = playbackIndex;
   reactExports.useEffect(() => {
     if (codebaseNodes.size === 0 || !selectedProjectPath) return;
-    const filePaths = Array.from(codebaseNodes.keys()).filter((id2) => {
-      const node2 = codebaseNodes.get(id2);
-      return node2?.type === "file";
-    });
+    if (codebaseStore.getState().restoredFromCache) return;
+    const filePaths = Array.from(codebaseNodes.keys()).filter(
+      (id2) => codebaseNodes.get(id2)?.type === "file"
+    );
     window.api.depScan(selectedProjectPath, filePaths).then((result) => {
-      setDepEdges(result);
+      const edges = result;
+      setDepEdges(edges);
+      const sessionPath = selectedSessionPath;
+      if (sessionPath) useTabCacheStore.getState().patch(sessionPath, { depEdges: edges });
     }).catch(() => {
     });
   }, [codebaseNodes, selectedProjectPath]);
   reactExports.useEffect(() => {
     if (codebaseNodes.size === 0) return;
-    const projectPath = selectedProjectPath ?? "";
-    let visibleActions;
-    let pulsingIds = /* @__PURE__ */ new Set();
-    if (playbackIndex !== null && exchanges.length > 0) {
-      const clampedIndex = Math.min(playbackIndex, exchanges.length - 1);
-      const visibleExchanges = exchanges.slice(0, clampedIndex + 1);
-      visibleActions = visibleExchanges.flatMap((e) => e.actions);
-      const currentExchange = exchanges[clampedIndex];
-      if (currentExchange) {
-        pulsingIds = toRelativeIds(currentExchange.affectedNodes, projectPath);
-        setActiveNodeIds(pulsingIds);
-      }
-    } else {
-      visibleActions = actions;
-      setActiveNodeIds(/* @__PURE__ */ new Set());
+    if (codebaseStore.getState().restoredFromCache) {
+      codebaseStore.setState({ restoredFromCache: false });
+      return;
     }
-    const filtered = actionTypeFilter.size > 0 ? visibleActions.filter((a) => actionTypeFilter.has(a.type)) : visibleActions;
-    const combinedPulsing = new Set(pulsingIds);
-    for (const f of highlightedFiles) combinedPulsing.add(f);
+    const projectPath = selectedProjectPath ?? "";
+    const filtered = actionTypeFilter.size > 0 ? actions.filter((a) => actionTypeFilter.has(a.type)) : actions;
     const decorated = mapActionsToNodes(filtered, codebaseNodes, projectPath);
     const { nodes: rfNodes, edges: rfEdges } = buildGraphFromNodes(
       decorated,
       rootIds,
-      combinedPulsing,
+      new Set(highlightedFiles),
       granularity,
       depEdges,
       compareNodeIds
     );
-    setGraph(rfNodes, rfEdges);
-  }, [codebaseNodes, actions, exchanges, playbackIndex, selectedProjectPath, actionTypeFilter, granularity, highlightedFiles, depEdges, compareNodeIds]);
+    if (playbackIndexRef.current === null) {
+      setGraph(rfNodes, rfEdges);
+      setActiveNodeIds(/* @__PURE__ */ new Set());
+      if (selectedSessionPath) {
+        useTabCacheStore.getState().patch(selectedSessionPath, {
+          graphNodes: rfNodes,
+          graphEdges: rfEdges
+        });
+      }
+    }
+  }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds]);
+  reactExports.useEffect(() => {
+    const { nodes: rfNodes, edges: rfEdges } = graphStore.getState();
+    if (playbackIndex === null) {
+      if (rfNodes.length === 0) return;
+      const projectPath2 = selectedProjectPath ?? "";
+      const actionsByNode2 = buildActionMap(actions, projectPath2, actionTypeFilter);
+      const combinedPulsing2 = new Set(highlightedFiles);
+      setGraph(applyActionMap(rfNodes, actionsByNode2, combinedPulsing2), rfEdges);
+      setActiveNodeIds(/* @__PURE__ */ new Set());
+      return;
+    }
+    if (rfNodes.length === 0 || exchanges.length === 0) return;
+    const projectPath = selectedProjectPath ?? "";
+    const clampedIndex = Math.min(playbackIndex, exchanges.length - 1);
+    const visibleActions = exchanges.slice(0, clampedIndex + 1).flatMap((e) => e.actions);
+    const actionsByNode = buildActionMap(visibleActions, projectPath, actionTypeFilter);
+    const currentExchange = exchanges[clampedIndex];
+    const pulsingIds = currentExchange ? toRelativeIds(currentExchange.affectedNodes, projectPath) : /* @__PURE__ */ new Set();
+    const currentActionsByNode = currentExchange ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter) : /* @__PURE__ */ new Map();
+    const combinedPulsing = new Set(pulsingIds);
+    for (const f of highlightedFiles) combinedPulsing.add(f);
+    setActiveNodeIds(pulsingIds);
+    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode), rfEdges);
+  }, [playbackIndex, exchanges, actions, actionTypeFilter, selectedProjectPath, highlightedFiles]);
 }
 function GranularityControl() {
   const { granularity, setGranularity } = useUiStore();
@@ -36133,13 +35623,467 @@ function GranularityControl() {
     g
   )) });
 }
-function AppInner() {
+function TabBar() {
+  const { tabs, activeTabId, setActiveTab, closeTab } = useTabsStore();
+  const handleTabClick = (tab2) => {
+    if (tab2.id === activeTabId) return;
+    setActiveTab(tab2.id);
+  };
+  const handleClose = (e, id2) => {
+    e.stopPropagation();
+    const { tabs: currentTabs, activeTabId: currentActive } = useTabsStore.getState();
+    if (currentActive === id2) {
+      const idx = currentTabs.findIndex((t) => t.id === id2);
+      const remaining = currentTabs.filter((t) => t.id !== id2);
+      if (remaining.length > 0) {
+        const next = idx > 0 ? remaining[idx - 1] : remaining[0];
+        setActiveTab(next.id);
+      } else {
+        setActiveTab(null);
+      }
+    }
+    closeTab(id2);
+    tabStoreMap.delete(id2);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-stretch h-9 bg-zinc-950 border-b border-zinc-800 shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        onClick: () => setActiveTab(null),
+        className: [
+          "flex items-center gap-1.5 px-4 text-xs shrink-0 border-r border-zinc-800 font-medium",
+          "relative transition-colors select-none",
+          activeTabId === null ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
+        ].join(" "),
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { size: 13 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Dashboard" })
+        ]
+      }
+    ),
+    tabs.map((tab2) => {
+      const isActive = tab2.id === activeTabId;
+      const date2 = new Date(tab2.mtime).toLocaleDateString(void 0, { month: "short", day: "numeric" });
+      const projectShort = tab2.projectDisplayName.split("/").slice(-1)[0];
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          onClick: () => handleTabClick(tab2),
+          className: [
+            "group flex items-center gap-2 pl-4 pr-2 text-xs shrink-0 border-r border-zinc-800",
+            "relative transition-colors select-none",
+            isActive ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
+          ].join(" "),
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "max-w-[160px] truncate", children: [
+              projectShort,
+              " · ",
+              date2
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "span",
+              {
+                role: "button",
+                "aria-label": "Close tab",
+                onClick: (e) => handleClose(e, tab2.id),
+                className: [
+                  "flex items-center justify-center w-4 h-4 rounded transition-colors",
+                  isActive ? "text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100" : "text-transparent group-hover:text-zinc-500 hover:!text-zinc-200 hover:bg-zinc-700"
+                ].join(" "),
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 10 })
+              }
+            )
+          ]
+        },
+        tab2.id
+      );
+    })
+  ] });
+}
+const useSessionStore = create$2((set2) => ({
+  projects: [],
+  sessions: [],
+  actions: [],
+  isLoadingProjects: false,
+  isLoadingSession: false,
+  loadProjects: async () => {
+    set2({ isLoadingProjects: true });
+    try {
+      const projects = await window.api.listProjects();
+      set2({ projects });
+    } finally {
+      set2({ isLoadingProjects: false });
+    }
+  },
+  loadSessions: async (encodedName) => {
+    const sessions = await window.api.listSessions(encodedName);
+    set2({ sessions });
+  },
+  loadSession: async (filePath) => {
+    set2({ isLoadingSession: true, actions: [] });
+    try {
+      const result = await window.api.loadSession(filePath);
+      set2({ actions: result.actions });
+    } finally {
+      set2({ isLoadingSession: false });
+    }
+  }
+}));
+function useOpenSession() {
+  const { openTab, recordRecentProject } = useTabsStore();
+  return async (params) => {
+    openTab(params);
+    recordRecentProject({
+      encodedName: params.projectEncoded,
+      projectPath: params.projectPath,
+      displayName: params.projectDisplayName,
+      lastSessionPath: params.sessionPath,
+      lastSessionId: params.sessionId,
+      lastSessionMtime: params.mtime
+    });
+    const newTabId = useTabsStore.getState().activeTabId;
+    if (!tabStoreMap.has(newTabId)) tabStoreMap.set(newTabId, createTabStores());
+    const tabStores = tabStoreMap.get(newTabId);
+    if (tabStores.session.getState().actions.length > 0 || tabStores.chat.getState().exchanges.length > 0) {
+      return;
+    }
+    const cached = useTabCacheStore.getState().get(params.sessionPath);
+    if (cached?.exchanges && cached?.actions && cached?.codebaseNodes) {
+      const savedUi = useTabsStore.getState().tabViewState[newTabId] ?? {};
+      tabStores.ui.setState({
+        selectedProjectEncoded: params.projectEncoded,
+        selectedProjectPath: params.projectPath,
+        selectedSessionPath: params.sessionPath,
+        selectedNodeId: "selectedNodeId" in savedUi ? savedUi.selectedNodeId ?? null : null,
+        selectedExchangeId: "selectedExchangeId" in savedUi ? savedUi.selectedExchangeId ?? null : null,
+        playbackIndex: "playbackIndex" in savedUi ? savedUi.playbackIndex ?? null : null,
+        isPlaying: false,
+        playbackSpeed: savedUi.playbackSpeed ?? 1,
+        activeNodeIds: /* @__PURE__ */ new Set(),
+        actionTypeFilter: savedUi.actionTypeFilter ?? /* @__PURE__ */ new Set(),
+        granularity: savedUi.granularity ?? "files"
+      });
+      tabStores.session.setState({
+        actions: cached.actions,
+        sessions: cached.sessions ?? [],
+        isLoadingSession: false
+      });
+      tabStores.chat.getState().setExchanges(cached.exchanges);
+      tabStores.codebase.setState({
+        nodes: cached.codebaseNodes,
+        rootIds: cached.codebaseRootIds ?? [],
+        restoredFromCache: true
+      });
+      if (cached.graphNodes?.length) {
+        tabStores.graph.setState({
+          nodes: cached.graphNodes,
+          edges: cached.graphEdges ?? [],
+          depEdges: cached.depEdges ?? []
+        });
+      }
+      tabStores.git.setState({ commits: cached.commits ?? [] });
+      tabStores.compare.getState().clear();
+      return;
+    }
+    const prevProjectPath = tabStores.ui.getState().selectedProjectPath;
+    const sameProject = prevProjectPath === params.projectPath;
+    tabStores.ui.getState().setSelectedProject(params.projectEncoded, params.projectPath);
+    tabStores.compare.getState().clear();
+    tabStores.chat.getState().clear();
+    tabStores.session.setState({ actions: [], isLoadingSession: true });
+    if (sameProject) {
+      const { nodes, rootIds } = tabStores.codebase.getState();
+      const { commits } = tabStores.git.getState();
+      const { sessions } = tabStores.session.getState();
+      useTabCacheStore.getState().patch(params.sessionPath, {
+        codebaseNodes: nodes,
+        codebaseRootIds: rootIds,
+        commits,
+        sessions
+      });
+    } else {
+      let sharedNodes = null;
+      let sharedRootIds = null;
+      for (const [tid, stores] of tabStoreMap) {
+        if (tid !== newTabId && stores.ui.getState().selectedProjectPath === params.projectPath && stores.codebase.getState().nodes.size > 0) {
+          sharedNodes = stores.codebase.getState().nodes;
+          sharedRootIds = stores.codebase.getState().rootIds;
+          break;
+        }
+      }
+      if (sharedNodes && sharedRootIds) {
+        tabStores.codebase.setState({
+          nodes: sharedNodes,
+          rootIds: sharedRootIds,
+          restoredFromCache: true
+        });
+        useTabCacheStore.getState().patch(params.sessionPath, {
+          codebaseNodes: sharedNodes,
+          codebaseRootIds: sharedRootIds
+        });
+      } else {
+        tabStores.codebase.getState().clear();
+        tabStores.codebase.getState().scanProject(params.projectPath).then(() => {
+          const { nodes, rootIds } = tabStores.codebase.getState();
+          useTabCacheStore.getState().patch(params.sessionPath, { codebaseNodes: nodes, codebaseRootIds: rootIds });
+        });
+      }
+      window.api.listSessions(params.projectEncoded).then((raw) => {
+        const sessions = raw;
+        useTabCacheStore.getState().patch(params.sessionPath, { sessions });
+        tabStores.session.setState({ sessions });
+      });
+      tabStores.git.getState().clear();
+      tabStores.git.getState().loadCommits(params.projectPath).then(() => {
+        const { commits } = tabStores.git.getState();
+        useTabCacheStore.getState().patch(params.sessionPath, { commits });
+      });
+      window.api.gitWatch(params.projectPath);
+    }
+    tabStores.ui.getState().setSelectedSession(params.sessionPath);
+    try {
+      const result = await window.api.loadSession(params.sessionPath);
+      useTabCacheStore.getState().patch(params.sessionPath, {
+        exchanges: result.exchanges,
+        actions: result.actions
+      });
+      tabStores.chat.getState().setExchanges(result.exchanges);
+      tabStores.session.setState({ actions: result.actions });
+    } finally {
+      tabStores.session.setState({ isLoadingSession: false });
+    }
+  };
+}
+function Dashboard() {
+  const { projects, loadProjects, isLoadingProjects } = useSessionStore();
+  const { recentProjects } = useTabsStore();
+  const openSession = useOpenSession();
+  const [expandedProject, setExpandedProject] = reactExports.useState(null);
+  const [projectSessions, setProjectSessions] = reactExports.useState({});
+  const [loadingSessions, setLoadingSessions] = reactExports.useState(null);
+  reactExports.useEffect(() => {
+    loadProjects();
+  }, []);
+  const loadSessionsForProject = async (project) => {
+    if (projectSessions[project.encodedName]) return;
+    setLoadingSessions(project.encodedName);
+    try {
+      const sessions = await window.api.listSessions(project.encodedName);
+      setProjectSessions((prev) => ({ ...prev, [project.encodedName]: sessions }));
+    } finally {
+      setLoadingSessions(null);
+    }
+  };
+  const handleProjectExpand = async (project) => {
+    if (expandedProject === project.encodedName) {
+      setExpandedProject(null);
+      return;
+    }
+    setExpandedProject(project.encodedName);
+    await loadSessionsForProject(project);
+  };
+  const handleOpenSession = (project, session) => {
+    openSession({
+      projectEncoded: project.encodedName,
+      projectPath: project.projectPath,
+      projectDisplayName: project.displayName,
+      sessionPath: session.filePath,
+      sessionId: session.sessionId,
+      mtime: session.mtime
+    });
+  };
+  const handleOpenRecent = async (encodedName, sessionPath, sessionId, mtime) => {
+    const project = projects.find((p) => p.encodedName === encodedName);
+    if (!project) return;
+    openSession({
+      projectEncoded: project.encodedName,
+      projectPath: project.projectPath,
+      projectDisplayName: project.displayName,
+      sessionPath,
+      sessionId,
+      mtime
+    });
+  };
+  const sortedProjects = [...projects].sort((a, b) => {
+    const ai = recentProjects.findIndex((r) => r.encodedName === a.encodedName);
+    const bi = recentProjects.findIndex((r) => r.encodedName === b.encodedName);
+    if (ai !== -1 && bi === -1) return -1;
+    if (ai === -1 && bi !== -1) return 1;
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    return a.displayName.localeCompare(b.displayName);
+  });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto bg-zinc-950", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto px-8 py-10", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-10", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5 mb-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { size: 18, className: "text-blue-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-lg font-semibold text-zinc-100 tracking-tight", children: "Claude Vertex" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-zinc-500 ml-[26px]", children: "Visualize Claude Code sessions as interactive code graphs" })
+    ] }),
+    recentProjects.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mb-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "Recent" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-2", children: recentProjects.slice(0, 4).map((recent) => {
+        const shortName = recent.displayName.split("/").slice(-2).join("/");
+        const lastDate = new Date(recent.lastOpened).toLocaleDateString(void 0, {
+          month: "short",
+          day: "numeric"
+        });
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            onClick: () => handleOpenRecent(
+              recent.encodedName,
+              recent.lastSessionPath,
+              recent.lastSessionId,
+              recent.lastSessionMtime
+            ),
+            className: "flex items-start gap-3 p-3.5 rounded-lg bg-zinc-900 border border-zinc-800\n                      hover:border-zinc-600 hover:bg-zinc-800/60 text-left transition-all group",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                FolderOpen,
+                {
+                  size: 15,
+                  className: "text-blue-400 shrink-0 mt-0.5 group-hover:text-blue-300 transition-colors"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm font-medium text-zinc-200 truncate leading-snug", children: shortName }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 mt-1 text-zinc-500 text-[11px]", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { size: 10 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: lastDate }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-700", children: "·" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono", children: recent.lastSessionId.slice(0, 7) })
+                ] })
+              ] })
+            ]
+          },
+          recent.encodedName
+        );
+      }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "All Projects" }),
+      isLoadingProjects ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-zinc-600 animate-pulse py-4", children: "Scanning ~/.claude/projects/…" }) : sortedProjects.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-zinc-600 py-4", children: [
+        "No projects found in ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "text-zinc-500", children: "~/.claude/projects/" })
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1", children: sortedProjects.map((project) => {
+        const isExpanded = expandedProject === project.encodedName;
+        const sessions = projectSessions[project.encodedName] ?? [];
+        const isLoading = loadingSessions === project.encodedName;
+        const shortName = project.displayName.split("/").slice(-2).join("/");
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: "rounded-lg overflow-hidden border border-zinc-800/80",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  onClick: () => handleProjectExpand(project),
+                  className: "w-full flex items-center gap-2.5 px-4 py-2.5 bg-zinc-900\n                        hover:bg-zinc-800/60 text-left transition-colors",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-600 shrink-0", children: isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { size: 13 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { size: 13 }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(FolderOpen, { size: 13, className: "text-zinc-500 shrink-0" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-zinc-300 flex-1 truncate", children: shortName }),
+                    isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] text-zinc-600 animate-pulse", children: "Loading…" })
+                  ]
+                }
+              ),
+              isExpanded && !isLoading && sessions.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-zinc-800/80 bg-zinc-950 divide-y divide-zinc-800/40", children: sessions.map((session) => {
+                const dt = new Date(session.mtime);
+                const dateStr = dt.toLocaleDateString(void 0, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                });
+                const timeStr = dt.toLocaleTimeString(void 0, {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                });
+                return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "button",
+                  {
+                    onClick: () => handleOpenSession(project, session),
+                    className: "w-full flex items-center gap-3 pl-10 pr-4 py-2 hover:bg-zinc-900\n                                text-left transition-colors group",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors", children: [
+                        session.sessionId.slice(0, 8),
+                        "…"
+                      ] }) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[11px] text-zinc-600 shrink-0", children: [
+                        dateStr,
+                        " · ",
+                        timeStr
+                      ] })
+                    ]
+                  },
+                  session.sessionId
+                );
+              }) }),
+              isExpanded && !isLoading && sessions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-zinc-800/80 bg-zinc-950 px-10 py-3 text-xs text-zinc-600", children: "No sessions found" })
+            ]
+          },
+          project.encodedName
+        );
+      }) })
+    ] })
+  ] }) });
+}
+const MIN_CHAT_WIDTH = 280;
+const MAX_CHAT_WIDTH = 800;
+const DEFAULT_CHAT_WIDTH = 400;
+function SessionView() {
   useGraphSync();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col h-screen w-screen bg-zinc-950 text-zinc-100 overflow-hidden", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center gap-4 px-3 py-2 border-b border-zinc-800 bg-zinc-900 shrink-0", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-semibold text-zinc-400 shrink-0", children: "Claude Vertex" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(SessionPicker, {}),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
+  const [chatWidth, setChatWidth] = reactExports.useState(DEFAULT_CHAT_WIDTH);
+  const chatPanelRef = reactExports.useRef(null);
+  const { selectedProjectPath, selectedSessionPath } = useUiStore();
+  const { sessions } = useSessionStore$1();
+  const compareStore = useCompareStore();
+  const onMouseDown = reactExports.useCallback((e) => {
+    const startX = e.clientX;
+    const startWidth = chatWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    const onMouseMove = (e2) => {
+      const delta = startX - e2.clientX;
+      const next = Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, startWidth + delta));
+      if (chatPanelRef.current) chatPanelRef.current.style.width = `${next}px`;
+    };
+    const onMouseUp = (e2) => {
+      const delta = startX - e2.clientX;
+      setChatWidth(Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, startWidth + delta)));
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, [chatWidth]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center gap-3 px-3 py-2 border-b border-zinc-800 bg-zinc-900 shrink-0", children: [
+      selectedProjectPath && sessions.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-600 shrink-0", children: "Compare:" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "select",
+          {
+            className: "bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200\n                focus:outline-none focus:border-zinc-500 max-w-[160px]",
+            value: compareStore.compareSessionPath ?? "",
+            onChange: (e) => {
+              compareStore.setCompareSession(e.target.value || null, selectedProjectPath);
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: "None" }),
+              sessions.filter((s) => s.filePath !== selectedSessionPath).map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs("option", { value: s.filePath, children: [
+                s.sessionId.slice(0, 8),
+                "… ",
+                new Date(s.mtime).toLocaleDateString()
+              ] }, s.sessionId))
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" })
+      ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(GranularityControl, {}),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(FilterBar, {}),
@@ -36150,12 +36094,62 @@ function AppInner() {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 overflow-hidden", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden flex flex-col", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CodebaseGraph, {}) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-[400px] shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1.5 border-b border-zinc-800 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide shrink-0", children: "Conversation" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChatPanel, {}) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(PlaybackControls, {})
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          className: "w-1 shrink-0 cursor-col-resize bg-zinc-800 hover:bg-zinc-600 active:bg-zinc-500 transition-colors",
+          onMouseDown
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          ref: chatPanelRef,
+          className: "shrink-0 bg-zinc-950 flex flex-col overflow-hidden",
+          style: { width: chatWidth },
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1.5 border-b border-zinc-800 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide shrink-0", children: "Conversation" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChatPanel, {}) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(PlaybackControls, {})
+          ]
+        }
+      )
     ] })
+  ] });
+}
+function AppInner() {
+  const { tabs, activeTabId } = useTabsStore();
+  React.useEffect(() => {
+    return window.api.onGitHeadChanged((data) => {
+      const commits = data;
+      for (const [, stores] of tabStoreMap) {
+        stores.git.getState().setCommits(commits);
+      }
+    });
+  }, []);
+  React.useEffect(() => {
+    return window.api.onSessionUpdate((data) => {
+      const d = data;
+      for (const [, stores] of tabStoreMap) {
+        if (stores.ui.getState().selectedSessionPath === d.filePath) {
+          stores.chat.getState().setExchanges(d.exchanges);
+          stores.session.setState({ actions: d.actions });
+        }
+      }
+    });
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col h-screen w-screen bg-zinc-950 text-zinc-100 overflow-hidden", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(TabBar, {}),
+    activeTabId === null && /* @__PURE__ */ jsxRuntimeExports.jsx(Dashboard, {}),
+    tabs.map((tab2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "flex-1 flex flex-col overflow-hidden",
+        style: { display: tab2.id === activeTabId ? "flex" : "none" },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(TabStoresProvider, { tabId: tab2.id, children: /* @__PURE__ */ jsxRuntimeExports.jsx(SessionView, {}) })
+      },
+      tab2.id
+    ))
   ] });
 }
 function App() {

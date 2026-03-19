@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUiStore } from '../../stores/ui-store'
+import { useUiStore } from '../../stores/tab-stores'
 import { ActionBadge } from '../Graph/overlays/ActionBadge'
 
 const ACTION_TYPES = ['read', 'created', 'edited', 'deleted', 'executed', 'searched']

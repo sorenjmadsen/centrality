@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react'
-import { useChatStore } from '../../stores/chat-store'
-import { useUiStore } from '../../stores/ui-store'
-import { useGitStore } from '../../stores/git-store'
-import { useSearchStore } from '../../stores/search-store'
+import { useChatStore, useUiStore, useGitStore, useSearchStore, useTabId } from '../../stores/tab-stores'
+import { useTabsStore } from '../../stores/tabs-store'
 import { ChatMessageBubble } from './ChatMessage'
 import { GitCommitMarker } from './GitCommitMarker'
 import type { ChatExchange } from '../../types/chat'
@@ -46,6 +44,8 @@ export function ChatPanel() {
   const { commits } = useGitStore()
   const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const { results, activeIdx } = useSearchStore()
+  const tabId = useTabId()
+  const saveTabViewState = useTabsStore(s => s.saveTabViewState)
   const scrollRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
@@ -56,6 +56,13 @@ export function ChatPanel() {
     [results]
   )
   const activeSearchId = results[activeIdx]?.exchangeId ?? null
+
+  // Restore scroll position when data first loads for this tab
+  useEffect(() => {
+    if (exchanges.length === 0 || !scrollRef.current || !tabId) return
+    const saved = useTabsStore.getState().tabViewState[tabId]?.chatScrollTop
+    if (saved !== undefined) scrollRef.current.scrollTop = saved
+  }, [exchanges.length === 0 ? 0 : 1]) // fire once when data transitions from empty → loaded
 
   // Scroll to active item
   const activeId = playbackIndex !== null
@@ -76,8 +83,14 @@ export function ChatPanel() {
     )
   }
 
+  const handleScroll = () => {
+    if (scrollRef.current && tabId) {
+      saveTabViewState(tabId, { chatScrollTop: scrollRef.current.scrollTop })
+    }
+  }
+
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto">
+    <div ref={scrollRef} className="h-full overflow-y-auto" onScroll={handleScroll}>
       <div className="flex flex-col gap-1 p-2">
         {timeline.map((item, i) => {
           if (item.kind === 'commit') {
