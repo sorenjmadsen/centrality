@@ -41,9 +41,16 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
       {displayText && (
         <div>
           <div className={`prose prose-invert prose-sm max-w-none text-zinc-300
-            prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
-            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-            prose-headings:text-zinc-200
+            prose-p:my-1
+            prose-ul:my-1 prose-ol:my-1 prose-li:my-0
+            prose-headings:text-zinc-200 prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1
+            prose-blockquote:border-zinc-600 prose-blockquote:text-zinc-400
+            prose-hr:border-zinc-700
+            prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-zinc-200
+            prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700 prose-pre:rounded-md
+            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none
+            prose-table:text-zinc-300 prose-thead:border-zinc-600 prose-tbody:divide-zinc-700 prose-th:text-zinc-200
           `}>
             <Markdown remarkPlugins={[remarkGfm]}>{displayText}</Markdown>
           </div>

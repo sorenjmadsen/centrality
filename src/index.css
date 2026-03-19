@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @keyframes pulse-opacity {
   0%, 100% { opacity: 0; }

@@ -341,7 +341,12 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     } else if (e.type === 'assistant' && Array.isArray(content)) {
       for (const block of content as Record<string, unknown>[]) {
         if (block['type'] === 'text') {
-          pendingAssistantText += (block['text'] as string) ?? ''
+          const newText = (block['text'] as string) ?? ''
+          if (newText) {
+            pendingAssistantText = pendingAssistantText
+              ? pendingAssistantText + '\n\n' + newText
+              : newText
+          }
           if (!pendingAssistantId) pendingAssistantId = e.uuid ?? ''
           if (!pendingAssistantTs) pendingAssistantTs = ts
         } else if (block['type'] === 'tool_use') {
