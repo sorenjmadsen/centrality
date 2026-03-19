@@ -28,6 +28,7 @@
   animation: pulse-opacity 1.2s ease-in-out infinite;
 }
 
+
 /* React Flow overrides */
 .react-flow__controls button {
   background-color: #18181b !important;

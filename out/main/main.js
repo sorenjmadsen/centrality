@@ -93,13 +93,18 @@ function listSessions(encodedName) {
     return { sessionId: f.replace(".jsonl", ""), filePath, mtime: stat.mtimeMs };
   }).sort((a, b) => b.mtime - a.mtime);
 }
-function inferActionType(toolName, input) {
+function inferActionType(toolName, input, result) {
   switch (toolName) {
     case "Read":
       return "read";
     case "Write": {
       const content = input["content"];
-      return content !== void 0 && content.length === 0 ? "deleted" : "created";
+      if (content !== void 0 && content.length === 0) return "deleted";
+      if (result) {
+        if (/created successfully/i.test(result)) return "created";
+        if (/updated successfully/i.test(result)) return "edited";
+      }
+      return "edited";
     }
     case "Edit":
     case "MultiEdit":
@@ -193,7 +198,7 @@ async function parseSession(filePath) {
         id: tc.id,
         sessionId,
         timestamp: pendingUserMsg.timestamp,
-        type: inferActionType(tc.toolName, tc.input),
+        type: inferActionType(tc.toolName, tc.input, tc.result),
         filePath: fp,
         toolName: tc.toolName,
         input: tc.input
@@ -260,7 +265,10 @@ async function parseSession(filePath) {
     } else if (e.type === "assistant" && Array.isArray(content)) {
       for (const block of content) {
         if (block["type"] === "text") {
-          pendingAssistantText += block["text"] ?? "";
+          const newText = block["text"] ?? "";
+          if (newText) {
+            pendingAssistantText = pendingAssistantText ? pendingAssistantText + "\n\n" + newText : newText;
+          }
           if (!pendingAssistantId) pendingAssistantId = e.uuid ?? "";
           if (!pendingAssistantTs) pendingAssistantTs = ts;
         } else if (block["type"] === "tool_use") {
