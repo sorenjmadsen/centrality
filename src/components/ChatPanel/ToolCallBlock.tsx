@@ -47,9 +47,9 @@ export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   }
 
   return (
-    <div className={`rounded border text-xs my-1 ${colors.split(' ')[1]}`}>
+    <div className={`rounded border text-xs my-1 ${colors.split(' ')[1]}`} onClick={e => e.stopPropagation()}>
       <button
-        onClick={e => { e.stopPropagation(); handleToggle() }}
+        onClick={handleToggle}
         className={`w-full flex items-center gap-1.5 px-2 py-1 text-left ${colors.split(' ')[0]}`}
       >
         {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
