@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import ignore, { type Ignore } from 'ignore'
 import { extractSymbols } from './tree-sitter-pool'
 import type { SymbolInfo } from './tree-sitter-pool'
 
@@ -19,6 +20,20 @@ const EXCLUDE = new Set([
   'node_modules', '.git', 'dist', 'build', 'out', '__pycache__',
   '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
 ])
+
+// Loads a .gitignore file into an Ignore instance scoped to `dir`.
+// Returns null if no .gitignore exists there.
+function loadGitignoreAt(dir: string): Ignore | null {
+  const gitignorePath = path.join(dir, '.gitignore')
+  if (!fs.existsSync(gitignorePath)) return null
+  try {
+    const ig = ignore()
+    ig.add(fs.readFileSync(gitignorePath, 'utf8'))
+    return ig
+  } catch {
+    return null
+  }
+}
 
 const LANG_MAP: Record<string, string> = {
   ts: 'typescript', tsx: 'typescript',
@@ -58,11 +73,35 @@ export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
   // Collect all file paths first (sync walk), then extract symbols async
   const filePaths: Array<{ relPath: string; absPath: string; language: string }> = []
 
+  // Stack of {baseRel, ig} pairs — each .gitignore is checked relative to its own directory
+  const igStack: Array<{ baseRel: string; ig: Ignore }> = []
+  const rootIg = loadGitignoreAt(projectPath)
+  if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
+
+  function isIgnored(relPath: string): boolean {
+    for (const { baseRel, ig } of igStack) {
+      const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath
+      if (ig.ignores(rel)) return true
+    }
+    return false
+  }
+
   function walkSync(absPath: string, relPath: string, parentId: string | undefined) {
+    // Load .gitignore for this directory (skip root, already loaded above)
+    let pushedIg = false
+    if (relPath !== '') {
+      const dirIg = loadGitignoreAt(absPath)
+      if (dirIg) {
+        igStack.push({ baseRel: relPath, ig: dirIg })
+        pushedIg = true
+      }
+    }
+
     let entries: fs.Dirent[]
     try {
       entries = fs.readdirSync(absPath, { withFileTypes: true })
     } catch {
+      if (pushedIg) igStack.pop()
       return
     }
 
@@ -73,6 +112,8 @@ export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
 
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name
       const childAbs = path.join(absPath, entry.name)
+
+      if (isIgnored(childRel)) continue
 
       if (entry.isDirectory()) {
         const dirNode: FsNode = {
@@ -111,6 +152,8 @@ export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
       const parentNode = nodes.find(n => n.id === parentId)
       if (parentNode) parentNode.children.push(...children)
     }
+
+    if (pushedIg) igStack.pop()
   }
 
   walkSync(projectPath, '', '')
