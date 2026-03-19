@@ -5,14 +5,23 @@ import { useUiStore, useChatStore } from '../../stores/tab-stores'
 const SPARKLINE_H = 20
 const SPARKLINE_COLOR = '#a1a1aa'
 
-function TokenSparkline({ exchanges }: { exchanges: { assistantMessage: { tokenUsage?: { input: number; output: number } } }[] }) {
+function computeExchangeCost(usage: { input: number; output: number; cacheRead?: number; cacheWrite?: number }): number {
+  return (
+    usage.input * 3 +
+    usage.output * 15 +
+    (usage.cacheRead ?? 0) * 0.3 +
+    (usage.cacheWrite ?? 0) * 3.75
+  ) / 1_000_000
+}
+
+function TokenSparkline({ exchanges }: { exchanges: { assistantMessage: { tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number } } }[] }) {
   // Compute cumulative costs
   const costs = useMemo(() => {
     let cumulative = 0
     return exchanges.map(ex => {
       const usage = ex.assistantMessage.tokenUsage
       if (usage) {
-        cumulative += (usage.input * 3 + usage.output * 15) / 1_000_000
+        cumulative += computeExchangeCost(usage)
       }
       return cumulative
     })

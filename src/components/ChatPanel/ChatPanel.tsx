@@ -1,16 +1,22 @@
 import React, { useEffect, useRef, useMemo } from 'react'
+import { Minimize2, RefreshCcw } from 'lucide-react'
 import { useChatStore, useUiStore, useGitStore, useSearchStore, useTabId } from '../../stores/tab-stores'
 import { useTabsStore } from '../../stores/tabs-store'
 import { ChatMessageBubble } from './ChatMessage'
 import { GitCommitMarker } from './GitCommitMarker'
-import type { ChatExchange } from '../../types/chat'
+import type { ChatExchange, ChatMarker } from '../../types/chat'
 import type { GitCommit } from '../../types/git'
 
 type TimelineItem =
   | { kind: 'exchange'; exchange: ChatExchange; idx: number }
   | { kind: 'commit'; commit: GitCommit }
+  | { kind: 'marker'; marker: ChatMarker }
 
-function buildTimeline(exchanges: ChatExchange[], commits: GitCommit[]): TimelineItem[] {
+function buildTimeline(
+  exchanges: ChatExchange[],
+  commits: GitCommit[],
+  markers: ChatMarker[]
+): TimelineItem[] {
   const items: TimelineItem[] = [
     ...exchanges.map((exchange, idx) => ({
       kind: 'exchange' as const,
@@ -18,15 +24,19 @@ function buildTimeline(exchanges: ChatExchange[], commits: GitCommit[]): Timelin
       idx,
     })),
     ...commits.map(commit => ({ kind: 'commit' as const, commit })),
+    ...markers.map(marker => ({ kind: 'marker' as const, marker })),
   ]
 
   items.sort((a, b) => {
-    const ta = a.kind === 'exchange'
-      ? new Date(a.exchange.userMessage.timestamp).getTime()
-      : new Date(a.commit.date).getTime()
-    const tb = b.kind === 'exchange'
-      ? new Date(b.exchange.userMessage.timestamp).getTime()
-      : new Date(b.commit.date).getTime()
+    let ta: number, tb: number
+    if (a.kind === 'exchange') ta = new Date(a.exchange.userMessage.timestamp).getTime()
+    else if (a.kind === 'commit') ta = new Date(a.commit.date).getTime()
+    else ta = new Date(a.marker.timestamp).getTime()
+
+    if (b.kind === 'exchange') tb = new Date(b.exchange.userMessage.timestamp).getTime()
+    else if (b.kind === 'commit') tb = new Date(b.commit.date).getTime()
+    else tb = new Date(b.marker.timestamp).getTime()
+
     return ta - tb
   })
 
@@ -36,11 +46,16 @@ function buildTimeline(exchanges: ChatExchange[], commits: GitCommit[]): Timelin
 function computeCost(exchange: ChatExchange): number {
   const usage = exchange.assistantMessage.tokenUsage
   if (!usage) return 0
-  return (usage.input * 3 + usage.output * 15) / 1_000_000
+  return (
+    usage.input * 3 +
+    usage.output * 15 +
+    (usage.cacheRead ?? 0) * 0.3 +
+    (usage.cacheWrite ?? 0) * 3.75
+  ) / 1_000_000
 }
 
 export function ChatPanel() {
-  const { exchanges } = useChatStore()
+  const { exchanges, markers } = useChatStore()
   const { commits } = useGitStore()
   const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const { results, activeIdx } = useSearchStore()
@@ -49,7 +64,7 @@ export function ChatPanel() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
-  const timeline = useMemo(() => buildTimeline(exchanges, commits), [exchanges, commits])
+  const timeline = useMemo(() => buildTimeline(exchanges, commits, markers), [exchanges, commits, markers])
 
   const searchResultIds = useMemo(
     () => new Set(results.map(r => r.exchangeId)),
@@ -97,6 +112,34 @@ export function ChatPanel() {
             return (
               <div key={`commit-${item.commit.hash}`} className="px-1">
                 <GitCommitMarker commit={item.commit} />
+              </div>
+            )
+          }
+
+          if (item.kind === 'marker') {
+            const { marker } = item
+            const isCompaction = marker.type === 'compaction'
+            return (
+              <div
+                key={marker.id}
+                className="flex items-center gap-2 px-1 py-0.5"
+              >
+                <div className={`flex-1 h-px ${isCompaction ? 'bg-amber-800/50' : 'bg-sky-800/50'}`} />
+                <div className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border
+                  ${isCompaction
+                    ? 'text-amber-600 border-amber-800/50 bg-amber-950/30'
+                    : 'text-sky-600 border-sky-800/50 bg-sky-950/30'
+                  }`}
+                >
+                  {isCompaction
+                    ? <Minimize2 size={10} />
+                    : <RefreshCcw size={10} />
+                  }
+                  <span>
+                    {isCompaction ? 'Context compacted' : `Model: ${marker.details ?? 'changed'}`}
+                  </span>
+                </div>
+                <div className={`flex-1 h-px ${isCompaction ? 'bg-amber-800/50' : 'bg-sky-800/50'}`} />
               </div>
             )
           }

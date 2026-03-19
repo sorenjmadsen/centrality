@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
@@ -10,9 +11,9 @@ import { GranularityControl } from './components/Controls/GranularityControl'
 import { TabBar } from './components/TabBar/TabBar'
 import { Dashboard } from './components/Dashboard/Dashboard'
 import { useTabsStore } from './stores/tabs-store'
-import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useCompareStore } from './stores/tab-stores'
+import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useChatStore } from './stores/tab-stores'
 import type { GitCommit } from './types/git'
-import type { ChatExchange } from './types/chat'
+import type { ChatExchange, ChatMarker } from './types/chat'
 import type { ClaudeAction } from './types/actions'
 
 const MIN_CHAT_WIDTH = 280
@@ -24,10 +25,32 @@ function SessionView(): React.ReactElement {
 
   const [chatWidth, setChatWidth] = useState(DEFAULT_CHAT_WIDTH)
   const chatPanelRef = useRef<HTMLDivElement>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const { selectedProjectPath, selectedSessionPath } = useUiStore()
-  const { sessions } = useSessionStore()
-  const compareStore = useCompareStore()
+  const { selectedSessionPath } = useUiStore()
+  const { setExchanges } = useChatStore()
+  const { sessions: _sessions } = useSessionStore()
+
+  const handleRefresh = useCallback(async () => {
+    if (!selectedSessionPath || isRefreshing) return
+    setIsRefreshing(true)
+    try {
+      const result = await window.api.loadSession(selectedSessionPath) as {
+        exchanges: ChatExchange[]
+        actions: ClaudeAction[]
+        markers?: ChatMarker[]
+      }
+      setExchanges(result.exchanges, result.markers ?? [])
+      // Also update session actions in the tab store
+      for (const [, stores] of tabStoreMap) {
+        if (stores.ui.getState().selectedSessionPath === selectedSessionPath) {
+          stores.session.setState({ actions: result.actions })
+        }
+      }
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [selectedSessionPath, isRefreshing, setExchanges])
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     const startX = e.clientX
@@ -58,36 +81,22 @@ function SessionView(): React.ReactElement {
     <>
       {/* Tool bar */}
       <header className="flex items-center gap-3 px-3 py-2 border-b border-zinc-800 bg-zinc-900 shrink-0">
-        {/* Compare session picker */}
-        {selectedProjectPath && sessions.length > 0 && (
-          <>
-            <span className="text-sm text-zinc-600 shrink-0">Compare:</span>
-            <select
-              className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200
-                focus:outline-none focus:border-zinc-500 max-w-[160px]"
-              value={compareStore.compareSessionPath ?? ''}
-              onChange={e => {
-                compareStore.setCompareSession(e.target.value || null, selectedProjectPath)
-              }}
-            >
-              <option value="">None</option>
-              {sessions
-                .filter(s => s.filePath !== selectedSessionPath)
-                .map(s => (
-                  <option key={s.sessionId} value={s.filePath}>
-                    {s.sessionId.slice(0, 8)}… {new Date(s.mtime).toLocaleDateString()}
-                  </option>
-                ))}
-            </select>
-            <div className="h-4 w-px bg-zinc-700 shrink-0" />
-          </>
-        )}
-
         <GranularityControl />
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <FilterBar />
         <div className="flex-1" />
         <SearchBar />
+        <div className="h-4 w-px bg-zinc-700 shrink-0" />
+        {selectedSessionPath && (
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-40"
+            title="Refresh session"
+          >
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+          </button>
+        )}
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <ExportMenu />
       </header>
@@ -137,14 +146,20 @@ function AppInner(): React.ReactElement {
     })
   }, [])
 
-  // Live session update listener — finds the matching tab and updates it
+  // Live session update listener — finds the matching tab and updates it (dirty check)
   React.useEffect(() => {
     return window.api.onSessionUpdate((data: unknown) => {
-      const d = data as { filePath: string; exchanges: ChatExchange[]; actions: ClaudeAction[] }
+      const d = data as { filePath: string; exchanges: ChatExchange[]; actions: ClaudeAction[]; markers?: ChatMarker[] }
       for (const [, stores] of tabStoreMap) {
         if (stores.ui.getState().selectedSessionPath === d.filePath) {
-          stores.chat.getState().setExchanges(d.exchanges)
-          stores.session.setState({ actions: d.actions })
+          const current = stores.chat.getState().exchanges
+          const isNew = d.exchanges.length !== current.length ||
+            (d.exchanges.length > 0 && current.length > 0 &&
+              d.exchanges[d.exchanges.length - 1].id !== current[current.length - 1].id)
+          if (isNew) {
+            stores.chat.getState().setExchanges(d.exchanges, d.markers ?? [])
+            stores.session.setState({ actions: d.actions })
+          }
         }
       }
     })

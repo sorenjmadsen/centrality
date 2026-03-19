@@ -6,11 +6,9 @@ import type { NodeData } from '../../../lib/graph-layout'
 
 export function FileNode({ data, selected }: NodeProps) {
   const d = data as NodeData
-  const borderColor = d.isCompare
-    ? 'border-orange-600'
-    : d.activeAction
-      ? ACTION_BORDER[d.activeAction]
-      : 'border-zinc-700'
+  const borderColor = d.activeAction
+    ? ACTION_BORDER[d.activeAction]
+    : 'border-zinc-700'
 
   const counts: Record<string, number> = {}
   for (const a of d.actions) {

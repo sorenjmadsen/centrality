@@ -18,7 +18,6 @@ export interface NodeData extends Record<string, unknown> {
   activeAction: string | null   // dominant action from the current exchange only
   isPulsing: boolean
   pulseDelay: number   // ms offset to synchronise all pulsing nodes to the same phase
-  isCompare?: boolean
   language?: string
   startLine?: number
   endLine?: number
@@ -31,8 +30,7 @@ export function buildGraphFromNodes(
   rootIds: string[],
   pulsingNodeIds: Set<string> = new Set(),
   granularity: 'files' | 'symbols' = 'files',
-  depEdges: DepEdge[] = [],
-  compareNodeIds: Set<string> = new Set()
+  depEdges: DepEdge[] = []
 ): { nodes: Node[]; edges: Edge[] } {
   const rfNodes: Node[] = []
   const rfEdges: Edge[] = []
@@ -60,7 +58,6 @@ export function buildGraphFromNodes(
       activeAction: null,
       isPulsing: pulsingNodeIds.has(id),
       pulseDelay: 0,
-      isCompare: compareNodeIds.has(id),
       language: node.language,
       startLine: node.startLine,
       endLine: node.endLine,

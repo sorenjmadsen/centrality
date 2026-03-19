@@ -40,7 +40,14 @@ export interface ChatMessage {
   textContent: string
   toolCalls: ToolCallEntry[]
   model?: string
-  tokenUsage?: { input: number; output: number }
+  tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number }
+}
+
+export interface ChatMarker {
+  id: string
+  type: 'compaction' | 'model_switch'
+  timestamp: string
+  details?: string
 }
 
 export interface ChatExchange {
@@ -54,6 +61,7 @@ export interface ChatExchange {
 export interface ParsedSession {
   actions: ClaudeAction[]
   exchanges: ChatExchange[]
+  markers: ChatMarker[]
   sessionId: string
 }
 
@@ -149,6 +157,7 @@ interface RawEntry {
   parentUuid?: string
   timestamp?: string
   sessionId?: string
+  summary?: string
   message?: {
     role?: string
     model?: string
@@ -160,6 +169,7 @@ interface RawEntry {
 export async function parseSession(filePath: string): Promise<ParsedSession> {
   const sessionId = path.basename(filePath, '.jsonl')
   const actions: ClaudeAction[] = []
+  const markers: ChatMarker[] = []
 
   // Read all entries
   const entries: RawEntry[] = []
@@ -170,6 +180,27 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
   for await (const line of rl) {
     if (!line.trim()) continue
     try { entries.push(JSON.parse(line)) } catch { /* skip malformed */ }
+  }
+
+  // Collect compaction markers from summary entries
+  for (const e of entries) {
+    if (e.type === 'summary' && e.timestamp) {
+      const summaryText = e.summary ??
+        (Array.isArray(e.message?.content)
+          ? (e.message!.content as Record<string, unknown>[])
+              .filter(b => b['type'] === 'text')
+              .map(b => b['text'])
+              .join(' ')
+          : typeof e.message?.content === 'string'
+            ? e.message.content
+            : '')
+      markers.push({
+        id: e.uuid ?? `summary-${e.timestamp}`,
+        type: 'compaction',
+        timestamp: e.timestamp,
+        details: (summaryText as string).slice(0, 120) || undefined,
+      })
+    }
   }
 
   // Only care about user and assistant entries
@@ -196,7 +227,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
   let pendingAssistantToolCalls: ToolCallEntry[] = []
   let pendingAssistantText = ''
   let pendingAssistantModel: string | undefined
-  let pendingAssistantUsage: { input: number; output: number } | undefined
+  let pendingAssistantUsage: { input: number; output: number; cacheRead?: number; cacheWrite?: number } | undefined
   let pendingAssistantId = ''
   let pendingAssistantTs = ''
 
@@ -284,14 +315,34 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       }
       if (e.message?.model) pendingAssistantModel = e.message.model
       if (e.message?.usage) {
+        const u = e.message.usage
         pendingAssistantUsage = {
-          input: e.message.usage['input_tokens'] ?? 0,
-          output: e.message.usage['output_tokens'] ?? 0,
+          input: u['input_tokens'] ?? 0,
+          output: u['output_tokens'] ?? 0,
+          cacheRead: u['cache_read_input_tokens'] ?? undefined,
+          cacheWrite: u['cache_creation_input_tokens'] ?? undefined,
         }
       }
     }
   }
   flushExchange()
 
-  return { actions, exchanges, sessionId }
+  // Detect model switches between consecutive exchanges
+  for (let i = 1; i < exchanges.length; i++) {
+    const prevModel = exchanges[i - 1].assistantMessage.model
+    const curModel = exchanges[i].assistantMessage.model
+    if (prevModel && curModel && prevModel !== curModel) {
+      markers.push({
+        id: `model-switch-${i}`,
+        type: 'model_switch',
+        timestamp: exchanges[i].userMessage.timestamp,
+        details: `${prevModel} → ${curModel}`,
+      })
+    }
+  }
+
+  // Sort markers by timestamp
+  markers.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+
+  return { actions, exchanges, markers, sessionId }
 }

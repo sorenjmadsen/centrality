@@ -17,7 +17,7 @@ import { createStore } from 'zustand/vanilla'
 import { useStore } from 'zustand'
 import type { StoreApi } from 'zustand/vanilla'
 import type { Node, Edge } from '@xyflow/react'
-import type { ChatExchange } from '../types/chat'
+import type { ChatExchange, ChatMarker } from '../types/chat'
 import type { ClaudeAction } from '../types/actions'
 import type { CodebaseNode } from '../types/codebase'
 import type { GitCommit, GitDiff } from '../types/git'
@@ -55,8 +55,9 @@ export interface UiStore {
 
 export interface ChatStore {
   exchanges: ChatExchange[]
+  markers: ChatMarker[]
   isLoading: boolean
-  setExchanges(exchanges: ChatExchange[]): void
+  setExchanges(exchanges: ChatExchange[], markers?: ChatMarker[]): void
   clear(): void
 }
 
@@ -97,15 +98,6 @@ export interface GitStore {
   clear(): void
 }
 
-export interface CompareStore {
-  compareSessionPath: string | null
-  compareExchanges: ChatExchange[]
-  compareActions: ClaudeAction[]
-  compareNodeIds: Set<string>
-  setCompareSession(path: string | null, projectPath: string): Promise<void>
-  clear(): void
-}
-
 export interface SearchResult {
   exchangeId: string
   snippet: string
@@ -130,7 +122,6 @@ export interface TabStores {
   codebase: StoreApi<CodebaseStore>
   graph: StoreApi<GraphStore>
   git: StoreApi<GitStore>
-  compare: StoreApi<CompareStore>
   search: StoreApi<SearchStore>
 }
 
@@ -195,9 +186,10 @@ function makeUiStore(): StoreApi<UiStore> {
 function makeChatStore(): StoreApi<ChatStore> {
   return createStore<ChatStore>(set => ({
     exchanges: [],
+    markers: [],
     isLoading: false,
-    setExchanges: exchanges => set({ exchanges }),
-    clear: () => set({ exchanges: [] }),
+    setExchanges: (exchanges, markers = []) => set({ exchanges, markers }),
+    clear: () => set({ exchanges: [], markers: [] }),
   }))
 }
 
@@ -281,34 +273,6 @@ function makeGitStore(): StoreApi<GitStore> {
   }))
 }
 
-function makeCompareStore(): StoreApi<CompareStore> {
-  return createStore<CompareStore>(set => ({
-    compareSessionPath: null,
-    compareExchanges: [],
-    compareActions: [],
-    compareNodeIds: new Set(),
-
-    async setCompareSession(path: string | null, projectPath: string) {
-      if (!path) {
-        set({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: new Set() })
-        return
-      }
-      const result = await window.api.loadSession(path) as { exchanges: ChatExchange[]; actions: ClaudeAction[] }
-      const nodeIds = new Set<string>()
-      for (const ex of result.exchanges) {
-        for (const node of ex.affectedNodes) {
-          nodeIds.add(node.startsWith(projectPath) ? node.slice(projectPath.length).replace(/^\//, '') : node)
-        }
-      }
-      set({ compareSessionPath: path, compareExchanges: result.exchanges, compareActions: result.actions, compareNodeIds: nodeIds })
-    },
-
-    clear() {
-      set({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: new Set() })
-    },
-  }))
-}
-
 function getSnippet(text: string, query: string, maxLen = 80): string {
   const lower = text.toLowerCase()
   const idx = lower.indexOf(query.toLowerCase())
@@ -365,7 +329,6 @@ export function createTabStores(): TabStores {
     codebase: makeCodebaseStore(),
     graph: makeGraphStore(),
     git: makeGitStore(),
-    compare: makeCompareStore(),
     search: makeSearchStore(),
   }
 }
@@ -453,12 +416,6 @@ export function useGitStore(): GitStore
 export function useGitStore<T>(selector: Selector<GitStore, T>): T
 export function useGitStore<T>(selector?: Selector<GitStore, T>): GitStore | T {
   return sel(useTabCtx().stores.git, selector)
-}
-
-export function useCompareStore(): CompareStore
-export function useCompareStore<T>(selector: Selector<CompareStore, T>): T
-export function useCompareStore<T>(selector?: Selector<CompareStore, T>): CompareStore | T {
-  return sel(useTabCtx().stores.compare, selector)
 }
 
 export function useSearchStore(): SearchStore

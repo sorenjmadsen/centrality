@@ -130,6 +130,7 @@ function extractFilePath(toolName, input) {
 async function parseSession(filePath) {
   const sessionId = path__namespace.basename(filePath, ".jsonl");
   const actions = [];
+  const markers = [];
   const entries = [];
   const rl = readline__namespace.createInterface({
     input: fs__namespace.createReadStream(filePath),
@@ -140,6 +141,17 @@ async function parseSession(filePath) {
     try {
       entries.push(JSON.parse(line));
     } catch {
+    }
+  }
+  for (const e of entries) {
+    if (e.type === "summary" && e.timestamp) {
+      const summaryText = e.summary ?? (Array.isArray(e.message?.content) ? e.message.content.filter((b) => b["type"] === "text").map((b) => b["text"]).join(" ") : typeof e.message?.content === "string" ? e.message.content : "");
+      markers.push({
+        id: e.uuid ?? `summary-${e.timestamp}`,
+        type: "compaction",
+        timestamp: e.timestamp,
+        details: summaryText.slice(0, 120) || void 0
+      });
     }
   }
   const relevant = entries.filter((e) => e.type === "user" || e.type === "assistant");
@@ -245,15 +257,31 @@ async function parseSession(filePath) {
       }
       if (e.message?.model) pendingAssistantModel = e.message.model;
       if (e.message?.usage) {
+        const u = e.message.usage;
         pendingAssistantUsage = {
-          input: e.message.usage["input_tokens"] ?? 0,
-          output: e.message.usage["output_tokens"] ?? 0
+          input: u["input_tokens"] ?? 0,
+          output: u["output_tokens"] ?? 0,
+          cacheRead: u["cache_read_input_tokens"] ?? void 0,
+          cacheWrite: u["cache_creation_input_tokens"] ?? void 0
         };
       }
     }
   }
   flushExchange();
-  return { actions, exchanges, sessionId };
+  for (let i = 1; i < exchanges.length; i++) {
+    const prevModel = exchanges[i - 1].assistantMessage.model;
+    const curModel = exchanges[i].assistantMessage.model;
+    if (prevModel && curModel && prevModel !== curModel) {
+      markers.push({
+        id: `model-switch-${i}`,
+        type: "model_switch",
+        timestamp: exchanges[i].userMessage.timestamp,
+        details: `${prevModel} → ${curModel}`
+      });
+    }
+  }
+  markers.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return { actions, exchanges, markers, sessionId };
 }
 let parserReady = false;
 let initPromise = null;

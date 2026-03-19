@@ -2,7 +2,7 @@ import { useTabsStore } from '../stores/tabs-store'
 import { useTabCacheStore } from '../stores/tab-cache-store'
 import { tabStoreMap, createTabStores } from '../stores/tab-stores'
 import type { ClaudeAction } from '../types/actions'
-import type { ChatExchange } from '../types/chat'
+import type { ChatExchange, ChatMarker } from '../types/chat'
 
 export interface OpenSessionParams {
   projectEncoded: string
@@ -63,7 +63,6 @@ export function useOpenSession() {
         sessions: cached.sessions ?? [],
         isLoadingSession: false,
       })
-      tabStores.chat.getState().setExchanges(cached.exchanges)
       tabStores.codebase.setState({
         nodes: cached.codebaseNodes,
         rootIds: cached.codebaseRootIds ?? [],
@@ -77,7 +76,7 @@ export function useOpenSession() {
         })
       }
       tabStores.git.setState({ commits: cached.commits ?? [] })
-      tabStores.compare.getState().clear()
+      tabStores.chat.getState().setExchanges(cached.exchanges, cached.markers ?? [])
       return
     }
 
@@ -86,7 +85,6 @@ export function useOpenSession() {
     const sameProject = prevProjectPath === params.projectPath
 
     tabStores.ui.getState().setSelectedProject(params.projectEncoded, params.projectPath)
-    tabStores.compare.getState().clear()
     tabStores.chat.getState().clear()
     tabStores.session.setState({ actions: [], isLoadingSession: true })
 
@@ -152,14 +150,17 @@ export function useOpenSession() {
       const result = await window.api.loadSession(params.sessionPath) as {
         exchanges: ChatExchange[]
         actions: ClaudeAction[]
+        markers?: ChatMarker[]
       }
+      const markers = result.markers ?? []
 
       useTabCacheStore.getState().patch(params.sessionPath, {
         exchanges: result.exchanges,
         actions: result.actions,
+        markers,
       })
 
-      tabStores.chat.getState().setExchanges(result.exchanges)
+      tabStores.chat.getState().setExchanges(result.exchanges, markers)
       tabStores.session.setState({ actions: result.actions })
     } finally {
       tabStores.session.setState({ isLoadingSession: false })

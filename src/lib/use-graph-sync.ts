@@ -7,7 +7,6 @@ import {
   useGraphStore,
   useUiStore,
   useGitStore,
-  useCompareStore,
   useTabStores,
 } from '../stores/tab-stores'
 import { mapActionsToNodes, dominantActionType } from './action-mapper'
@@ -157,7 +156,6 @@ export function useGraphSync() {
     setActiveNodeIds,
   } = useUiStore()
   const { highlightedFiles } = useGitStore()
-  const { compareNodeIds } = useCompareStore()
 
   // Raw store instances for imperative getState()/setState() calls inside effects
   const { codebase: codebaseStore, graph: graphStore, chat: chatStore } = useTabStores()
@@ -200,8 +198,21 @@ export function useGraphSync() {
       : actions
     const decorated = mapActionsToNodes(filtered, codebaseNodes, projectPath)
     const { nodes: rfNodes, edges: rfEdges } = buildGraphFromNodes(
-      decorated, rootIds, new Set(highlightedFiles), granularity, depEdges, compareNodeIds
+      decorated, rootIds, new Set(highlightedFiles), granularity, depEdges
     )
+
+    // Apply saved node positions from localStorage
+    if (selectedSessionPath) {
+      const savedKey = `claude-vertex:positions:${selectedSessionPath}:${granularity}`
+      try {
+        const saved = JSON.parse(localStorage.getItem(savedKey) ?? '{}') as Record<string, { x: number; y: number }>
+        if (Object.keys(saved).length > 0) {
+          for (const n of rfNodes) {
+            if (saved[n.id]) n.position = saved[n.id]
+          }
+        }
+      } catch { /* ignore */ }
+    }
 
     const currentPlayback = playbackIndexRef.current
     if (currentPlayback === null) {
@@ -240,7 +251,7 @@ export function useGraphSync() {
         graphEdges: rfEdges,
       })
     }
-  }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds])
+  }, [codebaseNodes, actions, depEdges, granularity, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds, selectedSessionPath])
 
   // Effect 2: fast playback overlay — only updates node data, never rebuilds edges.
   // Runs on every playback step but skips the expensive codebaseNodes clone.

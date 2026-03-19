@@ -12,6 +12,8 @@ export interface ChatMessage {
   tokenUsage?: {
     input: number
     output: number
+    cacheRead?: number
+    cacheWrite?: number
   }
 }
 
@@ -21,6 +23,13 @@ export interface ChatExchange {
   assistantMessage: ChatMessage
   actions: ClaudeAction[]
   affectedNodes: string[]
+}
+
+export interface ChatMarker {
+  id: string
+  type: 'compaction' | 'model_switch'
+  timestamp: string
+  details?: string
 }
 
 export interface PlaybackState {

@@ -12499,318 +12499,6 @@ function requireClient() {
 }
 var clientExports = requireClient();
 const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(clientExports);
-const createStoreImpl$1 = (createState2) => {
-  let state;
-  const listeners = /* @__PURE__ */ new Set();
-  const setState = (partial, replace2) => {
-    const nextState = typeof partial === "function" ? partial(state) : partial;
-    if (!Object.is(nextState, state)) {
-      const previousState = state;
-      state = (replace2 != null ? replace2 : typeof nextState !== "object" || nextState === null) ? nextState : Object.assign({}, state, nextState);
-      listeners.forEach((listener) => listener(state, previousState));
-    }
-  };
-  const getState = () => state;
-  const getInitialState2 = () => initialState;
-  const subscribe = (listener) => {
-    listeners.add(listener);
-    return () => listeners.delete(listener);
-  };
-  const api = { setState, getState, getInitialState: getInitialState2, subscribe };
-  const initialState = state = createState2(setState, getState, api);
-  return api;
-};
-const createStore$2 = ((createState2) => createState2 ? createStoreImpl$1(createState2) : createStoreImpl$1);
-const identity$3 = (arg) => arg;
-function useStore$1(api, selector2 = identity$3) {
-  const slice = React.useSyncExternalStore(
-    api.subscribe,
-    React.useCallback(() => selector2(api.getState()), [api, selector2]),
-    React.useCallback(() => selector2(api.getInitialState()), [api, selector2])
-  );
-  React.useDebugValue(slice);
-  return slice;
-}
-const createImpl = (createState2) => {
-  const api = createStore$2(createState2);
-  const useBoundStore = (selector2) => useStore$1(api, selector2);
-  Object.assign(useBoundStore, api);
-  return useBoundStore;
-};
-const create$2 = ((createState2) => createState2 ? createImpl(createState2) : createImpl);
-function makeUiStore() {
-  return createStore$2((set2, get2) => ({
-    selectedProjectEncoded: null,
-    selectedProjectPath: null,
-    selectedSessionPath: null,
-    selectedNodeId: null,
-    selectedExchangeId: null,
-    playbackIndex: null,
-    isPlaying: false,
-    playbackSpeed: 1,
-    activeNodeIds: /* @__PURE__ */ new Set(),
-    actionTypeFilter: /* @__PURE__ */ new Set(),
-    granularity: "files",
-    setSelectedProject: (encoded, projectPath) => set2({
-      selectedProjectEncoded: encoded,
-      selectedProjectPath: projectPath,
-      selectedSessionPath: null,
-      selectedNodeId: null,
-      selectedExchangeId: null,
-      playbackIndex: null,
-      isPlaying: false,
-      activeNodeIds: /* @__PURE__ */ new Set()
-    }),
-    setSelectedSession: (path2) => set2({
-      selectedSessionPath: path2,
-      playbackIndex: null,
-      isPlaying: false,
-      activeNodeIds: /* @__PURE__ */ new Set()
-    }),
-    setSelectedNode: (id2) => set2({ selectedNodeId: id2 }),
-    setSelectedExchange: (id2) => set2({ selectedExchangeId: id2 }),
-    setPlaybackIndex: (i) => set2({ playbackIndex: i }),
-    setPlaying: (v) => set2({ isPlaying: v }),
-    setPlaybackSpeed: (s) => set2({ playbackSpeed: s }),
-    setActiveNodeIds: (ids) => set2({ activeNodeIds: ids }),
-    stepForward: (maxIndex) => {
-      const { playbackIndex } = get2();
-      set2({ playbackIndex: playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex) });
-    },
-    stepBack: (maxIndex) => {
-      const { playbackIndex } = get2();
-      if (playbackIndex === null) {
-        set2({ playbackIndex: maxIndex });
-        return;
-      }
-      const prev = Math.max(playbackIndex - 1, 0);
-      set2({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev });
-    },
-    toggleActionTypeFilter: (type) => set2((s) => {
-      const next = new Set(s.actionTypeFilter);
-      next.has(type) ? next.delete(type) : next.add(type);
-      return { actionTypeFilter: next };
-    }),
-    clearActionTypeFilter: () => set2({ actionTypeFilter: /* @__PURE__ */ new Set() }),
-    setGranularity: (g) => set2({ granularity: g })
-  }));
-}
-function makeChatStore() {
-  return createStore$2((set2) => ({
-    exchanges: [],
-    isLoading: false,
-    setExchanges: (exchanges) => set2({ exchanges }),
-    clear: () => set2({ exchanges: [] })
-  }));
-}
-function makeSessionStore() {
-  return createStore$2(() => ({
-    sessions: [],
-    actions: [],
-    isLoadingSession: false
-  }));
-}
-function makeCodebaseStore() {
-  return createStore$2((set2) => ({
-    nodes: /* @__PURE__ */ new Map(),
-    rootIds: [],
-    isLoading: false,
-    restoredFromCache: false,
-    scanProject: async (projectPath) => {
-      set2({ isLoading: true, nodes: /* @__PURE__ */ new Map(), rootIds: [] });
-      try {
-        const raw = await window.api.scanCodebase(projectPath);
-        const nodes = new Map(raw.map((n) => [n.id, n]));
-        const rootIds = raw.filter((n) => n.parent == null).map((n) => n.id);
-        set2({ nodes, rootIds });
-      } finally {
-        set2({ isLoading: false });
-      }
-    },
-    clear: () => set2({ nodes: /* @__PURE__ */ new Map(), rootIds: [], restoredFromCache: false })
-  }));
-}
-function makeGraphStore() {
-  return createStore$2((set2) => ({
-    nodes: [],
-    edges: [],
-    depEdges: [],
-    setNodes: (nodes) => set2({ nodes }),
-    setEdges: (edges) => set2({ edges }),
-    setGraph: (nodes, edges) => set2({ nodes, edges }),
-    setDepEdges: (depEdges) => set2({ depEdges })
-  }));
-}
-function makeGitStore() {
-  return createStore$2((set2, get2) => ({
-    commits: [],
-    isLoading: false,
-    selectedCommitHash: null,
-    commitDiffs: /* @__PURE__ */ new Map(),
-    highlightedFiles: /* @__PURE__ */ new Set(),
-    loadCommits: async (projectPath) => {
-      set2({ isLoading: true });
-      try {
-        set2({ commits: await window.api.gitLog(projectPath) });
-      } finally {
-        set2({ isLoading: false });
-      }
-    },
-    selectCommit: async (hash, projectPath) => {
-      if (!hash) {
-        set2({ selectedCommitHash: null, highlightedFiles: /* @__PURE__ */ new Set() });
-        return;
-      }
-      const { commits, commitDiffs } = get2();
-      const commit = commits.find((c) => c.hash === hash);
-      set2({ selectedCommitHash: hash, highlightedFiles: new Set(commit?.changedFiles ?? []) });
-      if (!commitDiffs.has(hash)) {
-        try {
-          const diff = await window.api.gitDiff(projectPath, hash);
-          const next = new Map(get2().commitDiffs);
-          next.set(hash, diff);
-          set2({ commitDiffs: next });
-        } catch {
-        }
-      }
-    },
-    setCommits: (commits) => set2({ commits }),
-    clear: () => set2({ commits: [], selectedCommitHash: null, commitDiffs: /* @__PURE__ */ new Map(), highlightedFiles: /* @__PURE__ */ new Set() })
-  }));
-}
-function makeCompareStore() {
-  return createStore$2((set2) => ({
-    compareSessionPath: null,
-    compareExchanges: [],
-    compareActions: [],
-    compareNodeIds: /* @__PURE__ */ new Set(),
-    async setCompareSession(path2, projectPath) {
-      if (!path2) {
-        set2({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: /* @__PURE__ */ new Set() });
-        return;
-      }
-      const result = await window.api.loadSession(path2);
-      const nodeIds = /* @__PURE__ */ new Set();
-      for (const ex of result.exchanges) {
-        for (const node2 of ex.affectedNodes) {
-          nodeIds.add(node2.startsWith(projectPath) ? node2.slice(projectPath.length).replace(/^\//, "") : node2);
-        }
-      }
-      set2({ compareSessionPath: path2, compareExchanges: result.exchanges, compareActions: result.actions, compareNodeIds: nodeIds });
-    },
-    clear() {
-      set2({ compareSessionPath: null, compareExchanges: [], compareActions: [], compareNodeIds: /* @__PURE__ */ new Set() });
-    }
-  }));
-}
-function getSnippet(text2, query, maxLen = 80) {
-  const lower2 = text2.toLowerCase();
-  const idx = lower2.indexOf(query.toLowerCase());
-  if (idx === -1) return text2.slice(0, maxLen);
-  const start2 = Math.max(0, idx - 20);
-  const end = Math.min(text2.length, idx + query.length + 40);
-  return (start2 > 0 ? "…" : "") + text2.slice(start2, end) + (end < text2.length ? "…" : "");
-}
-function makeSearchStore() {
-  return createStore$2((set2, get2) => ({
-    query: "",
-    results: [],
-    activeIdx: 0,
-    search(q, exchanges) {
-      if (!q.trim()) {
-        set2({ query: q, results: [], activeIdx: 0 });
-        return;
-      }
-      const lower2 = q.toLowerCase();
-      const results = [];
-      for (const ex of exchanges) {
-        const userText = ex.userMessage.textContent;
-        const assistantText = ex.assistantMessage.textContent;
-        const toolInputs = ex.assistantMessage.toolCalls.map((tc) => JSON.stringify(tc.input)).join(" ");
-        const combined = `${userText} ${assistantText} ${toolInputs}`;
-        if (combined.toLowerCase().includes(lower2)) {
-          let snippet = "";
-          if (userText.toLowerCase().includes(lower2)) snippet = getSnippet(userText, q);
-          else if (assistantText.toLowerCase().includes(lower2)) snippet = getSnippet(assistantText, q);
-          else snippet = getSnippet(toolInputs, q);
-          results.push({ exchangeId: ex.id, snippet });
-        }
-      }
-      set2({ query: q, results, activeIdx: 0 });
-    },
-    nextResult() {
-      const { results, activeIdx } = get2();
-      if (results.length > 0) set2({ activeIdx: (activeIdx + 1) % results.length });
-    },
-    prevResult() {
-      const { results, activeIdx } = get2();
-      if (results.length > 0) set2({ activeIdx: (activeIdx - 1 + results.length) % results.length });
-    },
-    clearSearch() {
-      set2({ query: "", results: [], activeIdx: 0 });
-    }
-  }));
-}
-function createTabStores() {
-  return {
-    ui: makeUiStore(),
-    chat: makeChatStore(),
-    session: makeSessionStore(),
-    codebase: makeCodebaseStore(),
-    graph: makeGraphStore(),
-    git: makeGitStore(),
-    compare: makeCompareStore(),
-    search: makeSearchStore()
-  };
-}
-const tabStoreMap = /* @__PURE__ */ new Map();
-const TabStoresContext = reactExports.createContext(null);
-function useTabCtx() {
-  const ctx = reactExports.useContext(TabStoresContext);
-  if (!ctx) throw new Error("Tab store hook called outside <TabStoresProvider>");
-  return ctx;
-}
-function TabStoresProvider({ tabId, children: children2 }) {
-  const stores = reactExports.useMemo(() => {
-    if (!tabStoreMap.has(tabId)) tabStoreMap.set(tabId, createTabStores());
-    return tabStoreMap.get(tabId);
-  }, [tabId]);
-  const ctx = reactExports.useMemo(() => ({ tabId, stores }), [tabId, stores]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(TabStoresContext.Provider, { value: ctx, children: children2 });
-}
-function useTabStores() {
-  return useTabCtx().stores;
-}
-function useTabId() {
-  return useTabCtx().tabId;
-}
-function sel(store, selector2) {
-  return useStore$1(store, selector2 ?? ((s) => s));
-}
-function useUiStore(selector2) {
-  return sel(useTabCtx().stores.ui, selector2);
-}
-function useChatStore(selector2) {
-  return sel(useTabCtx().stores.chat, selector2);
-}
-function useSessionStore$1(selector2) {
-  return sel(useTabCtx().stores.session, selector2);
-}
-function useCodebaseStore(selector2) {
-  return sel(useTabCtx().stores.codebase, selector2);
-}
-function useGraphStore(selector2) {
-  return sel(useTabCtx().stores.graph, selector2);
-}
-function useGitStore(selector2) {
-  return sel(useTabCtx().stores.git, selector2);
-}
-function useCompareStore(selector2) {
-  return sel(useTabCtx().stores.compare, selector2);
-}
-function useSearchStore(selector2) {
-  return sel(useTabCtx().stores.search, selector2);
-}
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12916,7 +12604,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$r = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -12924,26 +12612,53 @@ const __iconNode$o = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$o);
+const Bot = createLucideIcon("bot", __iconNode$r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$n);
+const __iconNode$q = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$q);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$p = [
   ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
   ["path", { d: "M7 6v12", key: "1p53r6" }]
 ];
-const ChevronFirst = createLucideIcon("chevron-first", __iconNode$m);
+const ChevronFirst = createLucideIcon("chevron-first", __iconNode$p);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$o = [
+  ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
+  ["path", { d: "M17 6v12", key: "1o0aio" }]
+];
+const ChevronLast = createLucideIcon("chevron-last", __iconNode$o);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$n = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$m);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12951,56 +12666,29 @@ const ChevronFirst = createLucideIcon("chevron-first", __iconNode$m);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$l = [
-  ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
-  ["path", { d: "M17 6v12", key: "1o0aio" }]
-];
-const ChevronLast = createLucideIcon("chevron-last", __iconNode$l);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$k = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$k);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$j = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$j);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$i = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$i);
+const Clock = createLucideIcon("clock", __iconNode$l);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$h = [
+const __iconNode$k = [
   ["path", { d: "M12 15V3", key: "m9g1x1" }],
   ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
   ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
 ];
-const Download = createLucideIcon("download", __iconNode$h);
+const Download = createLucideIcon("download", __iconNode$k);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$g = [
+const __iconNode$j = [
   [
     "path",
     {
@@ -13010,14 +12698,14 @@ const __iconNode$g = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$g);
+const Eye = createLucideIcon("eye", __iconNode$j);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$f = [
+const __iconNode$i = [
   ["path", { d: "M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5", key: "1couwa" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   [
@@ -13028,41 +12716,41 @@ const __iconNode$f = [
     }
   ]
 ];
-const FilePen = createLucideIcon("file-pen", __iconNode$f);
+const FilePen = createLucideIcon("file-pen", __iconNode$i);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$e = [
+const __iconNode$h = [
   ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   ["path", { d: "M9 15h6", key: "cctwl0" }],
   ["path", { d: "M12 18v-6", key: "17g6i2" }]
 ];
-const FilePlus = createLucideIcon("file-plus", __iconNode$e);
+const FilePlus = createLucideIcon("file-plus", __iconNode$h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$d = [
+const __iconNode$g = [
   ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   ["path", { d: "M10 9H8", key: "b1mrlr" }],
   ["path", { d: "M16 13H8", key: "t4e002" }],
   ["path", { d: "M16 17H8", key: "z1uh3a" }]
 ];
-const FileText = createLucideIcon("file-text", __iconNode$d);
+const FileText = createLucideIcon("file-text", __iconNode$g);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$c = [
+const __iconNode$f = [
   [
     "path",
     {
@@ -13071,14 +12759,14 @@ const __iconNode$c = [
     }
   ]
 ];
-const FolderOpen = createLucideIcon("folder-open", __iconNode$c);
+const FolderOpen = createLucideIcon("folder-open", __iconNode$f);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$b = [
+const __iconNode$e = [
   [
     "path",
     {
@@ -13087,7 +12775,45 @@ const __iconNode$b = [
     }
   ]
 ];
-const Folder = createLucideIcon("folder", __iconNode$b);
+const Folder = createLucideIcon("folder", __iconNode$e);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$d = [
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
+  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+];
+const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$d);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+];
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$c);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$b = [
+  ["path", { d: "m14 10 7-7", key: "oa77jy" }],
+  ["path", { d: "M20 10h-6V4", key: "mjg0md" }],
+  ["path", { d: "m3 21 7-7", key: "tjx5ai" }],
+  ["path", { d: "M4 14h6v6", key: "rmj7iw" }]
+];
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$b);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13095,24 +12821,18 @@ const Folder = createLucideIcon("folder", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
-  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
-  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
+  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
 ];
-const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$a);
+const Pause = createLucideIcon("pause", __iconNode$a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$9 = [
-  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
-  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
-  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
-  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
-];
-const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$9);
+const __iconNode$9 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$9);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13120,18 +12840,25 @@ const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$9);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$8 = [
-  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
-  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
+  ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
+  ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
+  ["path", { d: "M16 16h5v5", key: "ccwih5" }]
 ];
-const Pause = createLucideIcon("pause", __iconNode$8);
+const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$7 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$7);
+const __iconNode$7 = [
+  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+  ["path", { d: "M8 16H3v5", key: "1cv678" }]
+];
+const RefreshCw = createLucideIcon("refresh-cw", __iconNode$7);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13217,6 +12944,290 @@ const __iconNode = [
   ]
 ];
 const Zap = createLucideIcon("zap", __iconNode);
+const createStoreImpl$1 = (createState2) => {
+  let state;
+  const listeners = /* @__PURE__ */ new Set();
+  const setState = (partial, replace2) => {
+    const nextState = typeof partial === "function" ? partial(state) : partial;
+    if (!Object.is(nextState, state)) {
+      const previousState = state;
+      state = (replace2 != null ? replace2 : typeof nextState !== "object" || nextState === null) ? nextState : Object.assign({}, state, nextState);
+      listeners.forEach((listener) => listener(state, previousState));
+    }
+  };
+  const getState = () => state;
+  const getInitialState2 = () => initialState;
+  const subscribe = (listener) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  };
+  const api = { setState, getState, getInitialState: getInitialState2, subscribe };
+  const initialState = state = createState2(setState, getState, api);
+  return api;
+};
+const createStore$2 = ((createState2) => createState2 ? createStoreImpl$1(createState2) : createStoreImpl$1);
+const identity$3 = (arg) => arg;
+function useStore$1(api, selector2 = identity$3) {
+  const slice = React.useSyncExternalStore(
+    api.subscribe,
+    React.useCallback(() => selector2(api.getState()), [api, selector2]),
+    React.useCallback(() => selector2(api.getInitialState()), [api, selector2])
+  );
+  React.useDebugValue(slice);
+  return slice;
+}
+const createImpl = (createState2) => {
+  const api = createStore$2(createState2);
+  const useBoundStore = (selector2) => useStore$1(api, selector2);
+  Object.assign(useBoundStore, api);
+  return useBoundStore;
+};
+const create$2 = ((createState2) => createState2 ? createImpl(createState2) : createImpl);
+function makeUiStore() {
+  return createStore$2((set2, get2) => ({
+    selectedProjectEncoded: null,
+    selectedProjectPath: null,
+    selectedSessionPath: null,
+    selectedNodeId: null,
+    selectedExchangeId: null,
+    playbackIndex: null,
+    isPlaying: false,
+    playbackSpeed: 1,
+    activeNodeIds: /* @__PURE__ */ new Set(),
+    actionTypeFilter: /* @__PURE__ */ new Set(),
+    granularity: "files",
+    setSelectedProject: (encoded, projectPath) => set2({
+      selectedProjectEncoded: encoded,
+      selectedProjectPath: projectPath,
+      selectedSessionPath: null,
+      selectedNodeId: null,
+      selectedExchangeId: null,
+      playbackIndex: null,
+      isPlaying: false,
+      activeNodeIds: /* @__PURE__ */ new Set()
+    }),
+    setSelectedSession: (path2) => set2({
+      selectedSessionPath: path2,
+      playbackIndex: null,
+      isPlaying: false,
+      activeNodeIds: /* @__PURE__ */ new Set()
+    }),
+    setSelectedNode: (id2) => set2({ selectedNodeId: id2 }),
+    setSelectedExchange: (id2) => set2({ selectedExchangeId: id2 }),
+    setPlaybackIndex: (i) => set2({ playbackIndex: i }),
+    setPlaying: (v) => set2({ isPlaying: v }),
+    setPlaybackSpeed: (s) => set2({ playbackSpeed: s }),
+    setActiveNodeIds: (ids) => set2({ activeNodeIds: ids }),
+    stepForward: (maxIndex) => {
+      const { playbackIndex } = get2();
+      set2({ playbackIndex: playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex) });
+    },
+    stepBack: (maxIndex) => {
+      const { playbackIndex } = get2();
+      if (playbackIndex === null) {
+        set2({ playbackIndex: maxIndex });
+        return;
+      }
+      const prev = Math.max(playbackIndex - 1, 0);
+      set2({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev });
+    },
+    toggleActionTypeFilter: (type) => set2((s) => {
+      const next = new Set(s.actionTypeFilter);
+      next.has(type) ? next.delete(type) : next.add(type);
+      return { actionTypeFilter: next };
+    }),
+    clearActionTypeFilter: () => set2({ actionTypeFilter: /* @__PURE__ */ new Set() }),
+    setGranularity: (g) => set2({ granularity: g })
+  }));
+}
+function makeChatStore() {
+  return createStore$2((set2) => ({
+    exchanges: [],
+    markers: [],
+    isLoading: false,
+    setExchanges: (exchanges, markers = []) => set2({ exchanges, markers }),
+    clear: () => set2({ exchanges: [], markers: [] })
+  }));
+}
+function makeSessionStore() {
+  return createStore$2(() => ({
+    sessions: [],
+    actions: [],
+    isLoadingSession: false
+  }));
+}
+function makeCodebaseStore() {
+  return createStore$2((set2) => ({
+    nodes: /* @__PURE__ */ new Map(),
+    rootIds: [],
+    isLoading: false,
+    restoredFromCache: false,
+    scanProject: async (projectPath) => {
+      set2({ isLoading: true, nodes: /* @__PURE__ */ new Map(), rootIds: [] });
+      try {
+        const raw = await window.api.scanCodebase(projectPath);
+        const nodes = new Map(raw.map((n) => [n.id, n]));
+        const rootIds = raw.filter((n) => n.parent == null).map((n) => n.id);
+        set2({ nodes, rootIds });
+      } finally {
+        set2({ isLoading: false });
+      }
+    },
+    clear: () => set2({ nodes: /* @__PURE__ */ new Map(), rootIds: [], restoredFromCache: false })
+  }));
+}
+function makeGraphStore() {
+  return createStore$2((set2) => ({
+    nodes: [],
+    edges: [],
+    depEdges: [],
+    setNodes: (nodes) => set2({ nodes }),
+    setEdges: (edges) => set2({ edges }),
+    setGraph: (nodes, edges) => set2({ nodes, edges }),
+    setDepEdges: (depEdges) => set2({ depEdges })
+  }));
+}
+function makeGitStore() {
+  return createStore$2((set2, get2) => ({
+    commits: [],
+    isLoading: false,
+    selectedCommitHash: null,
+    commitDiffs: /* @__PURE__ */ new Map(),
+    highlightedFiles: /* @__PURE__ */ new Set(),
+    loadCommits: async (projectPath) => {
+      set2({ isLoading: true });
+      try {
+        set2({ commits: await window.api.gitLog(projectPath) });
+      } finally {
+        set2({ isLoading: false });
+      }
+    },
+    selectCommit: async (hash, projectPath) => {
+      if (!hash) {
+        set2({ selectedCommitHash: null, highlightedFiles: /* @__PURE__ */ new Set() });
+        return;
+      }
+      const { commits, commitDiffs } = get2();
+      const commit = commits.find((c) => c.hash === hash);
+      set2({ selectedCommitHash: hash, highlightedFiles: new Set(commit?.changedFiles ?? []) });
+      if (!commitDiffs.has(hash)) {
+        try {
+          const diff = await window.api.gitDiff(projectPath, hash);
+          const next = new Map(get2().commitDiffs);
+          next.set(hash, diff);
+          set2({ commitDiffs: next });
+        } catch {
+        }
+      }
+    },
+    setCommits: (commits) => set2({ commits }),
+    clear: () => set2({ commits: [], selectedCommitHash: null, commitDiffs: /* @__PURE__ */ new Map(), highlightedFiles: /* @__PURE__ */ new Set() })
+  }));
+}
+function getSnippet(text2, query, maxLen = 80) {
+  const lower2 = text2.toLowerCase();
+  const idx = lower2.indexOf(query.toLowerCase());
+  if (idx === -1) return text2.slice(0, maxLen);
+  const start2 = Math.max(0, idx - 20);
+  const end = Math.min(text2.length, idx + query.length + 40);
+  return (start2 > 0 ? "…" : "") + text2.slice(start2, end) + (end < text2.length ? "…" : "");
+}
+function makeSearchStore() {
+  return createStore$2((set2, get2) => ({
+    query: "",
+    results: [],
+    activeIdx: 0,
+    search(q, exchanges) {
+      if (!q.trim()) {
+        set2({ query: q, results: [], activeIdx: 0 });
+        return;
+      }
+      const lower2 = q.toLowerCase();
+      const results = [];
+      for (const ex of exchanges) {
+        const userText = ex.userMessage.textContent;
+        const assistantText = ex.assistantMessage.textContent;
+        const toolInputs = ex.assistantMessage.toolCalls.map((tc) => JSON.stringify(tc.input)).join(" ");
+        const combined = `${userText} ${assistantText} ${toolInputs}`;
+        if (combined.toLowerCase().includes(lower2)) {
+          let snippet = "";
+          if (userText.toLowerCase().includes(lower2)) snippet = getSnippet(userText, q);
+          else if (assistantText.toLowerCase().includes(lower2)) snippet = getSnippet(assistantText, q);
+          else snippet = getSnippet(toolInputs, q);
+          results.push({ exchangeId: ex.id, snippet });
+        }
+      }
+      set2({ query: q, results, activeIdx: 0 });
+    },
+    nextResult() {
+      const { results, activeIdx } = get2();
+      if (results.length > 0) set2({ activeIdx: (activeIdx + 1) % results.length });
+    },
+    prevResult() {
+      const { results, activeIdx } = get2();
+      if (results.length > 0) set2({ activeIdx: (activeIdx - 1 + results.length) % results.length });
+    },
+    clearSearch() {
+      set2({ query: "", results: [], activeIdx: 0 });
+    }
+  }));
+}
+function createTabStores() {
+  return {
+    ui: makeUiStore(),
+    chat: makeChatStore(),
+    session: makeSessionStore(),
+    codebase: makeCodebaseStore(),
+    graph: makeGraphStore(),
+    git: makeGitStore(),
+    search: makeSearchStore()
+  };
+}
+const tabStoreMap = /* @__PURE__ */ new Map();
+const TabStoresContext = reactExports.createContext(null);
+function useTabCtx() {
+  const ctx = reactExports.useContext(TabStoresContext);
+  if (!ctx) throw new Error("Tab store hook called outside <TabStoresProvider>");
+  return ctx;
+}
+function TabStoresProvider({ tabId, children: children2 }) {
+  const stores = reactExports.useMemo(() => {
+    if (!tabStoreMap.has(tabId)) tabStoreMap.set(tabId, createTabStores());
+    return tabStoreMap.get(tabId);
+  }, [tabId]);
+  const ctx = reactExports.useMemo(() => ({ tabId, stores }), [tabId, stores]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(TabStoresContext.Provider, { value: ctx, children: children2 });
+}
+function useTabStores() {
+  return useTabCtx().stores;
+}
+function useTabId() {
+  return useTabCtx().tabId;
+}
+function sel(store, selector2) {
+  return useStore$1(store, selector2 ?? ((s) => s));
+}
+function useUiStore(selector2) {
+  return sel(useTabCtx().stores.ui, selector2);
+}
+function useChatStore(selector2) {
+  return sel(useTabCtx().stores.chat, selector2);
+}
+function useSessionStore$1(selector2) {
+  return sel(useTabCtx().stores.session, selector2);
+}
+function useCodebaseStore(selector2) {
+  return sel(useTabCtx().stores.codebase, selector2);
+}
+function useGraphStore(selector2) {
+  return sel(useTabCtx().stores.graph, selector2);
+}
+function useGitStore(selector2) {
+  return sel(useTabCtx().stores.git, selector2);
+}
+function useSearchStore(selector2) {
+  return sel(useTabCtx().stores.search, selector2);
+}
 const ACTION_CONFIG = {
   read: { Icon: Eye, color: "text-blue-400", bg: "bg-blue-900/80" },
   created: { Icon: FilePlus, color: "text-green-400", bg: "bg-green-900/80" },
@@ -13239,8 +13250,8 @@ function ActionBadge({ actionType, count }) {
   const config = ACTION_CONFIG[actionType];
   if (!config) return null;
   const { Icon: Icon2, color: color2, bg } = config;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-medium ${bg} ${color2}`, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { size: 10 }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs font-medium ${bg} ${color2}`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { size: 12 }),
     count && count > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: count }) : null
   ] });
 }
@@ -13249,7 +13260,7 @@ function FilterBar() {
   const { actionTypeFilter, toggleActionTypeFilter, clearActionTypeFilter } = useUiStore();
   const isFiltered = actionTypeFilter.size > 0;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-600 uppercase tracking-wide shrink-0", children: "Filter" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-zinc-600 uppercase tracking-wide shrink-0", children: "Filter" }),
     ACTION_TYPES.map((type) => {
       const active = actionTypeFilter.size === 0 || actionTypeFilter.has(type);
       return /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -13267,7 +13278,7 @@ function FilterBar() {
       "button",
       {
         onClick: clearActionTypeFilter,
-        className: "text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors ml-1",
+        className: "text-sm text-zinc-600 hover:text-zinc-400 transition-colors ml-1",
         children: "clear"
       }
     )
@@ -13302,7 +13313,7 @@ function SearchBar() {
   const hasQuery = query.length > 0;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 w-[200px] relative", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1\n        focus-within:border-zinc-500 transition-colors", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { size: 11, className: "text-zinc-500 shrink-0" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { size: 13, className: "text-zinc-500 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "input",
         {
@@ -13312,16 +13323,16 @@ function SearchBar() {
           onChange: handleChange,
           onKeyDown: handleKeyDown,
           placeholder: "Search…",
-          className: "flex-1 bg-transparent text-xs text-zinc-200 placeholder-zinc-600\n            focus:outline-none min-w-0"
+          className: "flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600\n            focus:outline-none min-w-0"
         }
       ),
-      hasQuery && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-500 tabular-nums shrink-0", children: hasResults ? `${activeIdx + 1}/${results.length}` : "0" }),
+      hasQuery && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-500 tabular-nums shrink-0", children: hasResults ? `${activeIdx + 1}/${results.length}` : "0" }),
       hasQuery && /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
           onClick: () => clearSearch(),
           className: "text-zinc-600 hover:text-zinc-400 transition-colors shrink-0",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 11 })
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 13 })
         }
       )
     ] }),
@@ -13400,10 +13411,10 @@ function ExportMenu() {
       "button",
       {
         onClick: () => setOpen((v) => !v),
-        className: "flex items-center gap-1 px-2 py-1 rounded text-xs text-zinc-400\n          hover:text-zinc-200 hover:bg-zinc-800 transition-colors border border-transparent\n          hover:border-zinc-700",
+        className: "flex items-center gap-1 px-2 py-1 rounded text-sm text-zinc-400\n          hover:text-zinc-200 hover:bg-zinc-800 transition-colors border border-transparent\n          hover:border-zinc-700",
         title: "Export",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Download, { size: 12 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Download, { size: 14 }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Export" })
         ]
       }
@@ -13413,7 +13424,7 @@ function ExportMenu() {
         "button",
         {
           onClick: handleExportMarkdown,
-          className: "w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700\n              hover:text-zinc-100 transition-colors",
+          className: "w-full text-left px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700\n              hover:text-zinc-100 transition-colors",
           children: "Export Markdown"
         }
       ),
@@ -13421,12 +13432,12 @@ function ExportMenu() {
         "button",
         {
           onClick: handleScreenshot,
-          className: "w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700\n              hover:text-zinc-100 transition-colors",
+          className: "w-full text-left px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700\n              hover:text-zinc-100 transition-colors",
           children: "Screenshot"
         }
       )
     ] }),
-    toast && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute right-0 top-full mt-1 z-50 bg-zinc-700 border border-zinc-600\n          rounded px-3 py-2 text-xs text-zinc-200 whitespace-nowrap shadow-lg", children: toast })
+    toast && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute right-0 top-full mt-1 z-50 bg-zinc-700 border border-zinc-600\n          rounded px-3 py-2 text-sm text-zinc-200 whitespace-nowrap shadow-lg", children: toast })
   ] });
 }
 function cc(names) {
@@ -21630,6 +21641,11 @@ function ReactFlow({ nodes, edges, defaultNodes, defaultEdges, className, nodeTy
   return jsxRuntimeExports.jsx("div", { "data-testid": "rf__wrapper", ...rest, onScroll: wrapperOnScroll, style: { ...style2, ...wrapperStyle }, ref, className: cc(["react-flow", className, colorModeClassName]), id: id2, role: "application", children: jsxRuntimeExports.jsxs(Wrapper, { nodes, edges, width, height, fitView, fitViewOptions, minZoom, maxZoom, nodeOrigin, nodeExtent, zIndexMode, children: [jsxRuntimeExports.jsx(GraphView, { onInit, onNodeClick, onEdgeClick, onNodeMouseEnter, onNodeMouseMove, onNodeMouseLeave, onNodeContextMenu, onNodeDoubleClick, nodeTypes: nodeTypes2, edgeTypes: edgeTypes2, connectionLineType, connectionLineStyle, connectionLineComponent, connectionLineContainerStyle, selectionKeyCode, selectionOnDrag, selectionMode, deleteKeyCode, multiSelectionKeyCode, panActivationKeyCode, zoomActivationKeyCode, onlyRenderVisibleElements, defaultViewport: defaultViewport$1, translateExtent, minZoom, maxZoom, preventScrolling, zoomOnScroll, zoomOnPinch, zoomOnDoubleClick, panOnScroll, panOnScrollSpeed, panOnScrollMode, panOnDrag, onPaneClick, onPaneMouseEnter, onPaneMouseMove, onPaneMouseLeave, onPaneScroll, onPaneContextMenu, paneClickDistance, nodeClickDistance, onSelectionContextMenu, onSelectionStart, onSelectionEnd, onReconnect, onReconnectStart, onReconnectEnd, onEdgeContextMenu, onEdgeDoubleClick, onEdgeMouseEnter, onEdgeMouseMove, onEdgeMouseLeave, reconnectRadius, defaultMarkerColor, noDragClassName, noWheelClassName, noPanClassName, rfId, disableKeyboardA11y, nodeExtent, viewport, onViewportChange }), jsxRuntimeExports.jsx(StoreUpdater, { nodes, edges, defaultNodes, defaultEdges, onConnect, onConnectStart, onConnectEnd, onClickConnectStart, onClickConnectEnd, nodesDraggable, autoPanOnNodeFocus, nodesConnectable, nodesFocusable, edgesFocusable, edgesReconnectable, elementsSelectable, elevateNodesOnSelect, elevateEdgesOnSelect, minZoom, maxZoom, nodeExtent, onNodesChange, onEdgesChange, snapToGrid, snapGrid, connectionMode, translateExtent, connectOnClick, defaultEdgeOptions, fitView, fitViewOptions, onNodesDelete, onEdgesDelete, onDelete, onNodeDragStart, onNodeDrag, onNodeDragStop, onSelectionDrag, onSelectionDragStart, onSelectionDragStop, onMove, onMoveStart, onMoveEnd, noPanClassName, nodeOrigin, rfId, autoPanOnConnect, autoPanOnNodeDrag, autoPanSpeed, onError, connectionRadius, isValidConnection, selectNodesOnDrag, nodeDragThreshold, connectionDragThreshold, onBeforeDelete, debug, ariaLabelConfig, zIndexMode }), jsxRuntimeExports.jsx(SelectionListener, { onSelectionChange }), children2, jsxRuntimeExports.jsx(Attribution, { proOptions, position: attributionPosition }), jsxRuntimeExports.jsx(A11yDescriptions, { rfId, disableKeyboardA11y })] }) });
 }
 var index$1 = fixedForwardRef(ReactFlow);
+const nodesSelector = (state) => state.nodes;
+function useNodes() {
+  const nodes = useStore(nodesSelector, shallow$1);
+  return nodes;
+}
 function LinePattern({ dimensions, lineWidth, variant, className }) {
   return jsxRuntimeExports.jsx("path", { strokeWidth: lineWidth, d: `M${dimensions[0] / 2} 0 V${dimensions[1]} M0 ${dimensions[1] / 2} H${dimensions[0]}`, className: cc(["react-flow__background-pattern", variant, className]) });
 }
@@ -22114,28 +22130,28 @@ const useTabsStore = create$2((set2, get2) => ({
 }));
 function DirectoryNode({ data, selected: selected2 }) {
   const d = data;
-  const borderColor = d.isCompare ? "border-orange-600" : d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
+  const borderColor = d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
-      className: `flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium
+      className: `relative overflow-visible flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-base font-medium
         bg-zinc-900/80 text-zinc-400 transition-colors cursor-default
         ${selected2 ? "ring-1 ring-zinc-400" : ""}
-        ${d.isPulsing ? "node-pulse" : ""}
         ${borderColor}
       `,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Folder, { size: 12, className: "text-zinc-500 shrink-0" }),
+        d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms` } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Folder, { size: 16, className: "text-zinc-500 shrink-0" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate", children: d.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Top, className: "opacity-0" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "source", position: Position.Bottom, className: "opacity-0" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Left, className: "opacity-0" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "source", position: Position.Right, className: "opacity-0" })
       ]
     }
   );
 }
 function FileNode({ data, selected: selected2 }) {
   const d = data;
-  const borderColor = d.isCompare ? "border-orange-600" : d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
+  const borderColor = d.activeAction ? ACTION_BORDER[d.activeAction] : "border-zinc-700";
   const counts = {};
   for (const a of d.actions) {
     counts[a.type] = (counts[a.type] ?? 0) + 1;
@@ -22144,20 +22160,20 @@ function FileNode({ data, selected: selected2 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
-      className: `rounded-md border px-2 py-1.5 text-xs bg-zinc-900 text-zinc-300
+      className: `relative overflow-visible rounded-md border px-2 py-1.5 text-base bg-zinc-900 text-zinc-300
         transition-colors cursor-default
         ${selected2 ? "ring-1 ring-white/30" : ""}
-        ${d.isPulsing ? "node-pulse" : ""}
         ${borderColor}
       `,
       children: [
+        d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms` } }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(FileText, { size: 11, className: "text-zinc-500 shrink-0" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(FileText, { size: 15, className: "text-zinc-500 shrink-0" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate flex-1", children: d.label })
         ] }),
         badgeTypes.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-0.5 mt-1", children: badgeTypes.map((type) => /* @__PURE__ */ jsxRuntimeExports.jsx(ActionBadge, { actionType: type, count: counts[type] }, type)) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Top, className: "opacity-0" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "source", position: Position.Bottom, className: "opacity-0" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Left, className: "opacity-0" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "source", position: Position.Right, className: "opacity-0" })
       ]
     }
   );
@@ -22189,11 +22205,12 @@ function SymbolNode({ data }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
-      className: `flex items-center gap-1.5 px-2 rounded text-[10px] bg-zinc-900 border${d.isPulsing ? " node-pulse" : ""}`,
-      style: { borderColor, height: 26 },
+      className: "flex items-center gap-1.5 px-2 rounded text-base bg-zinc-900 border relative overflow-visible",
+      style: { borderColor, height: 40 },
       children: [
+        d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms`, borderRadius: 5 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Left, style: { opacity: 0 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `font-bold font-mono text-[9px] w-3 shrink-0 ${iconColor}`, children: icon }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `font-bold font-mono text-sm w-4 shrink-0 ${iconColor}`, children: icon }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-zinc-300 leading-none", children: d.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "source", position: Position.Right, style: { opacity: 0 } })
       ]
@@ -22252,13 +22269,86 @@ const nodeTypes = {
 const edgeTypes = {
   dependency: DependencyEdge
 };
+function positionsKey(sessionPath, granularity) {
+  return `claude-vertex:positions:${sessionPath}:${granularity}`;
+}
+function loadSavedPositions(sessionPath, granularity) {
+  try {
+    const raw = localStorage.getItem(positionsKey(sessionPath, granularity));
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function savePositions(sessionPath, granularity, positions) {
+  localStorage.setItem(positionsKey(sessionPath, granularity), JSON.stringify(positions));
+}
+function MinimapTrace() {
+  const rfNodes = useNodes();
+  const { exchanges } = useChatStore();
+  const { playbackIndex, selectedProjectPath } = useUiStore();
+  const tracePoints = reactExports.useMemo(() => {
+    if (rfNodes.length === 0 || exchanges.length === 0) return [];
+    const nodeCenter = /* @__PURE__ */ new Map();
+    for (const n of rfNodes) {
+      const w = n.measured?.width ?? n.style?.width ?? 230;
+      const h = n.measured?.height ?? 68;
+      nodeCenter.set(n.id, { x: n.position.x + w / 2, y: n.position.y + h / 2 });
+    }
+    const projPath = selectedProjectPath ?? "";
+    const visibleExchanges = playbackIndex !== null ? exchanges.slice(0, playbackIndex + 1) : exchanges;
+    const points = [];
+    let lastId = "";
+    for (const ex of visibleExchanges) {
+      for (const filePath of ex.affectedNodes) {
+        let relId = filePath;
+        if (projPath && filePath.startsWith(projPath)) {
+          relId = filePath.slice(projPath.length).replace(/^\//, "");
+        }
+        const center = nodeCenter.get(relId);
+        if (center && relId !== lastId) {
+          points.push(center);
+          lastId = relId;
+        }
+      }
+    }
+    return points;
+  }, [rfNodes, exchanges, playbackIndex, selectedProjectPath]);
+  if (tracePoints.length < 2) return null;
+  const polylinePoints = tracePoints.map((p) => `${p.x},${p.y}`).join(" ");
+  const last = tracePoints[tracePoints.length - 1];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "polyline",
+      {
+        points: polylinePoints,
+        fill: "none",
+        stroke: "rgba(168, 85, 247, 0.55)",
+        strokeWidth: "2",
+        vectorEffect: "non-scaling-stroke",
+        strokeLinejoin: "round"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "circle",
+      {
+        cx: last.x,
+        cy: last.y,
+        r: "4",
+        fill: "rgba(168, 85, 247, 0.9)",
+        vectorEffect: "non-scaling-stroke"
+      }
+    )
+  ] });
+}
 function GraphCanvas() {
   const { nodes, edges } = useGraphStore();
-  const { selectedNodeId, selectedProjectPath, setSelectedNode, setSelectedExchange } = useUiStore();
+  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, setSelectedNode, setSelectedExchange } = useUiStore();
   const { exchanges } = useChatStore();
   const tabId = useTabId();
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
   const { setViewport, fitView } = useReactFlow();
+  const { graph: graphStore } = useTabStores();
   reactExports.useEffect(() => {
     const saved = useTabsStore.getState().tabViewState[tabId]?.graphViewport;
     if (saved) {
@@ -22270,6 +22360,26 @@ function GraphCanvas() {
   const onMoveEnd = reactExports.useCallback((_, viewport) => {
     saveTabViewState(tabId, { graphViewport: viewport });
   }, [tabId, saveTabViewState]);
+  const onNodesChange = reactExports.useCallback((changes) => {
+    const current = graphStore.getState().nodes;
+    const updated = applyNodeChanges(changes, current);
+    graphStore.setState({ nodes: updated });
+    if (!selectedSessionPath) return;
+    const finished = changes.filter(
+      (c) => c.type === "position" && c.dragging === false
+    );
+    if (finished.length > 0) {
+      const existing = loadSavedPositions(selectedSessionPath, granularity);
+      for (const c of finished) {
+        if (c.position) existing[c.id] = c.position;
+      }
+      savePositions(selectedSessionPath, granularity, existing);
+    }
+  }, [selectedSessionPath, granularity, graphStore]);
+  const mappedNodes = reactExports.useMemo(
+    () => nodes.map((n) => ({ ...n, selected: n.id === selectedNodeId })),
+    [nodes, selectedNodeId]
+  );
   const onNodeClick = reactExports.useCallback((_event, node2) => {
     const newId2 = node2.id === selectedNodeId ? null : node2.id;
     setSelectedNode(newId2);
@@ -22284,16 +22394,16 @@ function GraphCanvas() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
     index$1,
     {
-      nodes: nodes.map((n) => ({ ...n, selected: n.id === selectedNodeId })),
+      nodes: mappedNodes,
       edges,
       nodeTypes,
       edgeTypes,
       onNodeClick,
-      onNodesChange: () => {
-      },
+      onNodesChange,
       onEdgesChange: () => {
       },
       onMoveEnd,
+      nodesDraggable: true,
       minZoom: 0.05,
       maxZoom: 3,
       proOptions: { hideAttribution: true },
@@ -22316,7 +22426,8 @@ function GraphCanvas() {
               return colors[d?.dominantAction ?? ""] ?? "#3f3f46";
             },
             maskColor: "rgba(0,0,0,0.6)",
-            style: { background: "#18181b", border: "1px solid #3f3f46" }
+            style: { background: "#18181b", border: "1px solid #3f3f46" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(MinimapTrace, {})
           }
         )
       ]
@@ -35029,9 +35140,9 @@ function ChatMessageBubble({ message, isHighlighted }) {
   const displayText = isLong && !expanded ? message.textContent.slice(0, COLLAPSE_THRESHOLD) + "…" : message.textContent;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-sm ${isHighlighted ? "bg-zinc-800/50 rounded-lg p-1 -mx-1" : ""}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 mb-1", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `text-[10px] font-semibold uppercase tracking-wide ${isUser ? "text-zinc-500" : "text-zinc-400"}`, children: isUser ? "User" : message.model?.split("-").slice(0, 2).join("-") ?? "Claude" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-700", children: new Date(message.timestamp).toLocaleTimeString() }),
-      message.tokenUsage && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[10px] text-zinc-700 ml-auto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `text-xs font-semibold uppercase tracking-wide ${isUser ? "text-zinc-500" : "text-zinc-400"}`, children: isUser ? "User" : message.model?.split("-").slice(0, 2).join("-") ?? "Claude" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-700", children: new Date(message.timestamp).toLocaleTimeString() }),
+      message.tokenUsage && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-700 ml-auto", children: [
         message.tokenUsage.input.toLocaleString(),
         " / ",
         message.tokenUsage.output.toLocaleString(),
@@ -35047,7 +35158,7 @@ function ChatMessageBubble({ message, isHighlighted }) {
       isLong && /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
-          className: "text-[10px] text-zinc-500 hover:text-zinc-300 mt-0.5",
+          className: "text-xs text-zinc-500 hover:text-zinc-300 mt-0.5",
           onClick: (e) => {
             e.stopPropagation();
             setExpanded((x) => !x);
@@ -35121,18 +35232,24 @@ function GitCommitMarker({ commit }) {
     }
   );
 }
-function buildTimeline(exchanges, commits) {
+function buildTimeline(exchanges, commits, markers) {
   const items = [
     ...exchanges.map((exchange, idx) => ({
       kind: "exchange",
       exchange,
       idx
     })),
-    ...commits.map((commit) => ({ kind: "commit", commit }))
+    ...commits.map((commit) => ({ kind: "commit", commit })),
+    ...markers.map((marker) => ({ kind: "marker", marker }))
   ];
   items.sort((a, b) => {
-    const ta = a.kind === "exchange" ? new Date(a.exchange.userMessage.timestamp).getTime() : new Date(a.commit.date).getTime();
-    const tb = b.kind === "exchange" ? new Date(b.exchange.userMessage.timestamp).getTime() : new Date(b.commit.date).getTime();
+    let ta, tb;
+    if (a.kind === "exchange") ta = new Date(a.exchange.userMessage.timestamp).getTime();
+    else if (a.kind === "commit") ta = new Date(a.commit.date).getTime();
+    else ta = new Date(a.marker.timestamp).getTime();
+    if (b.kind === "exchange") tb = new Date(b.exchange.userMessage.timestamp).getTime();
+    else if (b.kind === "commit") tb = new Date(b.commit.date).getTime();
+    else tb = new Date(b.marker.timestamp).getTime();
     return ta - tb;
   });
   return items;
@@ -35140,10 +35257,10 @@ function buildTimeline(exchanges, commits) {
 function computeCost(exchange) {
   const usage = exchange.assistantMessage.tokenUsage;
   if (!usage) return 0;
-  return (usage.input * 3 + usage.output * 15) / 1e6;
+  return (usage.input * 3 + usage.output * 15 + (usage.cacheRead ?? 0) * 0.3 + (usage.cacheWrite ?? 0) * 3.75) / 1e6;
 }
 function ChatPanel() {
-  const { exchanges } = useChatStore();
+  const { exchanges, markers } = useChatStore();
   const { commits } = useGitStore();
   const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore();
   const { results, activeIdx } = useSearchStore();
@@ -35151,7 +35268,7 @@ function ChatPanel() {
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
   const scrollRef = reactExports.useRef(null);
   const itemRefs = reactExports.useRef(/* @__PURE__ */ new Map());
-  const timeline = reactExports.useMemo(() => buildTimeline(exchanges, commits), [exchanges, commits]);
+  const timeline = reactExports.useMemo(() => buildTimeline(exchanges, commits, markers), [exchanges, commits, markers]);
   const searchResultIds = reactExports.useMemo(
     () => new Set(results.map((r) => r.exchangeId)),
     [results]
@@ -35179,6 +35296,32 @@ function ChatPanel() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: scrollRef, className: "h-full overflow-y-auto", onScroll: handleScroll, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-1 p-2", children: timeline.map((item, i) => {
     if (item.kind === "commit") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(GitCommitMarker, { commit: item.commit }) }, `commit-${item.commit.hash}`);
+    }
+    if (item.kind === "marker") {
+      const { marker } = item;
+      const isCompaction = marker.type === "compaction";
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: "flex items-center gap-2 px-1 py-0.5",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `flex-1 h-px ${isCompaction ? "bg-amber-800/50" : "bg-sky-800/50"}` }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
+              {
+                className: `flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border
+                  ${isCompaction ? "text-amber-600 border-amber-800/50 bg-amber-950/30" : "text-sky-600 border-sky-800/50 bg-sky-950/30"}`,
+                children: [
+                  isCompaction ? /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { size: 10 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCcw, { size: 10 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: isCompaction ? "Context compacted" : `Model: ${marker.details ?? "changed"}` })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `flex-1 h-px ${isCompaction ? "bg-amber-800/50" : "bg-sky-800/50"}` })
+          ]
+        },
+        marker.id
+      );
     }
     const { exchange, idx } = item;
     const isPlaybackCurrent = playbackIndex !== null && idx === playbackIndex;
@@ -35209,7 +35352,7 @@ function ChatPanel() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.userMessage }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "my-2 border-t border-zinc-800" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.assistantMessage, isHighlighted: isPlaybackCurrent || isSelected }),
-          usage && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-1.5 flex items-center gap-1.5 text-[10px] text-zinc-600", children: [
+          usage && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-1.5 flex items-center gap-1.5 text-xs text-zinc-600", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               usage.input.toLocaleString(),
               "↓"
@@ -35231,13 +35374,16 @@ function ChatPanel() {
 }
 const SPARKLINE_H = 20;
 const SPARKLINE_COLOR = "#a1a1aa";
+function computeExchangeCost(usage) {
+  return (usage.input * 3 + usage.output * 15 + (usage.cacheRead ?? 0) * 0.3 + (usage.cacheWrite ?? 0) * 3.75) / 1e6;
+}
 function TokenSparkline({ exchanges }) {
   const costs = reactExports.useMemo(() => {
     let cumulative = 0;
     return exchanges.map((ex) => {
       const usage = ex.assistantMessage.tokenUsage;
       if (usage) {
-        cumulative += (usage.input * 3 + usage.output * 15) / 1e6;
+        cumulative += computeExchangeCost(usage);
       }
       return cumulative;
     });
@@ -35254,7 +35400,7 @@ function TokenSparkline({ exchanges }) {
   }).join(" ");
   const totalCost = maxCost.toFixed(4);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-1", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[10px] text-zinc-600 shrink-0 w-14", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 shrink-0 w-14", children: [
       "~$",
       totalCost
     ] }),
@@ -35318,7 +35464,7 @@ function PlaybackControls() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-zinc-800 px-3 py-2 bg-zinc-900/50 shrink-0", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(TokenSparkline, { exchanges }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-1.5", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[10px] text-zinc-600 tabular-nums w-14 shrink-0", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 tabular-nums w-14 shrink-0", children: [
         currentDisplay,
         "/",
         exchanges.length
@@ -35395,7 +35541,7 @@ function PlaybackControls() {
         "button",
         {
           onClick: () => setPlaybackSpeed(s),
-          className: `px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors
+          className: `px-1.5 py-0.5 rounded text-xs font-mono transition-colors
                 ${playbackSpeed === s ? "bg-zinc-600 text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`,
           children: [
             s,
@@ -35458,14 +35604,14 @@ function dominantActionType(actions) {
     (best, a) => (ACTION_PRIORITY[a.type] ?? 0) > (ACTION_PRIORITY[best.type] ?? 0) ? a : best
   ).type;
 }
-const FILE_WIDTH = 170;
-const FILE_HEIGHT = 38;
-const DIR_HEIGHT = 36;
-const SYMBOL_HEIGHT = 28;
-const V_GAP = 6;
-const INDENT_X = 220;
+const FILE_WIDTH = 230;
+const FILE_HEIGHT = 68;
+const DIR_HEIGHT = 48;
+const SYMBOL_HEIGHT = 46;
+const V_GAP = 10;
+const INDENT_X = 320;
 const SYMBOL_TYPES = /* @__PURE__ */ new Set(["class", "function", "method", "type", "enum", "interface", "struct"]);
-function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ new Set(), granularity = "files", depEdges = [], compareNodeIds = /* @__PURE__ */ new Set()) {
+function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ new Set(), granularity = "files", depEdges = []) {
   const rfNodes = [];
   const rfEdges = [];
   let yOffset = 0;
@@ -35485,7 +35631,7 @@ function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ ne
       dominantAction: dominantActionType(node2.actions),
       activeAction: null,
       isPulsing: pulsingNodeIds.has(id2),
-      isCompare: compareNodeIds.has(id2),
+      pulseDelay: 0,
       language: node2.language,
       startLine: node2.startLine,
       endLine: node2.endLine
@@ -35539,7 +35685,58 @@ function buildActionMap(actions, projectPath, filter2) {
   }
   return map2;
 }
-function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = /* @__PURE__ */ new Map()) {
+const SYMBOL_DEF_RE = /^(?:export\s+)?(?:default\s+)?(?:async\s+)?function[*]?\s+(\w+)|^(?:export\s+)?(?:abstract\s+)?class\s+(\w+)|^(?:export\s+)?(?:const|let|var)\s+(\w+)\s*[=:][^=].*(?:=>|\bfunction\b)|^(?:pub\s+)?(?:async\s+)?fn\s+(\w+)|^struct\s+(\w+)|^enum\s+(\w+)|^impl\s+(\w+)|^(?:export\s+)?interface\s+(\w+)|^(?:export\s+)?type\s+(\w+)\s*=|^def\s+(\w+)|^class\s+(\w+)/m;
+function symbolNameFromStr(str) {
+  const m = SYMBOL_DEF_RE.exec(str.trimStart());
+  return m ? m.slice(1).find(Boolean) ?? null : null;
+}
+function findAffectedSymbolIds(actions, pulsingFileIds, cbNodes, projectPath) {
+  const result = /* @__PURE__ */ new Set();
+  for (const action of actions) {
+    if (!action.filePath) continue;
+    let rel = action.filePath;
+    if (rel.startsWith(projectPath)) rel = rel.slice(projectPath.length).replace(/^\//, "");
+    if (!pulsingFileIds.has(rel)) continue;
+    const fileSymbols = [];
+    for (const [id2, node2] of cbNodes) {
+      if (SYMBOL_TYPES.has(node2.type) && node2.path === rel) fileSymbols.push([id2, node2]);
+    }
+    if (fileSymbols.length === 0) continue;
+    const inp = action.input;
+    const startLine = inp.start_line ?? inp.offset;
+    if (startLine !== void 0) {
+      const numLines = inp.num_lines ?? inp.limit;
+      const endLine = numLines !== void 0 ? startLine + numLines - 1 : Infinity;
+      for (const [id2, node2] of fileSymbols) {
+        if (node2.startLine !== void 0 && node2.endLine !== void 0 && node2.startLine <= endLine && node2.endLine >= startLine) {
+          result.add(id2);
+        }
+      }
+      continue;
+    }
+    const strs = [String(inp.old_string ?? ""), String(inp.new_string ?? "")];
+    if (Array.isArray(inp.edits)) {
+      for (const e of inp.edits) {
+        strs.push(String(e.old_string ?? ""), String(e.new_string ?? ""));
+      }
+    }
+    for (const s of strs) {
+      const name2 = symbolNameFromStr(s);
+      if (name2) {
+        for (const [id2, node2] of fileSymbols) {
+          if (node2.name === name2) {
+            result.add(id2);
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
+  return result;
+}
+const PULSE_DURATION = 1200;
+function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = /* @__PURE__ */ new Map(), pulseDelay = 0) {
   return nodes.map((n) => {
     const nodeActions = actionsByNode.get(n.id) ?? [];
     const data = n.data;
@@ -35552,7 +35749,8 @@ function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = 
         actions: nodeActions,
         dominantAction: dominantActionType(nodeActions),
         activeAction: newActiveAction,
-        isPulsing: newPulsing
+        isPulsing: newPulsing,
+        pulseDelay: newPulsing ? pulseDelay : 0
       }
     };
   });
@@ -35571,7 +35769,6 @@ function useGraphSync() {
     setActiveNodeIds
   } = useUiStore();
   const { highlightedFiles } = useGitStore();
-  const { compareNodeIds } = useCompareStore();
   const { codebase: codebaseStore, graph: graphStore, chat: chatStore } = useTabStores();
   const playbackIndexRef = reactExports.useRef(playbackIndex);
   playbackIndexRef.current = playbackIndex;
@@ -35603,9 +35800,20 @@ function useGraphSync() {
       rootIds,
       new Set(highlightedFiles),
       granularity,
-      depEdges,
-      compareNodeIds
+      depEdges
     );
+    if (selectedSessionPath) {
+      const savedKey = `claude-vertex:positions:${selectedSessionPath}:${granularity}`;
+      try {
+        const saved = JSON.parse(localStorage.getItem(savedKey) ?? "{}");
+        if (Object.keys(saved).length > 0) {
+          for (const n of rfNodes) {
+            if (saved[n.id]) n.position = saved[n.id];
+          }
+        }
+      } catch {
+      }
+    }
     const currentPlayback = playbackIndexRef.current;
     if (currentPlayback === null) {
       setGraph(rfNodes, rfEdges);
@@ -35621,8 +35829,9 @@ function useGraphSync() {
         const currentActionsByNode = currentExchange ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter) : /* @__PURE__ */ new Map();
         const combinedPulsing = new Set(pulsingIds);
         for (const f of highlightedFiles) combinedPulsing.add(f);
+        for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id2);
         setActiveNodeIds(pulsingIds);
-        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode), rfEdges);
+        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
       } else {
         setGraph(rfNodes, rfEdges);
         setActiveNodeIds(/* @__PURE__ */ new Set());
@@ -35634,7 +35843,7 @@ function useGraphSync() {
         graphEdges: rfEdges
       });
     }
-  }, [codebaseNodes, actions, depEdges, granularity, compareNodeIds, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds]);
+  }, [codebaseNodes, actions, depEdges, granularity, actionTypeFilter, highlightedFiles, selectedProjectPath, rootIds, selectedSessionPath]);
   reactExports.useEffect(() => {
     const { nodes: rfNodes, edges: rfEdges } = graphStore.getState();
     if (playbackIndex === null) {
@@ -35656,8 +35865,11 @@ function useGraphSync() {
     const currentActionsByNode = currentExchange ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter) : /* @__PURE__ */ new Map();
     const combinedPulsing = new Set(pulsingIds);
     for (const f of highlightedFiles) combinedPulsing.add(f);
+    if (currentExchange) {
+      for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id2);
+    }
     setActiveNodeIds(pulsingIds);
-    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode), rfEdges);
+    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
   }, [playbackIndex, exchanges, actions, actionTypeFilter, selectedProjectPath, highlightedFiles]);
 }
 function GranularityControl() {
@@ -35666,7 +35878,7 @@ function GranularityControl() {
     "button",
     {
       onClick: () => setGranularity(g),
-      className: `px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${granularity === g ? "bg-zinc-600 text-zinc-100" : "text-zinc-400 hover:text-zinc-200"}`,
+      className: `px-2 py-0.5 rounded text-sm font-medium transition-colors ${granularity === g ? "bg-zinc-600 text-zinc-100" : "text-zinc-400 hover:text-zinc-200"}`,
       children: g === "files" ? "Files" : "Symbols"
     },
     g
@@ -35700,7 +35912,7 @@ function TabBar() {
       {
         onClick: () => setActiveTab(null),
         className: [
-          "flex items-center gap-1.5 px-4 text-xs shrink-0 border-r border-zinc-800 font-medium",
+          "flex items-center gap-1.5 px-4 text-base shrink-0 border-r border-zinc-800 font-medium",
           "relative transition-colors select-none",
           activeTabId === null ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
         ].join(" "),
@@ -35719,7 +35931,7 @@ function TabBar() {
         {
           onClick: () => handleTabClick(tab2),
           className: [
-            "group flex items-center gap-2 pl-4 pr-2 text-xs shrink-0 border-r border-zinc-800",
+            "group flex items-center gap-2 pl-4 pr-2 text-base shrink-0 border-r border-zinc-800",
             "relative transition-colors select-none",
             isActive ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
           ].join(" "),
@@ -35817,7 +36029,6 @@ function useOpenSession() {
         sessions: cached.sessions ?? [],
         isLoadingSession: false
       });
-      tabStores.chat.getState().setExchanges(cached.exchanges);
       tabStores.codebase.setState({
         nodes: cached.codebaseNodes,
         rootIds: cached.codebaseRootIds ?? [],
@@ -35831,13 +36042,12 @@ function useOpenSession() {
         });
       }
       tabStores.git.setState({ commits: cached.commits ?? [] });
-      tabStores.compare.getState().clear();
+      tabStores.chat.getState().setExchanges(cached.exchanges, cached.markers ?? []);
       return;
     }
     const prevProjectPath = tabStores.ui.getState().selectedProjectPath;
     const sameProject = prevProjectPath === params.projectPath;
     tabStores.ui.getState().setSelectedProject(params.projectEncoded, params.projectPath);
-    tabStores.compare.getState().clear();
     tabStores.chat.getState().clear();
     tabStores.session.setState({ actions: [], isLoadingSession: true });
     if (sameProject) {
@@ -35892,11 +36102,13 @@ function useOpenSession() {
     tabStores.ui.getState().setSelectedSession(params.sessionPath);
     try {
       const result = await window.api.loadSession(params.sessionPath);
+      const markers = result.markers ?? [];
       useTabCacheStore.getState().patch(params.sessionPath, {
         exchanges: result.exchanges,
-        actions: result.actions
+        actions: result.actions,
+        markers
       });
-      tabStores.chat.getState().setExchanges(result.exchanges);
+      tabStores.chat.getState().setExchanges(result.exchanges, markers);
       tabStores.session.setState({ actions: result.actions });
     } finally {
       tabStores.session.setState({ isLoadingSession: false });
@@ -35970,7 +36182,7 @@ function Dashboard() {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-zinc-500 ml-[26px]", children: "Visualize Claude Code sessions as interactive code graphs" })
     ] }),
     recentProjects.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mb-8", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "Recent" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "Recent" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-2", children: recentProjects.slice(0, 4).map((recent) => {
         const shortName = recent.displayName.split("/").slice(-2).join("/");
         const lastDate = new Date(recent.lastOpened).toLocaleDateString(void 0, {
@@ -35997,7 +36209,7 @@ function Dashboard() {
               ),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm font-medium text-zinc-200 truncate leading-snug", children: shortName }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 mt-1 text-zinc-500 text-[11px]", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 mt-1 text-zinc-500 text-xs", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { size: 10 }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: lastDate }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-700", children: "·" }),
@@ -36011,8 +36223,8 @@ function Dashboard() {
       }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "All Projects" }),
-      isLoadingProjects ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-zinc-600 animate-pulse py-4", children: "Scanning ~/.claude/projects/…" }) : sortedProjects.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-zinc-600 py-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3", children: "All Projects" }),
+      isLoadingProjects ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-zinc-600 animate-pulse py-4", children: "Scanning ~/.claude/projects/…" }) : sortedProjects.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-zinc-600 py-4", children: [
         "No projects found in ",
         /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "text-zinc-500", children: "~/.claude/projects/" })
       ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1", children: sortedProjects.map((project) => {
@@ -36034,7 +36246,7 @@ function Dashboard() {
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-600 shrink-0", children: isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { size: 13 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { size: 13 }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(FolderOpen, { size: 13, className: "text-zinc-500 shrink-0" }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-zinc-300 flex-1 truncate", children: shortName }),
-                    isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] text-zinc-600 animate-pulse", children: "Loading…" })
+                    isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-600 animate-pulse", children: "Loading…" })
                   ]
                 }
               ),
@@ -36055,11 +36267,11 @@ function Dashboard() {
                     onClick: () => handleOpenSession(project, session),
                     className: "w-full flex items-center gap-3 pl-10 pr-4 py-2 hover:bg-zinc-900\n                                text-left transition-colors group",
                     children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono text-xs text-zinc-400 group-hover:text-zinc-200 transition-colors", children: [
                         session.sessionId.slice(0, 8),
                         "…"
                       ] }) }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[11px] text-zinc-600 shrink-0", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 shrink-0", children: [
                         dateStr,
                         " · ",
                         timeStr
@@ -36085,9 +36297,25 @@ function SessionView() {
   useGraphSync();
   const [chatWidth, setChatWidth] = reactExports.useState(DEFAULT_CHAT_WIDTH);
   const chatPanelRef = reactExports.useRef(null);
-  const { selectedProjectPath, selectedSessionPath } = useUiStore();
-  const { sessions } = useSessionStore$1();
-  const compareStore = useCompareStore();
+  const [isRefreshing, setIsRefreshing] = reactExports.useState(false);
+  const { selectedSessionPath } = useUiStore();
+  const { setExchanges } = useChatStore();
+  const { sessions: _sessions } = useSessionStore$1();
+  const handleRefresh = reactExports.useCallback(async () => {
+    if (!selectedSessionPath || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const result = await window.api.loadSession(selectedSessionPath);
+      setExchanges(result.exchanges, result.markers ?? []);
+      for (const [, stores] of tabStoreMap) {
+        if (stores.ui.getState().selectedSessionPath === selectedSessionPath) {
+          stores.session.setState({ actions: result.actions });
+        }
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [selectedSessionPath, isRefreshing, setExchanges]);
   const onMouseDown = reactExports.useCallback((e) => {
     const startX = e.clientX;
     const startWidth = chatWidth;
@@ -36111,33 +36339,22 @@ function SessionView() {
   }, [chatWidth]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center gap-3 px-3 py-2 border-b border-zinc-800 bg-zinc-900 shrink-0", children: [
-      selectedProjectPath && sessions.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-zinc-600 shrink-0", children: "Compare:" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "select",
-          {
-            className: "bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200\n                focus:outline-none focus:border-zinc-500 max-w-[160px]",
-            value: compareStore.compareSessionPath ?? "",
-            onChange: (e) => {
-              compareStore.setCompareSession(e.target.value || null, selectedProjectPath);
-            },
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", children: "None" }),
-              sessions.filter((s) => s.filePath !== selectedSessionPath).map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs("option", { value: s.filePath, children: [
-                s.sessionId.slice(0, 8),
-                "… ",
-                new Date(s.mtime).toLocaleDateString()
-              ] }, s.sessionId))
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" })
-      ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(GranularityControl, {}),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(FilterBar, {}),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(SearchBar, {}),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
+      selectedSessionPath && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          onClick: handleRefresh,
+          disabled: isRefreshing,
+          className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-40",
+          title: "Refresh session",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCw, { size: 14, className: isRefreshing ? "animate-spin" : "" })
+        }
+      ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(ExportMenu, {})
     ] }),
@@ -36157,7 +36374,7 @@ function SessionView() {
           className: "shrink-0 bg-zinc-950 flex flex-col overflow-hidden",
           style: { width: chatWidth },
           children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1.5 border-b border-zinc-800 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide shrink-0", children: "Conversation" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1.5 border-b border-zinc-800 text-sm font-semibold text-zinc-500 uppercase tracking-wide shrink-0", children: "Conversation" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChatPanel, {}) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(PlaybackControls, {})
           ]
@@ -36181,8 +36398,12 @@ function AppInner() {
       const d = data;
       for (const [, stores] of tabStoreMap) {
         if (stores.ui.getState().selectedSessionPath === d.filePath) {
-          stores.chat.getState().setExchanges(d.exchanges);
-          stores.session.setState({ actions: d.actions });
+          const current = stores.chat.getState().exchanges;
+          const isNew = d.exchanges.length !== current.length || d.exchanges.length > 0 && current.length > 0 && d.exchanges[d.exchanges.length - 1].id !== current[current.length - 1].id;
+          if (isNew) {
+            stores.chat.getState().setExchanges(d.exchanges, d.markers ?? []);
+            stores.session.setState({ actions: d.actions });
+          }
         }
       }
     });

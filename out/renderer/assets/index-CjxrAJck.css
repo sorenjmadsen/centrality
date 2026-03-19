@@ -687,6 +687,9 @@ svg.react-flow__connectionline {
     --color-red-950: oklch(25.8% .092 26.042);
     --color-orange-600: oklch(64.6% .222 41.116);
     --color-amber-400: oklch(82.8% .189 84.429);
+    --color-amber-600: oklch(66.6% .179 58.318);
+    --color-amber-800: oklch(47.3% .137 46.201);
+    --color-amber-950: oklch(27.9% .077 45.635);
     --color-yellow-400: oklch(85.2% .199 91.936);
     --color-yellow-500: oklch(79.5% .184 86.047);
     --color-yellow-600: oklch(68.1% .162 75.834);
@@ -706,6 +709,9 @@ svg.react-flow__connectionline {
     --color-cyan-800: oklch(45% .085 224.283);
     --color-cyan-900: oklch(39.8% .07 227.392);
     --color-sky-400: oklch(74.6% .16 232.661);
+    --color-sky-600: oklch(58.8% .158 241.966);
+    --color-sky-800: oklch(44.3% .11 240.79);
+    --color-sky-950: oklch(29.3% .066 243.157);
     --color-blue-300: oklch(80.9% .105 251.813);
     --color-blue-400: oklch(70.7% .165 254.624);
     --color-blue-500: oklch(62.3% .214 259.815);
@@ -738,6 +744,8 @@ svg.react-flow__connectionline {
     --text-xs--line-height: calc(1 / .75);
     --text-sm: .875rem;
     --text-sm--line-height: calc(1.25 / .875);
+    --text-base: 1rem;
+    --text-base--line-height: calc(1.5 / 1);
     --text-lg: 1.125rem;
     --text-lg--line-height: calc(1.75 / 1.125);
     --font-weight-medium: 500;
@@ -749,6 +757,7 @@ svg.react-flow__connectionline {
     --leading-snug: 1.375;
     --radius-md: .375rem;
     --radius-lg: .5rem;
+    --animate-spin: spin 1s linear infinite;
     --animate-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
     --default-transition-duration: .15s;
     --default-transition-timing-function: cubic-bezier(.4, 0, .2, 1);
@@ -1209,6 +1218,10 @@ svg.react-flow__connectionline {
     height: 100%;
   }
 
+  .h-px {
+    height: 1px;
+  }
+
   .h-screen {
     height: 100vh;
   }
@@ -1295,6 +1308,10 @@ svg.react-flow__connectionline {
 
   .animate-pulse {
     animation: var(--animate-pulse);
+  }
+
+  .animate-spin {
+    animation: var(--animate-spin);
   }
 
   .cursor-col-resize {
@@ -1411,6 +1428,10 @@ svg.react-flow__connectionline {
     overflow: hidden;
   }
 
+  .overflow-visible {
+    overflow: visible;
+  }
+
   .overflow-x-auto {
     overflow-x: auto;
   }
@@ -1421,6 +1442,10 @@ svg.react-flow__connectionline {
 
   .rounded {
     border-radius: .25rem;
+  }
+
+  .rounded-full {
+    border-radius: 3.40282e38px;
   }
 
   .rounded-lg {
@@ -1449,6 +1474,16 @@ svg.react-flow__connectionline {
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
+  }
+
+  .border-amber-800\/50 {
+    border-color: #953d0080;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-amber-800\/50 {
+      border-color: color-mix(in oklab, var(--color-amber-800) 50%, transparent);
+    }
   }
 
   .border-blue-500 {
@@ -1489,6 +1524,16 @@ svg.react-flow__connectionline {
 
   .border-red-500 {
     border-color: var(--color-red-500);
+  }
+
+  .border-sky-800\/50 {
+    border-color: #00598680;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-sky-800\/50 {
+      border-color: color-mix(in oklab, var(--color-sky-800) 50%, transparent);
+    }
   }
 
   .border-transparent {
@@ -1546,6 +1591,26 @@ svg.react-flow__connectionline {
   @supports (color: color-mix(in lab, red, red)) {
     .border-zinc-800\/80 {
       border-color: color-mix(in oklab, var(--color-zinc-800) 80%, transparent);
+    }
+  }
+
+  .bg-amber-800\/50 {
+    background-color: #953d0080;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-amber-800\/50 {
+      background-color: color-mix(in oklab, var(--color-amber-800) 50%, transparent);
+    }
+  }
+
+  .bg-amber-950\/30 {
+    background-color: #4619014d;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-amber-950\/30 {
+      background-color: color-mix(in oklab, var(--color-amber-950) 30%, transparent);
     }
   }
 
@@ -1626,6 +1691,26 @@ svg.react-flow__connectionline {
   @supports (color: color-mix(in lab, red, red)) {
     .bg-red-950\/40 {
       background-color: color-mix(in oklab, var(--color-red-950) 40%, transparent);
+    }
+  }
+
+  .bg-sky-800\/50 {
+    background-color: #00598680;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-sky-800\/50 {
+      background-color: color-mix(in oklab, var(--color-sky-800) 50%, transparent);
+    }
+  }
+
+  .bg-sky-950\/30 {
+    background-color: #052f4a4d;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-sky-950\/30 {
+      background-color: color-mix(in oklab, var(--color-sky-950) 30%, transparent);
     }
   }
 
@@ -1841,6 +1926,11 @@ svg.react-flow__connectionline {
     font-family: var(--font-mono);
   }
 
+  .text-base {
+    font-size: var(--text-base);
+    line-height: var(--tw-leading, var(--text-base--line-height));
+  }
+
   .text-lg {
     font-size: var(--text-lg);
     line-height: var(--tw-leading, var(--text-lg--line-height));
@@ -1929,6 +2019,10 @@ svg.react-flow__connectionline {
     color: var(--color-amber-400);
   }
 
+  .text-amber-600 {
+    color: var(--color-amber-600);
+  }
+
   .text-blue-400 {
     color: var(--color-blue-400);
   }
@@ -1971,6 +2065,10 @@ svg.react-flow__connectionline {
 
   .text-sky-400 {
     color: var(--color-sky-400);
+  }
+
+  .text-sky-600 {
+    color: var(--color-sky-600);
   }
 
   .text-transparent {
@@ -2320,23 +2418,33 @@ svg.react-flow__connectionline {
     background-color: var(--color-zinc-500);
   }
 
+  .disabled\:opacity-40:disabled {
+    opacity: .4;
+  }
+
   .\[\&\:\:-webkit-scrollbar\]\:hidden::-webkit-scrollbar {
     display: none;
   }
 }
 
-@keyframes pulse-glow {
+@keyframes pulse-opacity {
   0%, 100% {
-    box-shadow: 0 0 #facc1500;
+    opacity: 0;
   }
 
   50% {
-    box-shadow: 0 0 0 4px #facc1559, 0 0 12px #facc1533;
+    opacity: 1;
   }
 }
 
-.node-pulse {
-  animation: 1.2s ease-in-out infinite pulse-glow;
+.pulse-ring {
+  pointer-events: none;
+  border: 2px solid #facc15d9;
+  border-radius: 7px;
+  animation: 1.2s ease-in-out infinite pulse-opacity;
+  position: absolute;
+  inset: -3px;
+  box-shadow: 0 0 10px #facc158c, 0 0 24px #facc154d;
 }
 
 .react-flow__controls button {
@@ -2581,6 +2689,12 @@ svg.react-flow__connectionline {
   syntax: "*";
   inherits: false;
   initial-value: "";
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {

@@ -7,7 +7,7 @@
 import { create } from 'zustand'
 import type { Node, Edge } from '@xyflow/react'
 import type { ClaudeAction } from '../types/actions'
-import type { ChatExchange } from '../types/chat'
+import type { ChatExchange, ChatMarker } from '../types/chat'
 import type { CodebaseNode } from '../types/codebase'
 import type { GitCommit } from '../types/git'
 import type { DepEdge } from './graph-store'
@@ -17,6 +17,7 @@ export interface TabCacheEntry {
   // From loadSession
   exchanges: ChatExchange[]
   actions: ClaudeAction[]
+  markers: ChatMarker[]
   // From listSessions
   sessions: SessionInfo[]
   // From scanCodebase
