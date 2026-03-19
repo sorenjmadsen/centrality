@@ -36,7 +36,7 @@ export function TabBar() {
       <button
         onClick={() => setActiveTab(null)}
         className={[
-          'flex items-center gap-1.5 px-4 text-xs shrink-0 border-r border-zinc-800 font-medium',
+          'flex items-center gap-1.5 px-4 text-base shrink-0 border-r border-zinc-800 font-medium',
           'relative transition-colors select-none',
           activeTabId === null
             ? 'text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500'
@@ -58,7 +58,7 @@ export function TabBar() {
             key={tab.id}
             onClick={() => handleTabClick(tab)}
             className={[
-              'group flex items-center gap-2 pl-4 pr-2 text-xs shrink-0 border-r border-zinc-800',
+              'group flex items-center gap-2 pl-4 pr-2 text-base shrink-0 border-r border-zinc-800',
               'relative transition-colors select-none',
               isActive
                 ? 'text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500'
