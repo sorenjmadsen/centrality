@@ -32,8 +32,8 @@ export function ActionBadge({ actionType, count }: ActionBadgeProps) {
   const { Icon, color, bg } = config
 
   return (
-    <span className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-medium ${bg} ${color}`}>
-      <Icon size={10} />
+    <span className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs font-medium ${bg} ${color}`}>
+      <Icon size={12} />
       {count && count > 1 ? <span>{count}</span> : null}
     </span>
   )

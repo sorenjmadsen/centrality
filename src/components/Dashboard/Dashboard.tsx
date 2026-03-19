@@ -88,7 +88,7 @@ export function Dashboard() {
         {/* Recent section */}
         {recentProjects.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
               Recent
             </h2>
             <div className="grid grid-cols-2 gap-2">
@@ -117,7 +117,7 @@ export function Dashboard() {
                       <div className="text-sm font-medium text-zinc-200 truncate leading-snug">
                         {shortName}
                       </div>
-                      <div className="flex items-center gap-1 mt-1 text-zinc-500 text-[11px]">
+                      <div className="flex items-center gap-1 mt-1 text-zinc-500 text-xs">
                         <Clock size={10} />
                         <span>{lastDate}</span>
                         <span className="text-zinc-700">·</span>
@@ -133,12 +133,12 @@ export function Dashboard() {
 
         {/* All projects */}
         <section>
-          <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
             All Projects
           </h2>
 
           {isLoadingProjects ? (
-            <div className="text-xs text-zinc-600 animate-pulse py-4">Scanning ~/.claude/projects/…</div>
+            <div className="text-sm text-zinc-600 animate-pulse py-4">Scanning ~/.claude/projects/…</div>
           ) : sortedProjects.length === 0 ? (
             <div className="text-sm text-zinc-600 py-4">
               No projects found in <code className="text-zinc-500">~/.claude/projects/</code>
@@ -171,7 +171,7 @@ export function Dashboard() {
                       <FolderOpen size={13} className="text-zinc-500 shrink-0" />
                       <span className="text-sm text-zinc-300 flex-1 truncate">{shortName}</span>
                       {isLoading && (
-                        <span className="text-[11px] text-zinc-600 animate-pulse">Loading…</span>
+                        <span className="text-xs text-zinc-600 animate-pulse">Loading…</span>
                       )}
                     </button>
 
@@ -194,11 +194,11 @@ export function Dashboard() {
                                 text-left transition-colors group"
                             >
                               <div className="flex-1 min-w-0">
-                                <span className="font-mono text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                                <span className="font-mono text-xs text-zinc-400 group-hover:text-zinc-200 transition-colors">
                                   {session.sessionId.slice(0, 8)}…
                                 </span>
                               </div>
-                              <span className="text-[11px] text-zinc-600 shrink-0">
+                              <span className="text-xs text-zinc-600 shrink-0">
                                 {dateStr} · {timeStr}
                               </span>
                             </button>

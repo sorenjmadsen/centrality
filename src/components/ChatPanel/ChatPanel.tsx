@@ -137,7 +137,7 @@ export function ChatPanel() {
               <div className="my-2 border-t border-zinc-800" />
               <ChatMessageBubble message={exchange.assistantMessage} isHighlighted={isPlaybackCurrent || isSelected} />
               {usage && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-zinc-600">
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-600">
                   <span>{usage.input.toLocaleString()}↓</span>
                   <span>{usage.output.toLocaleString()}↑</span>
                   <span className="text-zinc-500">~${cost.toFixed(4)}</span>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -50,6 +50,11 @@ function GraphCanvas() {
     saveTabViewState(tabId, { graphViewport: viewport })
   }, [tabId, saveTabViewState])
 
+  const mappedNodes = useMemo(
+    () => nodes.map(n => ({ ...n, selected: n.id === selectedNodeId })),
+    [nodes, selectedNodeId]
+  )
+
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     const newId = node.id === selectedNodeId ? null : node.id
     setSelectedNode(newId)
@@ -66,7 +71,7 @@ function GraphCanvas() {
   return (
     <div className="flex-1 h-full">
       <ReactFlow
-        nodes={nodes.map(n => ({ ...n, selected: n.id === selectedNodeId }))}
+        nodes={mappedNodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -74,6 +79,7 @@ function GraphCanvas() {
         onNodesChange={() => {}}
         onEdgesChange={() => {}}
         onMoveEnd={onMoveEnd}
+        nodesDraggable={false}
         minZoom={0.05}
         maxZoom={3}
         proOptions={{ hideAttribution: true }}

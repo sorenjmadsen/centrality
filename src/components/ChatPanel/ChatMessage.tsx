@@ -23,16 +23,16 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
   return (
     <div className={`text-sm ${isHighlighted ? 'bg-zinc-800/50 rounded-lg p-1 -mx-1' : ''}`}>
       <div className="flex items-center gap-1.5 mb-1">
-        <span className={`text-[10px] font-semibold uppercase tracking-wide ${
+        <span className={`text-xs font-semibold uppercase tracking-wide ${
           isUser ? 'text-zinc-500' : 'text-zinc-400'
         }`}>
           {isUser ? 'User' : (message.model?.split('-').slice(0, 2).join('-') ?? 'Claude')}
         </span>
-        <span className="text-[10px] text-zinc-700">
+        <span className="text-xs text-zinc-700">
           {new Date(message.timestamp).toLocaleTimeString()}
         </span>
         {message.tokenUsage && (
-          <span className="text-[10px] text-zinc-700 ml-auto">
+          <span className="text-xs text-zinc-700 ml-auto">
             {message.tokenUsage.input.toLocaleString()} / {message.tokenUsage.output.toLocaleString()} tok
           </span>
         )}
@@ -49,7 +49,7 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
           </div>
           {isLong && (
             <button
-              className="text-[10px] text-zinc-500 hover:text-zinc-300 mt-0.5"
+              className="text-xs text-zinc-500 hover:text-zinc-300 mt-0.5"
               onClick={e => { e.stopPropagation(); setExpanded(x => !x) }}
             >
               {expanded ? 'Show less' : 'Show more'}

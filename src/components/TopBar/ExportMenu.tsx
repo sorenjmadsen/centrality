@@ -62,12 +62,12 @@ export function ExportMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1 px-2 py-1 rounded text-xs text-zinc-400
+        className="flex items-center gap-1 px-2 py-1 rounded text-sm text-zinc-400
           hover:text-zinc-200 hover:bg-zinc-800 transition-colors border border-transparent
           hover:border-zinc-700"
         title="Export"
       >
-        <Download size={12} />
+        <Download size={14} />
         <span>Export</span>
       </button>
 
@@ -76,14 +76,14 @@ export function ExportMenu() {
           rounded shadow-lg min-w-[150px] py-1">
           <button
             onClick={handleExportMarkdown}
-            className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700
+            className="w-full text-left px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700
               hover:text-zinc-100 transition-colors"
           >
             Export Markdown
           </button>
           <button
             onClick={handleScreenshot}
-            className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700
+            className="w-full text-left px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700
               hover:text-zinc-100 transition-colors"
           >
             Screenshot
@@ -93,7 +93,7 @@ export function ExportMenu() {
 
       {toast && (
         <div className="absolute right-0 top-full mt-1 z-50 bg-zinc-700 border border-zinc-600
-          rounded px-3 py-2 text-xs text-zinc-200 whitespace-nowrap shadow-lg">
+          rounded px-3 py-2 text-sm text-zinc-200 whitespace-nowrap shadow-lg">
           {toast}
         </div>
       )}
