@@ -31,7 +31,7 @@ export function DiffViewer({ unified, maxLines = 200 }: DiffViewerProps) {
   }
 
   return (
-    <div className="font-mono text-[10px] overflow-x-auto overflow-y-auto max-h-72 rounded bg-zinc-950 border border-zinc-800">
+    <div className="font-mono text-[10px] overflow-x-auto overflow-y-auto max-h-72 rounded bg-zinc-950 border border-zinc-800 scrollable">
       {lines.map((line, i) => {
         let bg = ''
         let text = 'text-zinc-400'

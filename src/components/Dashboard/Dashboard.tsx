@@ -72,7 +72,7 @@ export function Dashboard() {
   })
 
   return (
-    <div className="flex-1 overflow-y-auto bg-zinc-950">
+    <div className="flex-1 overflow-y-auto scrollable bg-zinc-950">
       <div className="max-w-3xl mx-auto px-8 py-10">
         {/* Header */}
         <div className="mb-10">

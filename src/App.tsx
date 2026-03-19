@@ -134,7 +134,8 @@ function SessionView(): React.ReactElement {
 }
 
 function AppInner(): React.ReactElement {
-  const { tabs, activeTabId } = useTabsStore()
+  const tabs = useTabsStore(s => s.tabs)
+  const activeTabId = useTabsStore(s => s.activeTabId)
 
   // Live git HEAD listener — updates all mounted tabs for the affected project
   React.useEffect(() => {

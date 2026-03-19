@@ -114,7 +114,7 @@ function MinimapTrace() {
 
 function GraphCanvas() {
   const { nodes, edges } = useGraphStore()
-  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange } = useUiStore()
+  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const { exchanges } = useChatStore()
   const tabId = useTabId()
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
@@ -168,12 +168,19 @@ function GraphCanvas() {
 
     if (newId && selectedProjectPath) {
       const absPath = selectedProjectPath.replace(/\/$/, '') + '/' + newId
-      const exchange = exchanges.find(ex =>
-        ex.affectedNodes.some(n => n === absPath || n === newId || n.endsWith('/' + newId))
-      )
-      if (exchange) setSelectedExchange(exchange.id)
+      let matchIdx = -1
+      for (let i = exchanges.length - 1; i >= 0; i--) {
+        if (exchanges[i].affectedNodes.some(n => n === absPath || n === newId || n.endsWith('/' + newId))) {
+          matchIdx = i
+          break
+        }
+      }
+      if (matchIdx !== -1) {
+        setSelectedExchange(exchanges[matchIdx].id)
+        setPlaybackIndex(matchIdx)
+      }
     }
-  }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange])
+  }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange, setPlaybackIndex])
 
   return (
     <div className="flex-1 h-full">

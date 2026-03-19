@@ -106,7 +106,7 @@ export function ChatPanel() {
   }
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto" onScroll={handleScroll}>
+    <div ref={scrollRef} className="h-full overflow-y-auto scrollable" onScroll={handleScroll}>
       <div className="flex flex-col gap-1 p-2">
         {timeline.map((item, i) => {
           if (item.kind === 'commit') {
