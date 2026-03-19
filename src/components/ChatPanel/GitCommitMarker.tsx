@@ -11,12 +11,14 @@ interface GitCommitMarkerProps {
 export function GitCommitMarker({ commit }: GitCommitMarkerProps) {
   const [open, setOpen] = useState(false)
   const { selectedCommitHash, commitDiffs, selectCommit } = useGitStore()
-  const { selectedProjectPath } = useUiStore()
+  const { selectedProjectPath, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const isSelected = selectedCommitHash === commit.hash
   const diff = commitDiffs.get(commit.hash)
 
   async function handleClick() {
     const newHash = isSelected ? null : commit.hash
+    // Clear exchange selection when selecting a git commit
+    if (newHash) { setSelectedExchange(null); setPlaybackIndex(null) }
     await selectCommit(newHash, selectedProjectPath ?? '')
   }
 
@@ -24,6 +26,7 @@ export function GitCommitMarker({ commit }: GitCommitMarkerProps) {
     e.stopPropagation()
     setOpen(o => !o)
     if (!open && !diff) {
+      setSelectedExchange(null); setPlaybackIndex(null)
       await selectCommit(commit.hash, selectedProjectPath ?? '')
     }
   }

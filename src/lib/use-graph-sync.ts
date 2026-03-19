@@ -117,16 +117,18 @@ const PULSE_DURATION = 1200 // ms — must match animation duration in index.css
 function applyActionMap(
   nodes: Node[],
   actionsByNode: Map<string, ClaudeAction[]>,
-  pulsingIds: Set<string>,
+  exchangePulsingIds: Set<string>,
+  gitPulsingIds: Set<string> = new Set(),
   activeActionsByNode: Map<string, ClaudeAction[]> = new Map(),
   pulseDelay = 0
 ): Node[] {
   return nodes.map(n => {
     const nodeActions = actionsByNode.get(n.id) ?? []
     const data = n.data as NodeData
-    const newPulsing = pulsingIds.has(n.id)
-    const newActiveAction = newPulsing ? dominantActionType(activeActionsByNode.get(n.id) ?? []) : null
-    // Always create a new node object — never short-circuit on isPulsing or activeAction,
+    const newExchangePulsing = exchangePulsingIds.has(n.id)
+    const newGitPulsing = gitPulsingIds.has(n.id)
+    const newActiveAction = newExchangePulsing ? dominantActionType(activeActionsByNode.get(n.id) ?? []) : null
+    // Always create a new node object — never short-circuit on isPulsing/gitPulsing or activeAction,
     // since stale truthy values on those fields cause nodes to keep pulsing across exchanges.
     return {
       ...n,
@@ -135,8 +137,9 @@ function applyActionMap(
         actions: nodeActions,
         dominantAction: dominantActionType(nodeActions),
         activeAction: newActiveAction,
-        isPulsing: newPulsing,
-        pulseDelay: newPulsing ? pulseDelay : 0,
+        isPulsing: newExchangePulsing,
+        gitPulsing: newGitPulsing,
+        pulseDelay: newExchangePulsing ? pulseDelay : 0,
       },
     }
   })
@@ -234,11 +237,11 @@ export function useGraphSync() {
         const currentActionsByNode = currentExchange
           ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter)
           : new Map<string, ClaudeAction[]>()
-        const combinedPulsing = new Set<string>(pulsingIds)
-        for (const f of highlightedFiles) combinedPulsing.add(f)
-        for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id)
+        const exchangePulsing = new Set<string>(pulsingIds)
+        for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) exchangePulsing.add(id)
+        const gitPulsing = new Set<string>(highlightedFiles)
         setActiveNodeIds(pulsingIds)
-        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
+        setGraph(applyActionMap(rfNodes, actionsByNode, exchangePulsing, gitPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
       } else {
         setGraph(rfNodes, rfEdges)
         setActiveNodeIds(new Set())
@@ -263,8 +266,7 @@ export function useGraphSync() {
       if (rfNodes.length === 0) return
       const projectPath = selectedProjectPath ?? ''
       const actionsByNode = buildActionMap(actions, projectPath, actionTypeFilter)
-      const combinedPulsing = new Set(highlightedFiles)
-      setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing), rfEdges)
+      setGraph(applyActionMap(rfNodes, actionsByNode, new Set(), new Set(highlightedFiles)), rfEdges)
       setActiveNodeIds(new Set())
       return
     }
@@ -285,13 +287,13 @@ export function useGraphSync() {
       ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter)
       : new Map<string, ClaudeAction[]>()
 
-    const combinedPulsing = new Set<string>(pulsingIds)
-    for (const f of highlightedFiles) combinedPulsing.add(f)
+    const exchangePulsing = new Set<string>(pulsingIds)
     if (currentExchange) {
-      for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id)
+      for (const id of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) exchangePulsing.add(id)
     }
+    const gitPulsing = new Set<string>(highlightedFiles)
 
     setActiveNodeIds(pulsingIds)
-    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
+    setGraph(applyActionMap(rfNodes, actionsByNode, exchangePulsing, gitPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges)
   }, [playbackIndex, exchanges, actions, actionTypeFilter, selectedProjectPath, highlightedFiles])
 }

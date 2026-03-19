@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react'
-import { Minimize2, RefreshCcw } from 'lucide-react'
+import { Minimize2, RefreshCcw, Terminal } from 'lucide-react'
 import { useChatStore, useUiStore, useGitStore, useSearchStore, useTabId } from '../../stores/tab-stores'
 import { useTabsStore } from '../../stores/tabs-store'
 import { ChatMessageBubble } from './ChatMessage'
@@ -57,7 +57,8 @@ function computeCost(exchange: ChatExchange): number {
 export function ChatPanel() {
   const { exchanges, markers } = useChatStore()
   const { commits } = useGitStore()
-  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore()
+  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex, selectedProjectPath } = useUiStore()
+  const { selectCommit } = useGitStore()
   const { results, activeIdx } = useSearchStore()
   const tabId = useTabId()
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
@@ -118,6 +119,20 @@ export function ChatPanel() {
 
           if (item.kind === 'marker') {
             const { marker } = item
+            if (marker.type === 'command') {
+              return (
+                <div key={marker.id} className="px-1 py-0.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-900 border border-zinc-800/60 text-xs text-zinc-500">
+                    <Terminal size={10} className="shrink-0 text-zinc-600" />
+                    <span className="font-mono text-zinc-400">{marker.details}</span>
+                    {marker.output && (
+                      <span className="text-zinc-600 truncate ml-1">{marker.output}</span>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
             const isCompaction = marker.type === 'compaction'
             return (
               <div
@@ -174,6 +189,8 @@ export function ChatPanel() {
                 const isDeselect = exchange.id === selectedExchangeId
                 setSelectedExchange(isDeselect ? null : exchange.id)
                 setPlaybackIndex(isDeselect ? null : idx)
+                // Clear git commit selection when selecting an exchange
+                if (!isDeselect) selectCommit(null, selectedProjectPath ?? '')
               }}
             >
               <ChatMessageBubble message={exchange.userMessage} />

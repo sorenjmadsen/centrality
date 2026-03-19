@@ -12604,7 +12604,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$t = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -12612,53 +12612,76 @@ const __iconNode$r = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$r);
+const Bot = createLucideIcon("bot", __iconNode$t);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$q);
+const __iconNode$s = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$s);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
+const __iconNode$r = [
   ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
   ["path", { d: "M7 6v12", key: "1p53r6" }]
 ];
-const ChevronFirst = createLucideIcon("chevron-first", __iconNode$p);
+const ChevronFirst = createLucideIcon("chevron-first", __iconNode$r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$q = [
   ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
   ["path", { d: "M17 6v12", key: "1o0aio" }]
 ];
-const ChevronLast = createLucideIcon("chevron-last", __iconNode$o);
+const ChevronLast = createLucideIcon("chevron-last", __iconNode$q);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$n);
+const __iconNode$p = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$p);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$m);
+const __iconNode$o = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$o);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$n = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
+];
+const Clock = createLucideIcon("clock", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
+  ["path", { d: "M12 15V3", key: "m9g1x1" }],
+  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+];
+const Download = createLucideIcon("download", __iconNode$m);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12666,29 +12689,6 @@ const ChevronUp = createLucideIcon("chevron-up", __iconNode$m);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$l = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
-];
-const Clock = createLucideIcon("clock", __iconNode$l);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$k = [
-  ["path", { d: "M12 15V3", key: "m9g1x1" }],
-  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
-  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
-];
-const Download = createLucideIcon("download", __iconNode$k);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$j = [
   [
     "path",
     {
@@ -12698,14 +12698,14 @@ const __iconNode$j = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$j);
+const Eye = createLucideIcon("eye", __iconNode$l);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$i = [
+const __iconNode$k = [
   ["path", { d: "M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5", key: "1couwa" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   [
@@ -12716,7 +12716,34 @@ const __iconNode$i = [
     }
   ]
 ];
-const FilePen = createLucideIcon("file-pen", __iconNode$i);
+const FilePen = createLucideIcon("file-pen", __iconNode$k);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M9 15h6", key: "cctwl0" }],
+  ["path", { d: "M12 18v-6", key: "17g6i2" }]
+];
+const FilePlus = createLucideIcon("file-plus", __iconNode$j);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$i = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M10 9H8", key: "b1mrlr" }],
+  ["path", { d: "M16 13H8", key: "t4e002" }],
+  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+];
+const FileText = createLucideIcon("file-text", __iconNode$i);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12724,33 +12751,6 @@ const FilePen = createLucideIcon("file-pen", __iconNode$i);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$h = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M9 15h6", key: "cctwl0" }],
-  ["path", { d: "M12 18v-6", key: "17g6i2" }]
-];
-const FilePlus = createLucideIcon("file-plus", __iconNode$h);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$g = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M10 9H8", key: "b1mrlr" }],
-  ["path", { d: "M16 13H8", key: "t4e002" }],
-  ["path", { d: "M16 17H8", key: "z1uh3a" }]
-];
-const FileText = createLucideIcon("file-text", __iconNode$g);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$f = [
   [
     "path",
     {
@@ -12759,14 +12759,14 @@ const __iconNode$f = [
     }
   ]
 ];
-const FolderOpen = createLucideIcon("folder-open", __iconNode$f);
+const FolderOpen = createLucideIcon("folder-open", __iconNode$h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$e = [
+const __iconNode$g = [
   [
     "path",
     {
@@ -12775,7 +12775,32 @@ const __iconNode$e = [
     }
   ]
 ];
-const Folder = createLucideIcon("folder", __iconNode$e);
+const Folder = createLucideIcon("folder", __iconNode$g);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$f = [
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
+  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+];
+const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$f);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$e = [
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+];
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$e);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12783,11 +12808,10 @@ const Folder = createLucideIcon("folder", __iconNode$e);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$d = [
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
-  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
-  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 9.9-1", key: "1mm8w8" }]
 ];
-const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$d);
+const LockOpen = createLucideIcon("lock-open", __iconNode$d);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12795,12 +12819,10 @@ const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$c = [
-  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
-  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
-  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
-  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
 ];
-const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$c);
+const Lock = createLucideIcon("lock", __iconNode$c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -22141,6 +22163,7 @@ function DirectoryNode({ data, selected: selected2 }) {
       `,
       children: [
         d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms` } }),
+        d.gitPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring-git" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Folder, { size: 16, className: "text-zinc-500 shrink-0" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate", children: d.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Left, className: "opacity-0" }),
@@ -22167,6 +22190,7 @@ function FileNode({ data, selected: selected2 }) {
       `,
       children: [
         d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms` } }),
+        d.gitPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring-git" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(FileText, { size: 15, className: "text-zinc-500 shrink-0" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate flex-1", children: d.label })
@@ -22209,6 +22233,7 @@ function SymbolNode({ data }) {
       style: { borderColor, height: 40 },
       children: [
         d.isPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring", style: { animationDelay: `${d.pulseDelay}ms`, borderRadius: 5 } }),
+        d.gitPulsing && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pulse-ring-git", style: { borderRadius: 5 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Handle, { type: "target", position: Position.Left, style: { opacity: 0 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `font-bold font-mono text-sm w-4 shrink-0 ${iconColor}`, children: icon }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-zinc-300 leading-none", children: d.label }),
@@ -22349,6 +22374,7 @@ function GraphCanvas() {
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
   const { setViewport, fitView } = useReactFlow();
   const { graph: graphStore } = useTabStores();
+  const [isDraggable, setIsDraggable] = reactExports.useState(false);
   reactExports.useEffect(() => {
     const saved = useTabsStore.getState().tabViewState[tabId]?.graphViewport;
     if (saved) {
@@ -22403,13 +22429,23 @@ function GraphCanvas() {
       onEdgesChange: () => {
       },
       onMoveEnd,
-      nodesDraggable: true,
+      nodesDraggable: isDraggable,
       minZoom: 0.05,
       maxZoom: 3,
       proOptions: { hideAttribution: true },
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Background, { variant: BackgroundVariant.Dots, color: "#27272a", gap: 20 }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Controls, {}),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Panel, { position: "bottom-left", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            onClick: () => setIsDraggable((d) => !d),
+            className: `flex items-center justify-center w-7 h-7 rounded border transition-colors
+              ${isDraggable ? "bg-zinc-700 border-zinc-500 text-zinc-200" : "bg-zinc-900 border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"}`,
+            title: isDraggable ? "Lock node positions" : "Unlock node positions",
+            children: isDraggable ? /* @__PURE__ */ jsxRuntimeExports.jsx(LockOpen, { size: 12 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Lock, { size: 12 })
+          }
+        ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           MiniMap,
           {
@@ -35173,17 +35209,23 @@ function ChatMessageBubble({ message, isHighlighted }) {
 function GitCommitMarker({ commit }) {
   const [open, setOpen] = reactExports.useState(false);
   const { selectedCommitHash, commitDiffs, selectCommit } = useGitStore();
-  const { selectedProjectPath } = useUiStore();
+  const { selectedProjectPath, setSelectedExchange, setPlaybackIndex } = useUiStore();
   const isSelected = selectedCommitHash === commit.hash;
   const diff = commitDiffs.get(commit.hash);
   async function handleClick() {
     const newHash = isSelected ? null : commit.hash;
+    if (newHash) {
+      setSelectedExchange(null);
+      setPlaybackIndex(null);
+    }
     await selectCommit(newHash, selectedProjectPath ?? "");
   }
   async function handleExpand(e) {
     e.stopPropagation();
     setOpen((o) => !o);
     if (!open && !diff) {
+      setSelectedExchange(null);
+      setPlaybackIndex(null);
       await selectCommit(commit.hash, selectedProjectPath ?? "");
     }
   }
@@ -35262,7 +35304,8 @@ function computeCost(exchange) {
 function ChatPanel() {
   const { exchanges, markers } = useChatStore();
   const { commits } = useGitStore();
-  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex } = useUiStore();
+  const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex, selectedProjectPath } = useUiStore();
+  const { selectCommit } = useGitStore();
   const { results, activeIdx } = useSearchStore();
   const tabId = useTabId();
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
@@ -35299,6 +35342,13 @@ function ChatPanel() {
     }
     if (item.kind === "marker") {
       const { marker } = item;
+      if (marker.type === "command") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-1 py-0.5", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-900 border border-zinc-800/60 text-xs text-zinc-500", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Terminal, { size: 10, className: "shrink-0 text-zinc-600" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-zinc-400", children: marker.details }),
+          marker.output && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-600 truncate ml-1", children: marker.output })
+        ] }) }, marker.id);
+      }
       const isCompaction = marker.type === "compaction";
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "div",
@@ -35347,6 +35397,7 @@ function ChatPanel() {
           const isDeselect = exchange.id === selectedExchangeId;
           setSelectedExchange(isDeselect ? null : exchange.id);
           setPlaybackIndex(isDeselect ? null : idx);
+          if (!isDeselect) selectCommit(null, selectedProjectPath ?? "");
         },
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.userMessage }),
@@ -35630,7 +35681,9 @@ function buildGraphFromNodes(nodes, rootIds, pulsingNodeIds = /* @__PURE__ */ ne
       actions: node2.actions,
       dominantAction: dominantActionType(node2.actions),
       activeAction: null,
-      isPulsing: pulsingNodeIds.has(id2),
+      isPulsing: false,
+      gitPulsing: pulsingNodeIds.has(id2),
+      // pulsingNodeIds are always git-highlighted files here
       pulseDelay: 0,
       language: node2.language,
       startLine: node2.startLine,
@@ -35736,12 +35789,13 @@ function findAffectedSymbolIds(actions, pulsingFileIds, cbNodes, projectPath) {
   return result;
 }
 const PULSE_DURATION = 1200;
-function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = /* @__PURE__ */ new Map(), pulseDelay = 0) {
+function applyActionMap(nodes, actionsByNode, exchangePulsingIds, gitPulsingIds = /* @__PURE__ */ new Set(), activeActionsByNode = /* @__PURE__ */ new Map(), pulseDelay = 0) {
   return nodes.map((n) => {
     const nodeActions = actionsByNode.get(n.id) ?? [];
     const data = n.data;
-    const newPulsing = pulsingIds.has(n.id);
-    const newActiveAction = newPulsing ? dominantActionType(activeActionsByNode.get(n.id) ?? []) : null;
+    const newExchangePulsing = exchangePulsingIds.has(n.id);
+    const newGitPulsing = gitPulsingIds.has(n.id);
+    const newActiveAction = newExchangePulsing ? dominantActionType(activeActionsByNode.get(n.id) ?? []) : null;
     return {
       ...n,
       data: {
@@ -35749,8 +35803,9 @@ function applyActionMap(nodes, actionsByNode, pulsingIds, activeActionsByNode = 
         actions: nodeActions,
         dominantAction: dominantActionType(nodeActions),
         activeAction: newActiveAction,
-        isPulsing: newPulsing,
-        pulseDelay: newPulsing ? pulseDelay : 0
+        isPulsing: newExchangePulsing,
+        gitPulsing: newGitPulsing,
+        pulseDelay: newExchangePulsing ? pulseDelay : 0
       }
     };
   });
@@ -35827,11 +35882,11 @@ function useGraphSync() {
         const currentExchange = currentExchanges[clampedIndex];
         const pulsingIds = currentExchange ? toRelativeIds(currentExchange.affectedNodes, projectPath) : /* @__PURE__ */ new Set();
         const currentActionsByNode = currentExchange ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter) : /* @__PURE__ */ new Map();
-        const combinedPulsing = new Set(pulsingIds);
-        for (const f of highlightedFiles) combinedPulsing.add(f);
-        for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id2);
+        const exchangePulsing = new Set(pulsingIds);
+        for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) exchangePulsing.add(id2);
+        const gitPulsing = new Set(highlightedFiles);
         setActiveNodeIds(pulsingIds);
-        setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
+        setGraph(applyActionMap(rfNodes, actionsByNode, exchangePulsing, gitPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
       } else {
         setGraph(rfNodes, rfEdges);
         setActiveNodeIds(/* @__PURE__ */ new Set());
@@ -35850,8 +35905,7 @@ function useGraphSync() {
       if (rfNodes.length === 0) return;
       const projectPath2 = selectedProjectPath ?? "";
       const actionsByNode2 = buildActionMap(actions, projectPath2, actionTypeFilter);
-      const combinedPulsing2 = new Set(highlightedFiles);
-      setGraph(applyActionMap(rfNodes, actionsByNode2, combinedPulsing2), rfEdges);
+      setGraph(applyActionMap(rfNodes, actionsByNode2, /* @__PURE__ */ new Set(), new Set(highlightedFiles)), rfEdges);
       setActiveNodeIds(/* @__PURE__ */ new Set());
       return;
     }
@@ -35863,13 +35917,13 @@ function useGraphSync() {
     const currentExchange = exchanges[clampedIndex];
     const pulsingIds = currentExchange ? toRelativeIds(currentExchange.affectedNodes, projectPath) : /* @__PURE__ */ new Set();
     const currentActionsByNode = currentExchange ? buildActionMap(currentExchange.actions, projectPath, actionTypeFilter) : /* @__PURE__ */ new Map();
-    const combinedPulsing = new Set(pulsingIds);
-    for (const f of highlightedFiles) combinedPulsing.add(f);
+    const exchangePulsing = new Set(pulsingIds);
     if (currentExchange) {
-      for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) combinedPulsing.add(id2);
+      for (const id2 of findAffectedSymbolIds(currentExchange.actions, pulsingIds, codebaseStore.getState().nodes, projectPath)) exchangePulsing.add(id2);
     }
+    const gitPulsing = new Set(highlightedFiles);
     setActiveNodeIds(pulsingIds);
-    setGraph(applyActionMap(rfNodes, actionsByNode, combinedPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
+    setGraph(applyActionMap(rfNodes, actionsByNode, exchangePulsing, gitPulsing, currentActionsByNode, -(Date.now() % PULSE_DURATION)), rfEdges);
   }, [playbackIndex, exchanges, actions, actionTypeFilter, selectedProjectPath, highlightedFiles]);
 }
 function GranularityControl() {

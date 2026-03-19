@@ -19,6 +19,7 @@ export function DirectoryNode({ data, selected }: NodeProps) {
       `}
     >
       {d.isPulsing && <div className="pulse-ring" style={{ animationDelay: `${d.pulseDelay}ms` }} />}
+      {d.gitPulsing && <div className="pulse-ring-git" />}
       <Folder size={16} className="text-zinc-500 shrink-0" />
       <span className="truncate">{d.label}</span>
       <Handle type="target" position={Position.Left} className="opacity-0" />

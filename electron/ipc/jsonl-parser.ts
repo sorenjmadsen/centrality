@@ -45,9 +45,10 @@ export interface ChatMessage {
 
 export interface ChatMarker {
   id: string
-  type: 'compaction' | 'model_switch'
+  type: 'compaction' | 'model_switch' | 'command'
   timestamp: string
-  details?: string
+  details?: string   // command name or model change description
+  output?: string    // command stdout (for 'command' type)
 }
 
 export interface ChatExchange {
@@ -120,12 +121,20 @@ export function listSessions(encodedName: string): SessionInfo[] {
     .sort((a, b) => b.mtime - a.mtime)
 }
 
-function inferActionType(toolName: string, input: Record<string, unknown>): string {
+function inferActionType(toolName: string, input: Record<string, unknown>, result?: string): string {
   switch (toolName) {
     case 'Read': return 'read'
     case 'Write': {
       const content = input['content'] as string | undefined
-      return content !== undefined && content.length === 0 ? 'deleted' : 'created'
+      if (content !== undefined && content.length === 0) return 'deleted'
+      // The tool result reliably tells us whether the file was new or existing.
+      // "File created successfully at:" → created; "has been updated successfully" → edited.
+      if (result) {
+        if (/created successfully/i.test(result)) return 'created'
+        if (/updated successfully/i.test(result)) return 'edited'
+      }
+      // No result available — default to 'edited' (safer: most Writes overwrite existing files)
+      return 'edited'
     }
     case 'Edit':
     case 'MultiEdit': return 'edited'
@@ -158,6 +167,7 @@ interface RawEntry {
   timestamp?: string
   sessionId?: string
   summary?: string
+  isMeta?: boolean
   message?: {
     role?: string
     model?: string
@@ -249,7 +259,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
           id: tc.id,
           sessionId,
           timestamp: pendingUserMsg!.timestamp,
-          type: inferActionType(tc.toolName, tc.input),
+          type: inferActionType(tc.toolName, tc.input, tc.result),
           filePath: fp,
           toolName: tc.toolName,
           input: tc.input,
@@ -276,19 +286,54 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     pendingAssistantTs = ''
   }
 
+  // Track last command marker so we can attach stdout to it
+  let lastCommandMarker: ChatMarker | null = null
+
   for (const e of relevant) {
     const content = e.message?.content
     const ts = e.timestamp ?? ''
 
     if (e.type === 'user') {
+      // Skip meta entries entirely
+      if (e.isMeta) continue
+
       if (typeof content === 'string' && content.trim()) {
+        const text = content.trim()
+
+        // Detect slash commands: <command-name>...</command-name>
+        if (text.startsWith('<command-name>') || text.startsWith('<local-command-caveat>')) {
+          const cmdMatch = text.match(/<command-name>([^<]*)<\/command-name>/)
+          if (cmdMatch) {
+            lastCommandMarker = {
+              id: e.uuid ?? `cmd-${ts}`,
+              type: 'command',
+              timestamp: ts,
+              details: cmdMatch[1].trim(),
+            }
+            markers.push(lastCommandMarker)
+          }
+          continue
+        }
+
+        // Detect command stdout: <local-command-stdout>...</local-command-stdout>
+        if (text.startsWith('<local-command-stdout>')) {
+          const stdoutMatch = text.match(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/)
+          if (stdoutMatch && lastCommandMarker) {
+            lastCommandMarker.output = stdoutMatch[1].trim()
+          }
+          continue
+        }
+
+        // Reset command tracking — we're past the command/stdout pair
+        lastCommandMarker = null
+
         // Human message — close previous exchange, start new one
         flushExchange()
         pendingUserMsg = {
           id: e.uuid ?? '',
           role: 'user',
           timestamp: ts,
-          textContent: content.trim(),
+          textContent: text,
           toolCalls: [],
         }
       }

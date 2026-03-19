@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Lock, Unlock } from 'lucide-react'
 import {
   ReactFlow,
   ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
+  Panel,
   BackgroundVariant,
   useReactFlow,
   useNodes,
@@ -112,12 +114,13 @@ function MinimapTrace() {
 
 function GraphCanvas() {
   const { nodes, edges } = useGraphStore()
-  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, setSelectedNode, setSelectedExchange } = useUiStore()
+  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange } = useUiStore()
   const { exchanges } = useChatStore()
   const tabId = useTabId()
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
   const { setViewport, fitView } = useReactFlow()
   const { graph: graphStore } = useTabStores()
+  const [isDraggable, setIsDraggable] = useState(false)
 
   // Restore saved viewport or fit on first mount
   useEffect(() => {
@@ -183,21 +186,45 @@ function GraphCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={() => {}}
         onMoveEnd={onMoveEnd}
-        nodesDraggable={true}
+        nodesDraggable={isDraggable}
         minZoom={0.05}
         maxZoom={3}
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} color="#27272a" gap={20} />
         <Controls />
+        <Panel position="bottom-left">
+          <button
+            onClick={() => setIsDraggable(d => !d)}
+            className={`flex items-center justify-center w-7 h-7 rounded border transition-colors
+              ${isDraggable
+                ? 'bg-zinc-700 border-zinc-500 text-zinc-200'
+                : 'bg-zinc-900 border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
+              }`}
+            title={isDraggable ? 'Lock node positions' : 'Unlock node positions'}
+          >
+            {isDraggable ? <Unlock size={12} /> : <Lock size={12} />}
+          </button>
+        </Panel>
         <MiniMap
           nodeColor={n => {
-            const d = n.data as { dominantAction?: string }
+            const d = n.data as { dominantAction?: string; gitPulsing?: boolean }
             const colors: Record<string, string> = {
               read: '#3b82f6', created: '#22c55e', edited: '#eab308',
               deleted: '#ef4444', executed: '#a855f7', searched: '#71717a',
             }
-            return colors[d?.dominantAction ?? ''] ?? '#3f3f46'
+            const baseColor = colors[d?.dominantAction ?? ''] ?? '#3f3f46'
+
+            // When an exchange is active, dim all nodes that aren't involved
+            const hasFilter = playbackIndex !== null && activeNodeIds.size > 0
+            if (hasFilter) {
+              if (activeNodeIds.has(n.id)) return baseColor
+              if (d?.gitPulsing) return '#7c3aed'
+              return '#27272a'
+            }
+
+            if (d?.gitPulsing) return '#7c3aed'
+            return baseColor
           }}
           maskColor="rgba(0,0,0,0.6)"
           style={{ background: '#18181b', border: '1px solid #3f3f46' }}

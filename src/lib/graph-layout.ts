@@ -16,7 +16,8 @@ export interface NodeData extends Record<string, unknown> {
   actions: CodebaseNode['actions']
   dominantAction: string | null
   activeAction: string | null   // dominant action from the current exchange only
-  isPulsing: boolean
+  isPulsing: boolean    // pulsing due to selected exchange / playback (blueish-white)
+  gitPulsing: boolean   // pulsing due to selected git commit (violet)
   pulseDelay: number   // ms offset to synchronise all pulsing nodes to the same phase
   language?: string
   startLine?: number
@@ -56,7 +57,8 @@ export function buildGraphFromNodes(
       actions: node.actions,
       dominantAction: dominantActionType(node.actions),
       activeAction: null,
-      isPulsing: pulsingNodeIds.has(id),
+      isPulsing: false,
+      gitPulsing: pulsingNodeIds.has(id),   // pulsingNodeIds are always git-highlighted files here
       pulseDelay: 0,
       language: node.language,
       startLine: node.startLine,

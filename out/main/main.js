@@ -219,17 +219,41 @@ async function parseSession(filePath) {
     pendingAssistantId = "";
     pendingAssistantTs = "";
   }
+  let lastCommandMarker = null;
   for (const e of relevant) {
     const content = e.message?.content;
     const ts = e.timestamp ?? "";
     if (e.type === "user") {
+      if (e.isMeta) continue;
       if (typeof content === "string" && content.trim()) {
+        const text = content.trim();
+        if (text.startsWith("<command-name>") || text.startsWith("<local-command-caveat>")) {
+          const cmdMatch = text.match(/<command-name>([^<]*)<\/command-name>/);
+          if (cmdMatch) {
+            lastCommandMarker = {
+              id: e.uuid ?? `cmd-${ts}`,
+              type: "command",
+              timestamp: ts,
+              details: cmdMatch[1].trim()
+            };
+            markers.push(lastCommandMarker);
+          }
+          continue;
+        }
+        if (text.startsWith("<local-command-stdout>")) {
+          const stdoutMatch = text.match(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/);
+          if (stdoutMatch && lastCommandMarker) {
+            lastCommandMarker.output = stdoutMatch[1].trim();
+          }
+          continue;
+        }
+        lastCommandMarker = null;
         flushExchange();
         pendingUserMsg = {
           id: e.uuid ?? "",
           role: "user",
           timestamp: ts,
-          textContent: content.trim(),
+          textContent: text,
           toolCalls: []
         };
       }

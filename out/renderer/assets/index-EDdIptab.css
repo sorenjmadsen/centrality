@@ -685,7 +685,6 @@ svg.react-flow__connectionline {
     --color-red-500: oklch(63.7% .237 25.331);
     --color-red-900: oklch(39.6% .141 25.723);
     --color-red-950: oklch(25.8% .092 26.042);
-    --color-orange-600: oklch(64.6% .222 41.116);
     --color-amber-400: oklch(82.8% .189 84.429);
     --color-amber-600: oklch(66.6% .179 58.318);
     --color-amber-800: oklch(47.3% .137 46.201);
@@ -1210,6 +1209,10 @@ svg.react-flow__connectionline {
     height: calc(var(--spacing) * 5);
   }
 
+  .h-7 {
+    height: calc(var(--spacing) * 7);
+  }
+
   .h-9 {
     height: calc(var(--spacing) * 9);
   }
@@ -1238,12 +1241,12 @@ svg.react-flow__connectionline {
     width: calc(var(--spacing) * 1);
   }
 
-  .w-3 {
-    width: calc(var(--spacing) * 3);
-  }
-
   .w-4 {
     width: calc(var(--spacing) * 4);
+  }
+
+  .w-7 {
+    width: calc(var(--spacing) * 7);
   }
 
   .w-14 {
@@ -1272,14 +1275,6 @@ svg.react-flow__connectionline {
 
   .max-w-\[160px\] {
     max-width: 160px;
-  }
-
-  .max-w-\[200px\] {
-    max-width: 200px;
-  }
-
-  .max-w-\[220px\] {
-    max-width: 220px;
   }
 
   .max-w-none {
@@ -1510,10 +1505,6 @@ svg.react-flow__connectionline {
     border-color: var(--color-green-800);
   }
 
-  .border-orange-600 {
-    border-color: var(--color-orange-600);
-  }
-
   .border-purple-500 {
     border-color: var(--color-purple-500);
   }
@@ -1582,6 +1573,16 @@ svg.react-flow__connectionline {
 
   .border-zinc-800 {
     border-color: var(--color-zinc-800);
+  }
+
+  .border-zinc-800\/60 {
+    border-color: #27272a99;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-zinc-800\/60 {
+      border-color: color-mix(in oklab, var(--color-zinc-800) 60%, transparent);
+    }
   }
 
   .border-zinc-800\/80 {
@@ -1944,10 +1945,6 @@ svg.react-flow__connectionline {
   .text-xs {
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
-  }
-
-  .text-\[9px\] {
-    font-size: 9px;
   }
 
   .text-\[10px\] {
@@ -2405,10 +2402,6 @@ svg.react-flow__connectionline {
     }
   }
 
-  .focus\:border-zinc-500:focus {
-    border-color: var(--color-zinc-500);
-  }
-
   .focus\:outline-none:focus {
     --tw-outline-style: none;
     outline-style: none;
@@ -2439,12 +2432,22 @@ svg.react-flow__connectionline {
 
 .pulse-ring {
   pointer-events: none;
-  border: 2px solid #facc15d9;
+  border: 2px solid #bae6fde6;
   border-radius: 7px;
   animation: 1.2s ease-in-out infinite pulse-opacity;
   position: absolute;
   inset: -3px;
-  box-shadow: 0 0 10px #facc158c, 0 0 24px #facc154d;
+  box-shadow: 0 0 10px #bae6fd80, 0 0 24px #93c5fd4d;
+}
+
+.pulse-ring-git {
+  pointer-events: none;
+  border: 2px solid #a78bfae6;
+  border-radius: 7px;
+  animation: 1.2s ease-in-out infinite pulse-opacity;
+  position: absolute;
+  inset: -3px;
+  box-shadow: 0 0 10px #a78bfa99, 0 0 24px #8b5cf659;
 }
 
 .react-flow__controls button {

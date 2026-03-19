@@ -38,6 +38,7 @@ export function SymbolNode({ data }: NodeProps) {
       style={{ borderColor, height: 40 }}
     >
       {d.isPulsing && <div className="pulse-ring" style={{ animationDelay: `${d.pulseDelay}ms`, borderRadius: 5 }} />}
+      {d.gitPulsing && <div className="pulse-ring-git" style={{ borderRadius: 5 }} />}
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
 
       <span className={`font-bold font-mono text-sm w-4 shrink-0 ${iconColor}`}>{icon}</span>

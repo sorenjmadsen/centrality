@@ -27,9 +27,10 @@ export interface ChatExchange {
 
 export interface ChatMarker {
   id: string
-  type: 'compaction' | 'model_switch'
+  type: 'compaction' | 'model_switch' | 'command'
   timestamp: string
-  details?: string
+  details?: string   // command name or model change description
+  output?: string    // command stdout (for 'command' type)
 }
 
 export interface PlaybackState {

@@ -5,12 +5,24 @@
   50% { opacity: 1; }
 }
 
+/* Exchange / playback pulse — blueish white */
 .pulse-ring {
   position: absolute;
   inset: -3px;
   border-radius: 7px;
-  border: 2px solid rgba(250, 204, 21, 0.85);
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.55), 0 0 24px rgba(250, 204, 21, 0.3);
+  border: 2px solid rgba(186, 230, 253, 0.9);
+  box-shadow: 0 0 10px rgba(186, 230, 253, 0.5), 0 0 24px rgba(147, 197, 253, 0.3);
+  pointer-events: none;
+  animation: pulse-opacity 1.2s ease-in-out infinite;
+}
+
+/* Git commit pulse — violet */
+.pulse-ring-git {
+  position: absolute;
+  inset: -3px;
+  border-radius: 7px;
+  border: 2px solid rgba(167, 139, 250, 0.9);
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.6), 0 0 24px rgba(139, 92, 246, 0.35);
   pointer-events: none;
   animation: pulse-opacity 1.2s ease-in-out infinite;
 }
