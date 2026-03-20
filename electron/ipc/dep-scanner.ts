@@ -8,8 +8,6 @@ export interface DepEdge {
 
 const TS_JS_IMPORT_RE = /(?:import|export)\s+(?:.*?\s+from\s+)?['"]([^'"]+)['"]/g
 const TS_JS_REQUIRE_RE = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g
-const PY_FROM_RE = /^from\s+(\.+[\w./]*)\s+import/gm
-const PY_IMPORT_RE = /^import\s+([\w.]+)/gm
 
 const TS_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']
 const PY_EXTENSIONS = ['.py']
@@ -81,32 +79,42 @@ function parsePyImports(
   const edges: DepEdge[] = []
   const sourceDir = dirname(join(projectPath, sourceFile))
 
-  PY_FROM_RE.lastIndex = 0
+  function tryResolve(relPath: string): string | null {
+    for (const candidate of [relPath + '.py', relPath + '/__init__.py']) {
+      if (knownFiles.has(candidate) && candidate !== sourceFile) return candidate
+    }
+    return null
+  }
+
   let m: RegExpExecArray | null
-  while ((m = PY_FROM_RE.exec(content)) !== null) {
+
+  // Relative imports: from .module import X, from ..pkg.sub import Y
+  const relFromRe = /^from\s+(\.+[\w.]*)\s+import/gm
+  while ((m = relFromRe.exec(content)) !== null) {
     const mod = m[1]
-    if (!mod) continue
-
-    // Count leading dots for relative level
-    const dots = mod.match(/^\.+/)?.[0].length ?? 0
-    if (dots === 0) continue
-
+    const dots = mod.match(/^\.+/)![0].length
     const modPart = mod.slice(dots).replace(/\./g, '/')
     let base = sourceDir
     for (let i = 1; i < dots; i++) base = dirname(base)
-    const importPath = modPart ? join(base, modPart) : base
-    const relPath = relative(projectPath, importPath)
+    const absPath = modPart ? join(base, modPart) : base
+    const relPath = relative(projectPath, absPath)
+    const target = tryResolve(relPath)
+    if (target) edges.push({ source: sourceFile, target })
+  }
 
-    const candidates = [
-      relPath + '.py',
-      relPath + '/__init__.py',
-    ]
-    for (const candidate of candidates) {
-      if (knownFiles.has(candidate) && candidate !== sourceFile) {
-        edges.push({ source: sourceFile, target: candidate })
-        break
-      }
-    }
+  // Absolute imports: from mypackage.module import X
+  // Only creates an edge if the module resolves to a known file (filters out third-party)
+  const absFromRe = /^from\s+([A-Za-z_][\w.]*)\s+import/gm
+  while ((m = absFromRe.exec(content)) !== null) {
+    const target = tryResolve(m[1].replace(/\./g, '/'))
+    if (target) edges.push({ source: sourceFile, target })
+  }
+
+  // Absolute imports: import mypackage.module
+  const absImportRe = /^import\s+([A-Za-z_][\w.]*)/gm
+  while ((m = absImportRe.exec(content)) !== null) {
+    const target = tryResolve(m[1].replace(/\./g, '/'))
+    if (target) edges.push({ source: sourceFile, target })
   }
 
   return edges
