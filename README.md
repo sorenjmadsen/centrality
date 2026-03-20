@@ -1,3 +1,3 @@
 # claude-vertex
 
-Vertex is a desktop that allows you to trace how Claude uses and modifies your codebase.
+Vertex is a desktop app that allows you to trace how Claude uses and modifies your codebase.
