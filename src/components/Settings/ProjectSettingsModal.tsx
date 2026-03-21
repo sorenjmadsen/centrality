@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Plus } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useTabStores, useUiStore } from '../../stores/tab-stores'
@@ -18,6 +18,7 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS)
   const [patternInput, setPatternInput] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const { loadProjectSettings, saveProjectSettings, loadGlobalSettings, saveGlobalSettings } = useSettingsStore()
   const tabStores = useTabStores()
@@ -50,17 +51,20 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
 
   async function handleSave() {
     setSaving(true)
+    setError(null)
     try {
       await saveProjectSettings(encodedName, projectSettings)
       await saveGlobalSettings(globalSettings)
-      // Re-scan with new settings applied
-      if (selectedProjectPath) {
-        tabStores.codebase.getState().scanProject(selectedProjectPath, encodedName)
-        tabStores.git.getState().loadCommits(selectedProjectPath, encodedName)
-      }
-      onClose()
-    } finally {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed')
       setSaving(false)
+      return
+    }
+    // Close first, then trigger rescan (fire-and-forget)
+    onClose()
+    if (selectedProjectPath) {
+      tabStores.codebase.getState().scanProject(selectedProjectPath, encodedName)
+      tabStores.git.getState().loadCommits(selectedProjectPath, encodedName)
     }
   }
 
@@ -258,7 +262,9 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-5 py-4 border-t border-zinc-700">
+        <div className="flex items-center justify-between gap-2 px-5 py-4 border-t border-zinc-700">
+          {error && <span className="text-xs text-red-400 flex-1">{error}</span>}
+          <div className="flex gap-2 ml-auto">
           <button
             onClick={onClose}
             className="px-4 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -272,6 +278,7 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
           >
             {saving ? 'Saving…' : 'Save & Rescan'}
           </button>
+          </div>
         </div>
       </div>
     </div>

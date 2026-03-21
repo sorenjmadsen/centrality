@@ -26,6 +26,7 @@ const path = require("path");
 const fs = require("fs");
 const readline = require("readline");
 const os = require("os");
+const ignore = require("ignore");
 const Parser = require("web-tree-sitter");
 const chokidar = require("chokidar");
 const simpleGit = require("simple-git");
@@ -76,19 +77,20 @@ function tryResolve(base, remaining) {
   }
   return null;
 }
-function listProjects() {
-  const claudeDir = path__namespace.join(os__namespace.homedir(), ".claude", "projects");
-  if (!fs__namespace.existsSync(claudeDir)) return [];
-  return fs__namespace.readdirSync(claudeDir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => {
+function listProjects(claudeDir) {
+  const dir = claudeDir ?? path__namespace.join(os__namespace.homedir(), ".claude", "projects");
+  if (!fs__namespace.existsSync(dir)) return [];
+  return fs__namespace.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => {
     const projectPath = resolveProjectPath(e.name);
     return { encodedName: e.name, projectPath, displayName: projectPath };
   });
 }
-function listSessions(encodedName) {
-  const claudeDir = path__namespace.join(os__namespace.homedir(), ".claude", "projects", encodedName);
-  if (!fs__namespace.existsSync(claudeDir)) return [];
-  return fs__namespace.readdirSync(claudeDir).filter((f) => f.endsWith(".jsonl")).map((f) => {
-    const filePath = path__namespace.join(claudeDir, f);
+function listSessions(encodedName, claudeDir) {
+  const projectsDir = claudeDir ?? path__namespace.join(os__namespace.homedir(), ".claude", "projects");
+  const sessionDir = path__namespace.join(projectsDir, encodedName);
+  if (!fs__namespace.existsSync(sessionDir)) return [];
+  return fs__namespace.readdirSync(sessionDir).filter((f) => f.endsWith(".jsonl")).map((f) => {
+    const filePath = path__namespace.join(sessionDir, f);
     const stat = fs__namespace.statSync(filePath);
     return { sessionId: f.replace(".jsonl", ""), filePath, mtime: stat.mtimeMs };
   }).sort((a, b) => b.mtime - a.mtime);
@@ -528,6 +530,21 @@ const EXCLUDE = /* @__PURE__ */ new Set([
   ".venv",
   "venv"
 ]);
+function buildExcludeSet(extraExclude) {
+  if (!extraExclude?.length) return EXCLUDE;
+  return /* @__PURE__ */ new Set([...EXCLUDE, ...extraExclude]);
+}
+function loadGitignoreAt(dir) {
+  const gitignorePath = path__namespace.join(dir, ".gitignore");
+  if (!fs__namespace.existsSync(gitignorePath)) return null;
+  try {
+    const ig = ignore();
+    ig.add(fs__namespace.readFileSync(gitignorePath, "utf8"));
+    return ig;
+  } catch {
+    return null;
+  }
+}
 const LANG_MAP = {
   ts: "typescript",
   tsx: "typescript",
@@ -558,8 +575,9 @@ function getLanguage(filename) {
   const ext = filename.split(".").pop()?.toLowerCase();
   return ext ? LANG_MAP[ext] : void 0;
 }
-async function scanCodebase(projectPath) {
+async function scanCodebase(projectPath, extraExclude) {
   if (!fs__namespace.existsSync(projectPath)) return [];
+  const exclude = buildExcludeSet(extraExclude);
   const nodes = [];
   const rootName = path__namespace.basename(projectPath);
   const rootNode = {
@@ -571,18 +589,38 @@ async function scanCodebase(projectPath) {
   };
   nodes.push(rootNode);
   const filePaths = [];
+  const igStack = [];
+  const rootIg = loadGitignoreAt(projectPath);
+  if (rootIg) igStack.push({ baseRel: "", ig: rootIg });
+  function isIgnored(relPath) {
+    for (const { baseRel, ig } of igStack) {
+      const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath;
+      if (ig.ignores(rel)) return true;
+    }
+    return false;
+  }
   function walkSync(absPath, relPath, parentId) {
+    let pushedIg = false;
+    if (relPath !== "") {
+      const dirIg = loadGitignoreAt(absPath);
+      if (dirIg) {
+        igStack.push({ baseRel: relPath, ig: dirIg });
+        pushedIg = true;
+      }
+    }
     let entries;
     try {
       entries = fs__namespace.readdirSync(absPath, { withFileTypes: true });
     } catch {
+      if (pushedIg) igStack.pop();
       return;
     }
     const children = [];
     for (const entry of entries) {
-      if (EXCLUDE.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (exclude.has(entry.name) || entry.name.startsWith(".")) continue;
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name;
       const childAbs = path__namespace.join(absPath, entry.name);
+      if (isIgnored(childRel)) continue;
       if (entry.isDirectory()) {
         const dirNode = {
           id: childRel,
@@ -617,6 +655,7 @@ async function scanCodebase(projectPath) {
       const parentNode = nodes.find((n) => n.id === parentId);
       if (parentNode) parentNode.children.push(...children);
     }
+    if (pushedIg) igStack.pop();
   }
   walkSync(projectPath, "", "");
   const CONCURRENCY = 8;
@@ -716,13 +755,14 @@ function startSessionWatcher() {
 function isGitRepo(projectPath) {
   return fs__namespace.existsSync(path__namespace.join(projectPath, ".git"));
 }
-async function getGitLog(projectPath) {
+async function getGitLog(projectPath, historyDays) {
   if (!isGitRepo(projectPath)) return [];
   try {
     const git = simpleGit(projectPath);
+    const countArg = historyDays != null ? `--after=${historyDays}.days.ago` : "--max-count=200";
     const rawOutput = await git.raw([
       "log",
-      "--max-count=200",
+      countArg,
       "--name-only",
       "--pretty=format:COMMIT|%H|%h|%aI|%an|%s"
     ]);
@@ -1008,6 +1048,40 @@ async function captureScreenshot() {
   fs.writeFileSync(filePath, image.toPNG());
   return { success: true, filePath };
 }
+const DEFAULT_PROJECT_SETTINGS = {
+  excludePatterns: [],
+  gitHistoryDays: null,
+  accentColor: null
+};
+const DEFAULT_GLOBAL_SETTINGS = {
+  claudeDir: null
+};
+const BASE_DIR = path__namespace.join(os__namespace.homedir(), ".claude-vertex");
+const PROJECTS_DIR = path__namespace.join(BASE_DIR, "projects");
+const GLOBAL_PATH = path__namespace.join(BASE_DIR, "config.json");
+function readJson(filePath, defaults) {
+  try {
+    return { ...defaults, ...JSON.parse(fs__namespace.readFileSync(filePath, "utf8")) };
+  } catch {
+    return { ...defaults };
+  }
+}
+function writeJson(filePath, data) {
+  fs__namespace.mkdirSync(path__namespace.dirname(filePath), { recursive: true });
+  fs__namespace.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+function getProjectSettings(encodedName) {
+  return readJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), DEFAULT_PROJECT_SETTINGS);
+}
+function setProjectSettings(encodedName, settings) {
+  writeJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), settings);
+}
+function getGlobalSettings() {
+  return readJson(GLOBAL_PATH, DEFAULT_GLOBAL_SETTINGS);
+}
+function setGlobalSettings(settings) {
+  writeJson(GLOBAL_PATH, settings);
+}
 const isDev = process.env["NODE_ENV"] === "development";
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
@@ -1032,22 +1106,38 @@ function createWindow() {
   }
 }
 function registerIpcHandlers() {
-  electron.ipcMain.handle("projects:list", () => listProjects());
   electron.ipcMain.handle(
-    "session:list",
-    (_event, encodedName) => listSessions(encodedName)
+    "settings:get-project",
+    (_event, encodedName) => getProjectSettings(encodedName)
   );
+  electron.ipcMain.handle(
+    "settings:set-project",
+    (_event, encodedName, settings) => setProjectSettings(encodedName, settings)
+  );
+  electron.ipcMain.handle("settings:get-global", () => getGlobalSettings());
+  electron.ipcMain.handle(
+    "settings:set-global",
+    (_event, settings) => setGlobalSettings(settings)
+  );
+  electron.ipcMain.handle("projects:list", () => {
+    const { claudeDir } = getGlobalSettings();
+    return listProjects(claudeDir ?? void 0);
+  });
+  electron.ipcMain.handle("session:list", (_event, encodedName) => {
+    const { claudeDir } = getGlobalSettings();
+    return listSessions(encodedName, claudeDir ?? void 0);
+  });
   electron.ipcMain.handle("session:load", async (_event, filePath) => {
     return await parseSession(filePath);
   });
-  electron.ipcMain.handle(
-    "codebase:scan",
-    (_event, projectPath) => scanCodebase(projectPath)
-  );
-  electron.ipcMain.handle(
-    "git:log",
-    (_event, projectPath) => getGitLog(projectPath)
-  );
+  electron.ipcMain.handle("codebase:scan", (_event, projectPath, encodedName) => {
+    const { excludePatterns } = getProjectSettings(encodedName);
+    return scanCodebase(projectPath, excludePatterns.length ? excludePatterns : void 0);
+  });
+  electron.ipcMain.handle("git:log", (_event, projectPath, encodedName) => {
+    const { gitHistoryDays } = getProjectSettings(encodedName);
+    return getGitLog(projectPath, gitHistoryDays ?? void 0);
+  });
   electron.ipcMain.handle(
     "git:diff",
     (_event, projectPath, commitHash) => getGitDiff(projectPath, commitHash)
