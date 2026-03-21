@@ -3,6 +3,7 @@ import { RefreshCw } from 'lucide-react'
 import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
+import { SettingsButton } from './components/TopBar/SettingsButton'
 import { CodebaseGraph } from './components/Graph/CodebaseGraph'
 import { ChatPanel } from './components/ChatPanel/ChatPanel'
 import { PlaybackControls } from './components/ChatPanel/PlaybackControls'
@@ -97,6 +98,8 @@ function SessionView(): React.ReactElement {
             <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
           </button>
         )}
+        <div className="h-4 w-px bg-zinc-700 shrink-0" />
+        <SettingsButton />
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <ExportMenu />
       </header>

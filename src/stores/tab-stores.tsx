@@ -72,7 +72,7 @@ export interface CodebaseStore {
   rootIds: string[]
   isLoading: boolean
   restoredFromCache: boolean
-  scanProject(projectPath: string): Promise<void>
+  scanProject(projectPath: string, encodedName: string): Promise<void>
   clear(): void
 }
 
@@ -92,7 +92,7 @@ export interface GitStore {
   selectedCommitHash: string | null
   commitDiffs: Map<string, GitDiff>
   highlightedFiles: Set<string>
-  loadCommits(projectPath: string): Promise<void>
+  loadCommits(projectPath: string, encodedName: string): Promise<void>
   selectCommit(hash: string | null, projectPath: string): Promise<void>
   setCommits(commits: GitCommit[]): void
   clear(): void
@@ -208,10 +208,10 @@ function makeCodebaseStore(): StoreApi<CodebaseStore> {
     isLoading: false,
     restoredFromCache: false,
 
-    scanProject: async (projectPath: string) => {
+    scanProject: async (projectPath: string, encodedName: string) => {
       set({ isLoading: true, nodes: new Map(), rootIds: [] })
       try {
-        const raw = await window.api.scanCodebase(projectPath) as CodebaseNode[]
+        const raw = await window.api.scanCodebase(projectPath, encodedName) as CodebaseNode[]
         const nodes = new Map(raw.map(n => [n.id, n]))
         const rootIds = raw.filter(n => n.parent == null).map(n => n.id)
         set({ nodes, rootIds })
@@ -244,10 +244,10 @@ function makeGitStore(): StoreApi<GitStore> {
     commitDiffs: new Map(),
     highlightedFiles: new Set(),
 
-    loadCommits: async (projectPath: string) => {
+    loadCommits: async (projectPath: string, encodedName: string) => {
       set({ isLoading: true })
       try {
-        set({ commits: await window.api.gitLog(projectPath) as GitCommit[] })
+        set({ commits: await window.api.gitLog(projectPath, encodedName) as GitCommit[] })
       } finally {
         set({ isLoading: false })
       }

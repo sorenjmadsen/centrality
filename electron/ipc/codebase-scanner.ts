@@ -21,6 +21,11 @@ const EXCLUDE = new Set([
   '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
 ])
 
+function buildExcludeSet(extraExclude?: string[]): Set<string> {
+  if (!extraExclude?.length) return EXCLUDE
+  return new Set([...EXCLUDE, ...extraExclude])
+}
+
 // Loads a .gitignore file into an Ignore instance scoped to `dir`.
 // Returns null if no .gitignore exists there.
 function loadGitignoreAt(dir: string): Ignore | null {
@@ -54,9 +59,10 @@ function getLanguage(filename: string): string | undefined {
   return ext ? LANG_MAP[ext] : undefined
 }
 
-export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
+export async function scanCodebase(projectPath: string, extraExclude?: string[]): Promise<FsNode[]> {
   if (!fs.existsSync(projectPath)) return []
 
+  const exclude = buildExcludeSet(extraExclude)
   const nodes: FsNode[] = []
 
   // Add root node
@@ -108,7 +114,7 @@ export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
     const children: string[] = []
 
     for (const entry of entries) {
-      if (EXCLUDE.has(entry.name) || entry.name.startsWith('.')) continue
+      if (exclude.has(entry.name) || entry.name.startsWith('.')) continue
 
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name
       const childAbs = path.join(absPath, entry.name)

@@ -6,6 +6,11 @@ import { startSessionWatcher } from './ipc/session-watcher'
 import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher } from './ipc/git-integration'
 import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
+import {
+  getProjectSettings, setProjectSettings,
+  getGlobalSettings, setGlobalSettings,
+} from './ipc/settings-manager'
+import type { ProjectSettings, GlobalSettings } from '../src/types/settings'
 
 const isDev = process.env['NODE_ENV'] === 'development'
 
@@ -36,23 +41,43 @@ function createWindow(): void {
 }
 
 function registerIpcHandlers(): void {
-  ipcMain.handle('projects:list', () => listProjects())
-
-  ipcMain.handle('session:list', (_event, encodedName: string) =>
-    listSessions(encodedName)
+  ipcMain.handle('settings:get-project', (_event, encodedName: string) =>
+    getProjectSettings(encodedName)
   )
+
+  ipcMain.handle('settings:set-project', (_event, encodedName: string, settings: ProjectSettings) =>
+    setProjectSettings(encodedName, settings)
+  )
+
+  ipcMain.handle('settings:get-global', () => getGlobalSettings())
+
+  ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) =>
+    setGlobalSettings(settings)
+  )
+
+  ipcMain.handle('projects:list', () => {
+    const { claudeDir } = getGlobalSettings()
+    return listProjects(claudeDir ?? undefined)
+  })
+
+  ipcMain.handle('session:list', (_event, encodedName: string) => {
+    const { claudeDir } = getGlobalSettings()
+    return listSessions(encodedName, claudeDir ?? undefined)
+  })
 
   ipcMain.handle('session:load', async (_event, filePath: string) => {
     return await parseSession(filePath)
   })
 
-  ipcMain.handle('codebase:scan', (_event, projectPath: string) =>
-    scanCodebase(projectPath)
-  )
+  ipcMain.handle('codebase:scan', (_event, projectPath: string, encodedName: string) => {
+    const { excludePatterns } = getProjectSettings(encodedName)
+    return scanCodebase(projectPath, excludePatterns.length ? excludePatterns : undefined)
+  })
 
-  ipcMain.handle('git:log', (_event, projectPath: string) =>
-    getGitLog(projectPath)
-  )
+  ipcMain.handle('git:log', (_event, projectPath: string, encodedName: string) => {
+    const { gitHistoryDays } = getProjectSettings(encodedName)
+    return getGitLog(projectPath, gitHistoryDays ?? undefined)
+  })
 
   ipcMain.handle('git:diff', (_event, projectPath: string, commitHash: string) =>
     getGitDiff(projectPath, commitHash)

@@ -8,7 +8,7 @@ interface GitStore {
   commitDiffs: Map<string, GitDiff>   // hash → diff (cache)
   highlightedFiles: Set<string>       // relative paths highlighted by selected commit
 
-  loadCommits(projectPath: string): Promise<void>
+  loadCommits(projectPath: string, encodedName: string): Promise<void>
   selectCommit(hash: string | null, projectPath: string): Promise<void>
   setCommits(commits: GitCommit[]): void
   clear(): void
@@ -21,10 +21,10 @@ export const useGitStore = create<GitStore>((set, get) => ({
   commitDiffs: new Map(),
   highlightedFiles: new Set(),
 
-  loadCommits: async (projectPath: string) => {
+  loadCommits: async (projectPath: string, encodedName: string) => {
     set({ isLoading: true })
     try {
-      const raw = await window.api.gitLog(projectPath) as GitCommit[]
+      const raw = await window.api.gitLog(projectPath, encodedName) as GitCommit[]
       set({ commits: raw })
     } finally {
       set({ isLoading: false })

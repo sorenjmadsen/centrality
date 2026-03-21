@@ -1,6 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 export type IpcChannels =
+  | 'settings:get-project'
+  | 'settings:set-project'
+  | 'settings:get-global'
+  | 'settings:set-global'
   | 'projects:list'
   | 'session:list'
   | 'session:load'
@@ -11,15 +15,19 @@ export type IpcChannels =
   | 'export:screenshot'
 
 contextBridge.exposeInMainWorld('api', {
+  getProjectSettings: (encodedName: string) => ipcRenderer.invoke('settings:get-project', encodedName),
+  setProjectSettings: (encodedName: string, settings: unknown) => ipcRenderer.invoke('settings:set-project', encodedName, settings),
+  getGlobalSettings: () => ipcRenderer.invoke('settings:get-global'),
+  setGlobalSettings: (settings: unknown) => ipcRenderer.invoke('settings:set-global', settings),
   listProjects: () => ipcRenderer.invoke('projects:list'),
-  listSessions: (projectPath: string) => ipcRenderer.invoke('session:list', projectPath),
+  listSessions: (encodedName: string) => ipcRenderer.invoke('session:list', encodedName),
   loadSession: (sessionPath: string) => ipcRenderer.invoke('session:load', sessionPath),
-  scanCodebase: (projectPath: string) => ipcRenderer.invoke('codebase:scan', projectPath),
+  scanCodebase: (projectPath: string, encodedName: string) => ipcRenderer.invoke('codebase:scan', projectPath, encodedName),
   onSessionUpdate: (callback: (data: unknown) => void) => {
     ipcRenderer.on('session:update', (_event, data) => callback(data))
     return () => ipcRenderer.removeAllListeners('session:update')
   },
-  gitLog: (projectPath: string) => ipcRenderer.invoke('git:log', projectPath),
+  gitLog: (projectPath: string, encodedName: string) => ipcRenderer.invoke('git:log', projectPath, encodedName),
   gitDiff: (projectPath: string, commitHash: string) => ipcRenderer.invoke('git:diff', projectPath, commitHash),
   gitInlineDiff: (oldStr: string, newStr: string, filePath: string) => ipcRenderer.invoke('git:inline-diff', oldStr, newStr, filePath),
   gitWatch: (projectPath: string) => ipcRenderer.invoke('git:watch', projectPath),
