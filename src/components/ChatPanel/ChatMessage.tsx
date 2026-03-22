@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ChatMessage as ChatMessageType } from '../../types/chat'
-import { ToolCallBlock } from './ToolCallBlock'
+import { ExchangeChangeSummary } from './ExchangeChangeSummary'
 
 const COLLAPSE_THRESHOLD = 300 // chars
 
@@ -65,13 +65,7 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
         </div>
       )}
 
-      {message.toolCalls.length > 0 && (
-        <div className="mt-1.5 space-y-0.5">
-          {message.toolCalls.map(tc => (
-            <ToolCallBlock key={tc.id} toolCall={tc} />
-          ))}
-        </div>
-      )}
+      <ExchangeChangeSummary toolCalls={message.toolCalls} />
     </div>
   )
 }
