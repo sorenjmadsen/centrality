@@ -4,6 +4,7 @@ import { listProjects, listSessions, parseSession } from './ipc/jsonl-parser'
 import { scanCodebase } from './ipc/codebase-scanner'
 import { startSessionWatcher } from './ipc/session-watcher'
 import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher } from './ipc/git-integration'
+import { startCodebaseWatcher, stopCodebaseWatcher } from './ipc/codebase-watcher'
 import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
 import {
@@ -92,6 +93,14 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('git:watch', (_event, projectPath: string) => {
     startGitWatcher(projectPath)
+  })
+
+  ipcMain.handle('codebase:watch', (_event, projectPath: string, encodedName: string) => {
+    startCodebaseWatcher(projectPath, encodedName)
+  })
+
+  ipcMain.handle('codebase:unwatch', (_event, projectPath: string) => {
+    stopCodebaseWatcher(projectPath)
   })
 
   ipcMain.handle('dep:scan', (_event, projectPath: string, filePaths: string[]) =>

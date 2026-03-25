@@ -10,6 +10,8 @@ export type IpcChannels =
   | 'session:load'
   | 'session:watch'
   | 'codebase:scan'
+  | 'codebase:watch'
+  | 'codebase:unwatch'
   | 'dep:scan'
   | 'export:markdown'
   | 'export:screenshot'
@@ -26,6 +28,14 @@ contextBridge.exposeInMainWorld('api', {
   onSessionUpdate: (callback: (data: unknown) => void) => {
     ipcRenderer.on('session:update', (_event, data) => callback(data))
     return () => ipcRenderer.removeAllListeners('session:update')
+  },
+  watchCodebase: (projectPath: string, encodedName: string) =>
+    ipcRenderer.invoke('codebase:watch', projectPath, encodedName),
+  unwatchCodebase: (projectPath: string) =>
+    ipcRenderer.invoke('codebase:unwatch', projectPath),
+  onCodebaseUpdate: (callback: (data: unknown) => void) => {
+    ipcRenderer.on('codebase:update', (_event, data) => callback(data))
+    return () => ipcRenderer.removeAllListeners('codebase:update')
   },
   gitLog: (projectPath: string, encodedName: string) => ipcRenderer.invoke('git:log', projectPath, encodedName),
   gitDiff: (projectPath: string, commitHash: string) => ipcRenderer.invoke('git:diff', projectPath, commitHash),

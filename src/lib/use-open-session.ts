@@ -142,6 +142,7 @@ export function useOpenSession() {
         useTabCacheStore.getState().patch(params.sessionPath, { commits })
       })
       window.api.gitWatch(params.projectPath)
+      window.api.watchCodebase(params.projectPath, params.projectEncoded)
     }
 
     tabStores.ui.getState().setSelectedSession(params.sessionPath)

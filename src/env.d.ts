@@ -9,6 +9,9 @@ interface Window {
     loadSession(filePath: string): Promise<unknown>
     scanCodebase(projectPath: string, encodedName: string): Promise<unknown>
     onSessionUpdate(callback: (data: unknown) => void): () => void
+    watchCodebase(projectPath: string, encodedName: string): Promise<void>
+    unwatchCodebase(projectPath: string): Promise<void>
+    onCodebaseUpdate(callback: (data: unknown) => void): () => void
     gitLog(projectPath: string, encodedName: string): Promise<unknown>
     gitDiff(projectPath: string, commitHash: string): Promise<unknown>
     gitInlineDiff(oldStr: string, newStr: string, filePath: string): Promise<unknown>

@@ -204,14 +204,37 @@ export function useGraphSync() {
       decorated, rootIds, new Set(highlightedFiles), granularity, depEdges
     )
 
-    // Apply saved node positions from localStorage
+    // Apply saved node positions from localStorage.
+    // New nodes (no saved position) are stacked below all saved nodes to avoid overlaps.
     if (selectedSessionPath) {
       const savedKey = `claude-vertex:positions:${selectedSessionPath}:${granularity}`
       try {
         const saved = JSON.parse(localStorage.getItem(savedKey) ?? '{}') as Record<string, { x: number; y: number }>
         if (Object.keys(saved).length > 0) {
+          let maxSavedBottom = -Infinity
+          const unsavedNodes: Node[] = []
+
           for (const n of rfNodes) {
-            if (saved[n.id]) n.position = saved[n.id]
+            if (saved[n.id]) {
+              n.position = saved[n.id]
+              const bottom = n.position.y + 68  // FILE_HEIGHT is a safe upper bound
+              if (bottom > maxSavedBottom) maxSavedBottom = bottom
+            } else {
+              unsavedNodes.push(n)
+            }
+          }
+
+          // Stack new nodes below the lowest saved node
+          if (unsavedNodes.length > 0 && maxSavedBottom !== -Infinity) {
+            let yAccum = maxSavedBottom + 20
+            const newSaved = { ...saved }
+            for (const n of unsavedNodes) {
+              n.position = { x: n.position.x, y: yAccum }
+              newSaved[n.id] = n.position
+              yAccum += 68 + 10  // FILE_HEIGHT + V_GAP
+            }
+            // Persist so new positions survive the next rebuild
+            localStorage.setItem(savedKey, JSON.stringify(newSaved))
           }
         }
       } catch { /* ignore */ }

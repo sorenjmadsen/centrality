@@ -16,6 +16,7 @@ import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useChatSto
 import type { GitCommit } from './types/git'
 import type { ChatExchange, ChatMarker } from './types/chat'
 import type { ClaudeAction } from './types/actions'
+import type { CodebaseNode } from './types/codebase'
 
 const MIN_CHAT_WIDTH = 280
 const MAX_CHAT_WIDTH = 800
@@ -154,15 +155,61 @@ function AppInner(): React.ReactElement {
     return window.api.onSessionUpdate((data: unknown) => {
       const d = data as { filePath: string; exchanges: ChatExchange[]; actions: ClaudeAction[]; markers?: ChatMarker[] }
       for (const [, stores] of tabStoreMap) {
-        if (stores.ui.getState().selectedSessionPath === d.filePath) {
+        const storedPath = stores.ui.getState().selectedSessionPath
+        // Strip /private prefix to handle macOS symlink: /private/Users/... vs /Users/...
+        const normalizedStored = storedPath?.replace(/^\/private/, '') ?? null
+        const normalizedIncoming = d.filePath.replace(/^\/private/, '')
+        if (normalizedStored === normalizedIncoming) {
+          const last = d.exchanges[d.exchanges.length - 1]
+          // Skip if the last exchange is clearly mid-stream: assistant has no text,
+          // no tool calls, and no actions yet.
+          if (last &&
+              !last.assistantMessage.textContent.trim() &&
+              last.assistantMessage.toolCalls.length === 0 &&
+              last.actions.length === 0) {
+            continue
+          }
+
           const current = stores.chat.getState().exchanges
+          const currentLast = current[current.length - 1]
           const isNew = d.exchanges.length !== current.length ||
-            (d.exchanges.length > 0 && current.length > 0 &&
-              d.exchanges[d.exchanges.length - 1].id !== current[current.length - 1].id)
+            (last && currentLast && (
+              last.id !== currentLast.id ||
+              // Also update when existing exchange's content grows (response completed)
+              last.assistantMessage.textContent.length > currentLast.assistantMessage.textContent.length ||
+              last.assistantMessage.toolCalls.length > currentLast.assistantMessage.toolCalls.length
+            ))
           if (isNew) {
+            const prevLastId = current[current.length - 1]?.id ?? null
+            const prevLastIdx = current.length - 1
+            const uiState = stores.ui.getState()
+            const userIsAtLatest =
+              (uiState.selectedExchangeId === null && uiState.playbackIndex === null) ||
+              uiState.selectedExchangeId === prevLastId ||
+              uiState.playbackIndex === prevLastIdx
             stores.chat.getState().setExchanges(d.exchanges, d.markers ?? [])
             stores.session.setState({ actions: d.actions })
+            if (userIsAtLatest && d.exchanges.length > 0) {
+              const newLastIdx = d.exchanges.length - 1
+              uiState.setSelectedExchange(d.exchanges[newLastIdx].id)
+              uiState.setPlaybackIndex(newLastIdx)
+            }
           }
+        }
+      }
+    })
+  }, [])
+
+  // Live codebase update listener — rescans triggered by file changes in the project directory
+  React.useEffect(() => {
+    return window.api.onCodebaseUpdate((data: unknown) => {
+      const d = data as { projectPath: string; nodes: CodebaseNode[] }
+      for (const [, stores] of tabStoreMap) {
+        if (stores.ui.getState().selectedProjectPath === d.projectPath) {
+          const nodeMap = new Map(d.nodes.map(n => [n.id, n]))
+          const rootIds = d.nodes.filter(n => n.parent == null).map(n => n.id)
+          // Set restoredFromCache: false so useGraphSync Effect 1 does not skip the rebuild
+          stores.codebase.setState({ nodes: nodeMap, rootIds, restoredFromCache: false })
         }
       }
     })

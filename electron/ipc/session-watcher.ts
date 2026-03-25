@@ -5,22 +5,8 @@ import { BrowserWindow } from 'electron'
 import chokidar from 'chokidar'
 import { parseSession } from './jsonl-parser'
 
-// Track byte offsets per file to efficiently tail new lines
-const fileOffsets = new Map<string, number>()
-
-async function tailNewLines(filePath: string): Promise<string[]> {
-  const offset = fileOffsets.get(filePath) ?? 0
-  const stat = fs.statSync(filePath)
-  if (stat.size <= offset) return []
-
-  const buf = Buffer.alloc(stat.size - offset)
-  const fd = fs.openSync(filePath, 'r')
-  fs.readSync(fd, buf, 0, buf.length, offset)
-  fs.closeSync(fd)
-
-  fileOffsets.set(filePath, stat.size)
-  return buf.toString('utf8').split('\n').filter(l => l.trim())
-}
+// Per-file debounce timers (100ms)
+const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
 function sendToRenderer(channel: string, data: unknown) {
   BrowserWindow.getAllWindows().forEach(w => {
@@ -28,36 +14,45 @@ function sendToRenderer(channel: string, data: unknown) {
   })
 }
 
+// Resolve the canonical path, falling back to the input on failure.
+// On macOS, this resolves /Users → /private/Users so paths are consistent.
+function tryRealpath(p: string): string {
+  try { return fs.realpathSync(p) } catch { return p }
+}
+
 export function startSessionWatcher(): () => void {
-  const claudeDir = path.join(os.homedir(), '.claude', 'projects')
-  if (!fs.existsSync(claudeDir)) return () => {}
+  const rawClaudeDir = path.join(os.homedir(), '.claude', 'projects')
+  if (!fs.existsSync(rawClaudeDir)) return () => {}
+  const claudeDir = tryRealpath(rawClaudeDir)
 
-  const watcher = chokidar.watch(`${claudeDir}/**/*.jsonl`, {
+  // Watch the directory directly (not a glob) — more reliable with macOS FSEvents.
+  // Glob patterns can suppress FSEvents notifications on macOS.
+  const watcher = chokidar.watch(claudeDir, {
     persistent: true,
-    ignoreInitial: true,   // don't fire for existing files on startup
-    awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 },
+    ignoreInitial: true,
+    depth: 2,  // project-dir (depth 0) → session-dir (depth 1) → *.jsonl (depth 2)
   })
 
-  watcher.on('add', async (filePath: string) => {
-    // New session file — initialize offset and parse
-    try {
-      const stat = fs.statSync(filePath)
-      fileOffsets.set(filePath, stat.size)
-      const result = await parseSession(filePath)
-      sendToRenderer('session:new', { filePath, ...result })
-    } catch { /* ignore */ }
-  })
+  function scheduleReparse(filePath: string, channel: 'session:new' | 'session:update') {
+    const existing = debounceTimers.get(filePath)
+    if (existing) clearTimeout(existing)
+    const timer = setTimeout(async () => {
+      debounceTimers.delete(filePath)
+      try {
+        const realPath = tryRealpath(filePath)
+        const result = await parseSession(realPath)
+        sendToRenderer(channel, { filePath: realPath, ...result })
+      } catch { /* ignore */ }
+    }, 100)
+    debounceTimers.set(filePath, timer)
+  }
 
-  watcher.on('change', async (filePath: string) => {
-    // Existing file grew — tail new lines and re-parse just the new content
-    try {
-      const newLines = await tailNewLines(filePath)
-      if (newLines.length === 0) return
-      // Re-parse the whole file for now (simple approach)
-      const result = await parseSession(filePath)
-      sendToRenderer('session:update', { filePath, ...result })
-    } catch { /* ignore */ }
-  })
+  watcher.on('add', fp => { if (fp.endsWith('.jsonl')) scheduleReparse(fp, 'session:new') })
+  watcher.on('change', fp => { if (fp.endsWith('.jsonl')) scheduleReparse(fp, 'session:update') })
 
-  return () => watcher.close()
+  return () => {
+    watcher.close()
+    for (const t of debounceTimers.values()) clearTimeout(t)
+    debounceTimers.clear()
+  }
 }
