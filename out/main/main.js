@@ -530,9 +530,9 @@ const EXCLUDE = /* @__PURE__ */ new Set([
   ".venv",
   "venv"
 ]);
-function buildExcludeSet(extraExclude) {
-  if (!extraExclude?.length) return EXCLUDE;
-  return /* @__PURE__ */ new Set([...EXCLUDE, ...extraExclude]);
+function buildExtraIg(extraExclude) {
+  if (!extraExclude?.length) return null;
+  return ignore().add(extraExclude);
 }
 function loadGitignoreAt(dir) {
   const gitignorePath = path__namespace.join(dir, ".gitignore");
@@ -577,7 +577,7 @@ function getLanguage(filename) {
 }
 async function scanCodebase(projectPath, extraExclude) {
   if (!fs__namespace.existsSync(projectPath)) return [];
-  const exclude = buildExcludeSet(extraExclude);
+  const extraIg = buildExtraIg(extraExclude);
   const nodes = [];
   const rootName = path__namespace.basename(projectPath);
   const rootNode = {
@@ -593,6 +593,7 @@ async function scanCodebase(projectPath, extraExclude) {
   const rootIg = loadGitignoreAt(projectPath);
   if (rootIg) igStack.push({ baseRel: "", ig: rootIg });
   function isIgnored(relPath) {
+    if (extraIg?.ignores(relPath)) return true;
     for (const { baseRel, ig } of igStack) {
       const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath;
       if (ig.ignores(rel)) return true;
@@ -617,7 +618,7 @@ async function scanCodebase(projectPath, extraExclude) {
     }
     const children = [];
     for (const entry of entries) {
-      if (exclude.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (EXCLUDE.has(entry.name) || entry.name.startsWith(".")) continue;
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name;
       const childAbs = path__namespace.join(absPath, entry.name);
       if (isIgnored(childRel)) continue;
@@ -1050,8 +1051,7 @@ async function captureScreenshot() {
 }
 const DEFAULT_PROJECT_SETTINGS = {
   excludePatterns: [],
-  gitHistoryDays: null,
-  accentColor: null
+  gitHistoryDays: null
 };
 const DEFAULT_GLOBAL_SETTINGS = {
   claudeDir: null

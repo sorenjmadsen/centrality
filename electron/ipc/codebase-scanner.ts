@@ -21,9 +21,11 @@ const EXCLUDE = new Set([
   '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
 ])
 
-function buildExcludeSet(extraExclude?: string[]): Set<string> {
-  if (!extraExclude?.length) return EXCLUDE
-  return new Set([...EXCLUDE, ...extraExclude])
+// Build an ignore instance for user-supplied patterns so path-aware
+// patterns like "src/components" are matched correctly via the ignore library.
+function buildExtraIg(extraExclude?: string[]): Ignore | null {
+  if (!extraExclude?.length) return null
+  return ignore().add(extraExclude)
 }
 
 // Loads a .gitignore file into an Ignore instance scoped to `dir`.
@@ -62,7 +64,7 @@ function getLanguage(filename: string): string | undefined {
 export async function scanCodebase(projectPath: string, extraExclude?: string[]): Promise<FsNode[]> {
   if (!fs.existsSync(projectPath)) return []
 
-  const exclude = buildExcludeSet(extraExclude)
+  const extraIg = buildExtraIg(extraExclude)
   const nodes: FsNode[] = []
 
   // Add root node
@@ -85,6 +87,7 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
   if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
 
   function isIgnored(relPath: string): boolean {
+    if (extraIg?.ignores(relPath)) return true
     for (const { baseRel, ig } of igStack) {
       const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath
       if (ig.ignores(rel)) return true
@@ -114,7 +117,7 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
     const children: string[] = []
 
     for (const entry of entries) {
-      if (exclude.has(entry.name) || entry.name.startsWith('.')) continue
+      if (EXCLUDE.has(entry.name) || entry.name.startsWith('.')) continue
 
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name
       const childAbs = path.join(absPath, entry.name)

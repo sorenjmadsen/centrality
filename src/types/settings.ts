@@ -3,8 +3,6 @@ export interface ProjectSettings {
   excludePatterns: string[]
   /** Load git commits from this many days back. null = use default --max-count=200 */
   gitHistoryDays: number | null
-  /** Per-project accent color as hex string. null = default blue */
-  accentColor: string | null
 }
 
 export interface GlobalSettings {
@@ -15,7 +13,6 @@ export interface GlobalSettings {
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
   excludePatterns: [],
   gitHistoryDays: null,
-  accentColor: null,
 }
 
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {

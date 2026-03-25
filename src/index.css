@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Accent color tokens — overridden at runtime via applyTheme() in lib/themes.ts */
+@theme {
+  --color-accent: #3b82f6;      /* blue-500 equivalent */
+  --color-accent-deep: #2563eb; /* blue-600 equivalent */
+}
+
 @keyframes pulse-opacity {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
