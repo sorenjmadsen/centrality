@@ -152,24 +152,24 @@ export function ExchangeChangeSummary({ toolCalls }: ExchangeChangeSummaryProps)
       {/* Grouped summary */}
       <div className="rounded border border-zinc-800 bg-zinc-900/40 px-2 py-1.5 space-y-1">
         {groups.map(group => (
-          <div key={group.label} className="flex items-start gap-1.5 text-xs">
+          <div key={group.label} className="flex items-start gap-1.5 text-xs min-w-0">
             <span className={`mt-0.5 shrink-0 ${group.color}`}>{group.icon}</span>
             <span className={`shrink-0 font-medium w-14 ${group.color}`}>{group.label}</span>
-            <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-zinc-400 font-mono leading-snug">
+            <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-zinc-400 font-mono leading-snug min-w-0 overflow-hidden">
               {group.items.map((item, i) => {
                 // For file items (Modified/Created/Read), make them clickable
                 const isFile = group.label === 'Modified' || group.label === 'Created' || group.label === 'Read'
                 return isFile ? (
                   <span
                     key={i}
-                    className="hover:text-zinc-200 cursor-pointer"
+                    className="hover:text-zinc-200 cursor-pointer truncate max-w-full"
                     onClick={e => { e.stopPropagation(); setSelectedNode(item) }}
                     title={item}
                   >
                     {item}
                   </span>
                 ) : (
-                  <span key={i} className="text-zinc-500">{item}</span>
+                  <span key={i} className="text-zinc-500 break-all">{item}</span>
                 )
               })}
             </div>
