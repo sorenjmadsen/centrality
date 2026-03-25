@@ -64,6 +64,9 @@ export function ChatPanel() {
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
   const scrollRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const playbackIndexRef = useRef(playbackIndex)
+  playbackIndexRef.current = playbackIndex
+  const isLiveRef = useRef(false)
 
   const timeline = useMemo(() => buildTimeline(exchanges, commits, markers), [exchanges, commits, markers])
 
@@ -79,6 +82,17 @@ export function ChatPanel() {
     const saved = useTabsStore.getState().tabViewState[tabId]?.chatScrollTop
     if (saved !== undefined) scrollRef.current.scrollTop = saved
   }, [exchanges.length === 0 ? 0 : 1]) // fire once when data transitions from empty → loaded
+
+  // When viewing the latest exchange and it gets new content (real-time update),
+  // scroll to the bottom so growing content stays visible rather than getting cut off.
+  useEffect(() => {
+    if (exchanges.length === 0) { isLiveRef.current = false; return }
+    if (!isLiveRef.current) { isLiveRef.current = true; return } // skip initial load
+    const isViewingLatest = playbackIndexRef.current === exchanges.length - 1
+    if (isViewingLatest && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [exchanges])
 
   // Scroll to active item
   const activeId = playbackIndex !== null
