@@ -21,6 +21,13 @@ const EXCLUDE = new Set([
   '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
 ])
 
+// Build an ignore instance for user-supplied patterns so path-aware
+// patterns like "src/components" are matched correctly via the ignore library.
+function buildExtraIg(extraExclude?: string[]): Ignore | null {
+  if (!extraExclude?.length) return null
+  return ignore().add(extraExclude)
+}
+
 // Loads a .gitignore file into an Ignore instance scoped to `dir`.
 // Returns null if no .gitignore exists there.
 function loadGitignoreAt(dir: string): Ignore | null {
@@ -54,9 +61,10 @@ function getLanguage(filename: string): string | undefined {
   return ext ? LANG_MAP[ext] : undefined
 }
 
-export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
+export async function scanCodebase(projectPath: string, extraExclude?: string[]): Promise<FsNode[]> {
   if (!fs.existsSync(projectPath)) return []
 
+  const extraIg = buildExtraIg(extraExclude)
   const nodes: FsNode[] = []
 
   // Add root node
@@ -79,6 +87,7 @@ export async function scanCodebase(projectPath: string): Promise<FsNode[]> {
   if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
 
   function isIgnored(relPath: string): boolean {
+    if (extraIg?.ignores(relPath)) return true
     for (const { baseRel, ig } of igStack) {
       const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath
       if (ig.ignores(rel)) return true

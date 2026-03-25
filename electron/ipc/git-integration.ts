@@ -26,14 +26,15 @@ function isGitRepo(projectPath: string): boolean {
 
 // --- Git log ---
 
-export async function getGitLog(projectPath: string): Promise<GitCommit[]> {
+export async function getGitLog(projectPath: string, historyDays?: number): Promise<GitCommit[]> {
   if (!isGitRepo(projectPath)) return []
 
   try {
     const git = simpleGit(projectPath)
+    const countArg = historyDays != null ? `--after=${historyDays}.days.ago` : '--max-count=200'
     const rawOutput = await git.raw([
       'log',
-      '--max-count=200',
+      countArg,
       '--name-only',
       '--pretty=format:COMMIT|%H|%h|%aI|%an|%s',
     ])

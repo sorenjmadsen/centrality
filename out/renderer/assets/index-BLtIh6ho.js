@@ -12604,7 +12604,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$t = [
+const __iconNode$v = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -12612,53 +12612,76 @@ const __iconNode$t = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$t);
+const Bot = createLucideIcon("bot", __iconNode$v);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$s = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$s);
+const __iconNode$u = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$u);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$t = [
   ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
   ["path", { d: "M7 6v12", key: "1p53r6" }]
 ];
-const ChevronFirst = createLucideIcon("chevron-first", __iconNode$r);
+const ChevronFirst = createLucideIcon("chevron-first", __iconNode$t);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [
+const __iconNode$s = [
   ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
   ["path", { d: "M17 6v12", key: "1o0aio" }]
 ];
-const ChevronLast = createLucideIcon("chevron-last", __iconNode$q);
+const ChevronLast = createLucideIcon("chevron-last", __iconNode$s);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$p);
+const __iconNode$r = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$o);
+const __iconNode$q = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$q);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$p = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
+];
+const Clock = createLucideIcon("clock", __iconNode$p);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$o = [
+  ["path", { d: "M12 15V3", key: "m9g1x1" }],
+  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+];
+const Download = createLucideIcon("download", __iconNode$o);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12666,29 +12689,6 @@ const ChevronUp = createLucideIcon("chevron-up", __iconNode$o);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$n = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
-];
-const Clock = createLucideIcon("clock", __iconNode$n);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$m = [
-  ["path", { d: "M12 15V3", key: "m9g1x1" }],
-  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
-  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
-];
-const Download = createLucideIcon("download", __iconNode$m);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$l = [
   [
     "path",
     {
@@ -12698,14 +12698,14 @@ const __iconNode$l = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$l);
+const Eye = createLucideIcon("eye", __iconNode$n);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [
+const __iconNode$m = [
   ["path", { d: "M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5", key: "1couwa" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   [
@@ -12716,7 +12716,34 @@ const __iconNode$k = [
     }
   ]
 ];
-const FilePen = createLucideIcon("file-pen", __iconNode$k);
+const FilePen = createLucideIcon("file-pen", __iconNode$m);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$l = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M9 15h6", key: "cctwl0" }],
+  ["path", { d: "M12 18v-6", key: "17g6i2" }]
+];
+const FilePlus = createLucideIcon("file-plus", __iconNode$l);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M10 9H8", key: "b1mrlr" }],
+  ["path", { d: "M16 13H8", key: "t4e002" }],
+  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+];
+const FileText = createLucideIcon("file-text", __iconNode$k);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12724,33 +12751,6 @@ const FilePen = createLucideIcon("file-pen", __iconNode$k);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$j = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M9 15h6", key: "cctwl0" }],
-  ["path", { d: "M12 18v-6", key: "17g6i2" }]
-];
-const FilePlus = createLucideIcon("file-plus", __iconNode$j);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$i = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M10 9H8", key: "b1mrlr" }],
-  ["path", { d: "M16 13H8", key: "t4e002" }],
-  ["path", { d: "M16 17H8", key: "z1uh3a" }]
-];
-const FileText = createLucideIcon("file-text", __iconNode$i);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$h = [
   [
     "path",
     {
@@ -12759,14 +12759,14 @@ const __iconNode$h = [
     }
   ]
 ];
-const FolderOpen = createLucideIcon("folder-open", __iconNode$h);
+const FolderOpen = createLucideIcon("folder-open", __iconNode$j);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$g = [
+const __iconNode$i = [
   [
     "path",
     {
@@ -12775,7 +12775,32 @@ const __iconNode$g = [
     }
   ]
 ];
-const Folder = createLucideIcon("folder", __iconNode$g);
+const Folder = createLucideIcon("folder", __iconNode$i);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$h = [
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
+  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+];
+const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$h);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$g = [
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+];
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$g);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12783,11 +12808,10 @@ const Folder = createLucideIcon("folder", __iconNode$g);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$f = [
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
-  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
-  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 9.9-1", key: "1mm8w8" }]
 ];
-const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$f);
+const LockOpen = createLucideIcon("lock-open", __iconNode$f);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12795,12 +12819,10 @@ const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$e = [
-  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
-  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
-  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
-  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
 ];
-const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$e);
+const Lock = createLucideIcon("lock", __iconNode$e);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12808,10 +12830,12 @@ const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$e);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$d = [
-  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
-  ["path", { d: "M7 11V7a5 5 0 0 1 9.9-1", key: "1mm8w8" }]
+  ["path", { d: "m14 10 7-7", key: "oa77jy" }],
+  ["path", { d: "M20 10h-6V4", key: "mjg0md" }],
+  ["path", { d: "m3 21 7-7", key: "tjx5ai" }],
+  ["path", { d: "M4 14h6v6", key: "rmj7iw" }]
 ];
-const LockOpen = createLucideIcon("lock-open", __iconNode$d);
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$d);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12819,23 +12843,18 @@ const LockOpen = createLucideIcon("lock-open", __iconNode$d);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$c = [
-  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
-  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
+  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
+  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
 ];
-const Lock = createLucideIcon("lock", __iconNode$c);
+const Pause = createLucideIcon("pause", __iconNode$c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$b = [
-  ["path", { d: "m14 10 7-7", key: "oa77jy" }],
-  ["path", { d: "M20 10h-6V4", key: "mjg0md" }],
-  ["path", { d: "m3 21 7-7", key: "tjx5ai" }],
-  ["path", { d: "M4 14h6v6", key: "rmj7iw" }]
-];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$b);
+const __iconNode$b = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$b);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12843,18 +12862,23 @@ const Minimize2 = createLucideIcon("minimize-2", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
-  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
 ];
-const Pause = createLucideIcon("pause", __iconNode$a);
+const Plus = createLucideIcon("plus", __iconNode$a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$9 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$9);
+const __iconNode$9 = [
+  ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
+  ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
+  ["path", { d: "M16 16h5v5", key: "ccwih5" }]
+];
+const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$9);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12862,12 +12886,12 @@ const Play = createLucideIcon("play", __iconNode$9);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$8 = [
-  ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
-  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
-  ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
-  ["path", { d: "M16 16h5v5", key: "ccwih5" }]
+  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+  ["path", { d: "M8 16H3v5", key: "1cv678" }]
 ];
-const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$8);
+const RefreshCw = createLucideIcon("refresh-cw", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12875,12 +12899,10 @@ const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$8);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$7 = [
-  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
-  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
-  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
-  ["path", { d: "M8 16H3v5", key: "1cv678" }]
+  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
+  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
 ];
-const RefreshCw = createLucideIcon("refresh-cw", __iconNode$7);
+const Search = createLucideIcon("search", __iconNode$7);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12888,10 +12910,16 @@ const RefreshCw = createLucideIcon("refresh-cw", __iconNode$7);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$6 = [
-  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
-  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+  [
+    "path",
+    {
+      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+      key: "1qme2f"
+    }
+  ],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Search = createLucideIcon("search", __iconNode$6);
+const Settings = createLucideIcon("settings", __iconNode$6);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13084,10 +13112,10 @@ function makeCodebaseStore() {
     rootIds: [],
     isLoading: false,
     restoredFromCache: false,
-    scanProject: async (projectPath) => {
+    scanProject: async (projectPath, encodedName) => {
       set2({ isLoading: true, nodes: /* @__PURE__ */ new Map(), rootIds: [] });
       try {
-        const raw = await window.api.scanCodebase(projectPath);
+        const raw = await window.api.scanCodebase(projectPath, encodedName);
         const nodes = new Map(raw.map((n) => [n.id, n]));
         const rootIds = raw.filter((n) => n.parent == null).map((n) => n.id);
         set2({ nodes, rootIds });
@@ -13116,10 +13144,10 @@ function makeGitStore() {
     selectedCommitHash: null,
     commitDiffs: /* @__PURE__ */ new Map(),
     highlightedFiles: /* @__PURE__ */ new Set(),
-    loadCommits: async (projectPath) => {
+    loadCommits: async (projectPath, encodedName) => {
       set2({ isLoading: true });
       try {
-        set2({ commits: await window.api.gitLog(projectPath) });
+        set2({ commits: await window.api.gitLog(projectPath, encodedName) });
       } finally {
         set2({ isLoading: false });
       }
@@ -13460,6 +13488,238 @@ function ExportMenu() {
       )
     ] }),
     toast && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute right-0 top-full mt-1 z-50 bg-zinc-700 border border-zinc-600\n          rounded px-3 py-2 text-sm text-zinc-200 whitespace-nowrap shadow-lg", children: toast })
+  ] });
+}
+const DEFAULT_PROJECT_SETTINGS = {
+  excludePatterns: [],
+  gitHistoryDays: null
+};
+const DEFAULT_GLOBAL_SETTINGS = {
+  claudeDir: null
+};
+const useSettingsStore = create$2((set2, get2) => ({
+  projectSettings: {},
+  globalSettings: DEFAULT_GLOBAL_SETTINGS,
+  loadProjectSettings: async (encodedName) => {
+    const cached = get2().projectSettings[encodedName];
+    if (cached) return cached;
+    const s = await window.api.getProjectSettings(encodedName);
+    const settings = { ...DEFAULT_PROJECT_SETTINGS, ...s };
+    set2((state) => ({ projectSettings: { ...state.projectSettings, [encodedName]: settings } }));
+    return settings;
+  },
+  saveProjectSettings: async (encodedName, settings) => {
+    await window.api.setProjectSettings(encodedName, settings);
+    set2((state) => ({ projectSettings: { ...state.projectSettings, [encodedName]: settings } }));
+  },
+  loadGlobalSettings: async () => {
+    const s = await window.api.getGlobalSettings();
+    const settings = { ...DEFAULT_GLOBAL_SETTINGS, ...s };
+    set2({ globalSettings: settings });
+    return settings;
+  },
+  saveGlobalSettings: async (settings) => {
+    await window.api.setGlobalSettings(settings);
+    set2({ globalSettings: settings });
+  }
+}));
+function ProjectSettingsModal({ encodedName, onClose }) {
+  const [projectSettings, setProjectSettings] = reactExports.useState(DEFAULT_PROJECT_SETTINGS);
+  const [patternInput, setPatternInput] = reactExports.useState("");
+  const [saving, setSaving] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const { loadProjectSettings, saveProjectSettings } = useSettingsStore();
+  const tabStores = useTabStores();
+  const { selectedProjectPath } = useUiStore();
+  reactExports.useEffect(() => {
+    loadProjectSettings(encodedName).then(setProjectSettings);
+  }, [encodedName, loadProjectSettings]);
+  reactExports.useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  function addPattern() {
+    const trimmed = patternInput.trim();
+    if (!trimmed || projectSettings.excludePatterns.includes(trimmed)) return;
+    setProjectSettings((s) => ({ ...s, excludePatterns: [...s.excludePatterns, trimmed] }));
+    setPatternInput("");
+  }
+  function removePattern(pattern) {
+    setProjectSettings((s) => ({ ...s, excludePatterns: s.excludePatterns.filter((p) => p !== pattern) }));
+  }
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      await saveProjectSettings(encodedName, projectSettings);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+      setSaving(false);
+      return;
+    }
+    onClose();
+    if (selectedProjectPath) {
+      tabStores.codebase.getState().scanProject(selectedProjectPath, encodedName);
+      tabStores.git.getState().loadCommits(selectedProjectPath, encodedName);
+    }
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-zinc-900 border border-zinc-700 rounded-lg w-[480px] max-h-[85vh] flex flex-col shadow-2xl", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-5 py-4 border-b border-zinc-700", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-sm font-semibold text-zinc-100", children: "Project Settings" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          onClick: onClose,
+          className: "text-zinc-500 hover:text-zinc-300 transition-colors",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 16 })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 overflow-y-auto px-5 py-5 space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-xs font-medium text-zinc-300 mb-2", children: "Exclude Patterns" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-zinc-500 mb-3", children: "Additional directories or files to exclude from the graph (adds to built-in list)." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2 mb-2", children: projectSettings.excludePatterns.map((p) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "span",
+          {
+            className: "flex items-center gap-1 bg-zinc-800 text-zinc-300 text-xs px-2 py-1 rounded",
+            children: [
+              p,
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  onClick: () => removePattern(p),
+                  className: "text-zinc-500 hover:text-zinc-300 transition-colors",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 10 })
+                }
+              )
+            ]
+          },
+          p
+        )) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "text",
+              value: patternInput,
+              onChange: (e) => setPatternInput(e.target.value),
+              onKeyDown: (e) => {
+                if (e.key === "Enter") addPattern();
+              },
+              placeholder: "e.g. target, .DS_Store",
+              className: "flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              onClick: addPattern,
+              className: "p-1.5 bg-zinc-800 border border-zinc-700 rounded text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { size: 14 })
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-xs font-medium text-zinc-300 mb-2", children: "Git History" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "input",
+              {
+                type: "radio",
+                name: "gitHistory",
+                checked: projectSettings.gitHistoryDays === null,
+                onChange: () => setProjectSettings((s) => ({ ...s, gitHistoryDays: null })),
+                className: "accent-accent"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-300", children: "Default (200 most recent commits)" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "input",
+              {
+                type: "radio",
+                name: "gitHistory",
+                checked: projectSettings.gitHistoryDays !== null,
+                onChange: () => setProjectSettings((s) => ({ ...s, gitHistoryDays: 30 })),
+                className: "accent-accent"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-300", children: "Days back:" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "input",
+              {
+                type: "number",
+                min: 1,
+                max: 3650,
+                value: projectSettings.gitHistoryDays ?? 30,
+                onChange: (e) => setProjectSettings((s) => ({
+                  ...s,
+                  gitHistoryDays: Math.max(1, parseInt(e.target.value) || 1)
+                })),
+                onClick: () => {
+                  if (projectSettings.gitHistoryDays === null) {
+                    setProjectSettings((s) => ({ ...s, gitHistoryDays: 30 }));
+                  }
+                },
+                className: "w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500"
+              }
+            )
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2 px-5 py-4 border-t border-zinc-700", children: [
+      error && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-red-400 flex-1", children: error }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2 ml-auto", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            onClick: onClose,
+            className: "px-4 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors",
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            onClick: handleSave,
+            disabled: saving,
+            className: "px-4 py-1.5 text-xs bg-accent-deep hover:bg-accent text-white rounded transition-colors disabled:opacity-50",
+            children: saving ? "Saving…" : "Save & Rescan"
+          }
+        )
+      ] })
+    ] })
+  ] }) });
+}
+function SettingsButton() {
+  const [open, setOpen] = reactExports.useState(false);
+  const selectedProjectEncoded = useUiStore((s) => s.selectedProjectEncoded);
+  if (!selectedProjectEncoded) return null;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        onClick: () => setOpen(true),
+        className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
+        title: "Project settings",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Settings, { size: 14 })
+      }
+    ),
+    open && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      ProjectSettingsModal,
+      {
+        encodedName: selectedProjectEncoded,
+        onClose: () => setOpen(false)
+      }
+    )
   ] });
 }
 function cc(names) {
@@ -22368,7 +22628,7 @@ function MinimapTrace() {
 }
 function GraphCanvas() {
   const { nodes, edges } = useGraphStore();
-  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, setSelectedNode, setSelectedExchange } = useUiStore();
+  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange, setPlaybackIndex } = useUiStore();
   const { exchanges } = useChatStore();
   const tabId = useTabId();
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
@@ -22411,12 +22671,19 @@ function GraphCanvas() {
     setSelectedNode(newId2);
     if (newId2 && selectedProjectPath) {
       const absPath = selectedProjectPath.replace(/\/$/, "") + "/" + newId2;
-      const exchange = exchanges.find(
-        (ex) => ex.affectedNodes.some((n) => n === absPath || n === newId2 || n.endsWith("/" + newId2))
-      );
-      if (exchange) setSelectedExchange(exchange.id);
+      let matchIdx = -1;
+      for (let i = exchanges.length - 1; i >= 0; i--) {
+        if (exchanges[i].affectedNodes.some((n) => n === absPath || n === newId2 || n.endsWith("/" + newId2))) {
+          matchIdx = i;
+          break;
+        }
+      }
+      if (matchIdx !== -1) {
+        setSelectedExchange(exchanges[matchIdx].id);
+        setPlaybackIndex(matchIdx);
+      }
     }
-  }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange]);
+  }, [selectedNodeId, selectedProjectPath, exchanges, setSelectedNode, setSelectedExchange, setPlaybackIndex]);
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
     index$1,
     {
@@ -22459,7 +22726,15 @@ function GraphCanvas() {
                 executed: "#a855f7",
                 searched: "#71717a"
               };
-              return colors[d?.dominantAction ?? ""] ?? "#3f3f46";
+              const baseColor = colors[d?.dominantAction ?? ""] ?? "#3f3f46";
+              const hasFilter = playbackIndex !== null && activeNodeIds.size > 0;
+              if (hasFilter) {
+                if (activeNodeIds.has(n.id)) return baseColor;
+                if (d?.gitPulsing) return "#7c3aed";
+                return "#27272a";
+              }
+              if (d?.gitPulsing) return "#7c3aed";
+              return baseColor;
             },
             maskColor: "rgba(0,0,0,0.6)",
             style: { background: "#18181b", border: "1px solid #3f3f46" },
@@ -35072,7 +35347,7 @@ function DiffViewer({ unified: unified2, maxLines = 200 }) {
   if (!unified2.trim()) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-zinc-600 text-[10px] italic px-2 py-1", children: "No diff available" });
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "font-mono text-[10px] overflow-x-auto overflow-y-auto max-h-72 rounded bg-zinc-950 border border-zinc-800", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "font-mono text-[10px] overflow-x-auto overflow-y-auto max-h-72 rounded bg-zinc-950 border border-zinc-800 scrollable", children: [
     lines.map((line, i) => {
       let bg = "";
       let text2 = "text-zinc-400";
@@ -35130,7 +35405,7 @@ function ToolCallBlock({ toolCall }) {
       setInlineDiff(diff);
     }
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `rounded border text-xs my-1 ${colors.split(" ")[1]}`, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `rounded border text-xs my-1 ${colors.split(" ")[1]}`, onClick: (e) => e.stopPropagation(), children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "button",
       {
@@ -35160,7 +35435,7 @@ function ToolCallBlock({ toolCall }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-400 break-all", children: String(v).slice(0, 200) })
       ] }, k)) }),
       isEditTool && inlineDiff && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx(DiffViewer, { unified: inlineDiff }) }),
-      toolCall.result !== void 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-zinc-800 pt-1 text-zinc-500 font-mono text-[10px] max-h-32 overflow-y-auto", children: [
+      toolCall.result !== void 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-zinc-800 pt-1 text-zinc-500 font-mono text-[10px] max-h-32 overflow-y-auto scrollable", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-600", children: "result: " }),
         toolCall.result.slice(0, 500),
         toolCall.result.length > 500 ? "…" : ""
@@ -35187,9 +35462,16 @@ function ChatMessageBubble({ message, isHighlighted }) {
     ] }),
     displayText && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `prose prose-invert prose-sm max-w-none text-zinc-300
-            prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700
-            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-            prose-headings:text-zinc-200
+            prose-p:my-1
+            prose-ul:my-1 prose-ol:my-1 prose-li:my-0
+            prose-headings:text-zinc-200 prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1
+            prose-blockquote:border-zinc-600 prose-blockquote:text-zinc-400
+            prose-hr:border-zinc-700
+            prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-zinc-200
+            prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700 prose-pre:rounded-md
+            prose-code:text-zinc-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none
+            prose-table:text-zinc-300 prose-thead:border-zinc-600 prose-tbody:divide-zinc-700 prose-th:text-zinc-200
           `, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { remarkPlugins: [remarkGfm], children: displayText }) }),
       isLong && /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
@@ -35336,7 +35618,7 @@ function ChatPanel() {
       saveTabViewState(tabId, { chatScrollTop: scrollRef.current.scrollTop });
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: scrollRef, className: "h-full overflow-y-auto", onScroll: handleScroll, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-1 p-2", children: timeline.map((item, i) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: scrollRef, className: "h-full overflow-y-auto scrollable", onScroll: handleScroll, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-1 p-2", children: timeline.map((item, i) => {
     if (item.kind === "commit") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(GitCommitMarker, { commit: item.commit }) }, `commit-${item.commit.hash}`);
     }
@@ -35968,7 +36250,7 @@ function TabBar() {
         className: [
           "flex items-center gap-1.5 px-4 text-base shrink-0 border-r border-zinc-800 font-medium",
           "relative transition-colors select-none",
-          activeTabId === null ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
+          activeTabId === null ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-accent" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
         ].join(" "),
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { size: 13 }),
@@ -35987,7 +36269,7 @@ function TabBar() {
           className: [
             "group flex items-center gap-2 pl-4 pr-2 text-base shrink-0 border-r border-zinc-800",
             "relative transition-colors select-none",
-            isActive ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-blue-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
+            isActive ? "text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-accent" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60"
           ].join(" "),
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "max-w-[160px] truncate", children: [
@@ -36136,7 +36418,7 @@ function useOpenSession() {
         });
       } else {
         tabStores.codebase.getState().clear();
-        tabStores.codebase.getState().scanProject(params.projectPath).then(() => {
+        tabStores.codebase.getState().scanProject(params.projectPath, params.projectEncoded).then(() => {
           const { nodes, rootIds } = tabStores.codebase.getState();
           useTabCacheStore.getState().patch(params.sessionPath, { codebaseNodes: nodes, codebaseRootIds: rootIds });
         });
@@ -36147,7 +36429,7 @@ function useOpenSession() {
         tabStores.session.setState({ sessions });
       });
       tabStores.git.getState().clear();
-      tabStores.git.getState().loadCommits(params.projectPath).then(() => {
+      tabStores.git.getState().loadCommits(params.projectPath, params.projectEncoded).then(() => {
         const { commits } = tabStores.git.getState();
         useTabCacheStore.getState().patch(params.sessionPath, { commits });
       });
@@ -36227,7 +36509,7 @@ function Dashboard() {
     if (ai !== -1 && bi !== -1) return ai - bi;
     return a.displayName.localeCompare(b.displayName);
   });
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto bg-zinc-950", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto px-8 py-10", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto scrollable bg-zinc-950", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto px-8 py-10", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-10", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5 mb-1", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { size: 18, className: "text-blue-400" }),
@@ -36410,6 +36692,8 @@ function SessionView() {
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(SettingsButton, {}),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(ExportMenu, {})
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 overflow-hidden", children: [
@@ -36438,7 +36722,8 @@ function SessionView() {
   ] });
 }
 function AppInner() {
-  const { tabs, activeTabId } = useTabsStore();
+  const tabs = useTabsStore((s) => s.tabs);
+  const activeTabId = useTabsStore((s) => s.activeTabId);
   React.useEffect(() => {
     return window.api.onGitHeadChanged((data) => {
       const commits = data;

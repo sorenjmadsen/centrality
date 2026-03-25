@@ -3,6 +3,7 @@ import { RefreshCw } from 'lucide-react'
 import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
+import { SettingsButton } from './components/TopBar/SettingsButton'
 import { CodebaseGraph } from './components/Graph/CodebaseGraph'
 import { ChatPanel } from './components/ChatPanel/ChatPanel'
 import { PlaybackControls } from './components/ChatPanel/PlaybackControls'
@@ -98,6 +99,8 @@ function SessionView(): React.ReactElement {
           </button>
         )}
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
+        <SettingsButton />
+        <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <ExportMenu />
       </header>
 
@@ -136,7 +139,6 @@ function SessionView(): React.ReactElement {
 function AppInner(): React.ReactElement {
   const tabs = useTabsStore(s => s.tabs)
   const activeTabId = useTabsStore(s => s.activeTabId)
-
   // Live git HEAD listener — updates all mounted tabs for the affected project
   React.useEffect(() => {
     return window.api.onGitHeadChanged((data: unknown) => {

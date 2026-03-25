@@ -122,7 +122,7 @@ export function useOpenSession() {
         })
       } else {
         tabStores.codebase.getState().clear()
-        tabStores.codebase.getState().scanProject(params.projectPath).then(() => {
+        tabStores.codebase.getState().scanProject(params.projectPath, params.projectEncoded).then(() => {
           const { nodes, rootIds } = tabStores.codebase.getState()
           useTabCacheStore.getState().patch(params.sessionPath, { codebaseNodes: nodes, codebaseRootIds: rootIds })
         })
@@ -137,7 +137,7 @@ export function useOpenSession() {
 
       // Git
       tabStores.git.getState().clear()
-      tabStores.git.getState().loadCommits(params.projectPath).then(() => {
+      tabStores.git.getState().loadCommits(params.projectPath, params.projectEncoded).then(() => {
         const { commits } = tabStores.git.getState()
         useTabCacheStore.getState().patch(params.sessionPath, { commits })
       })

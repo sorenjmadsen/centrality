@@ -93,12 +93,12 @@ function tryResolve(base: string, remaining: string): string | null {
   return null
 }
 
-export function listProjects(): ProjectInfo[] {
-  const claudeDir = path.join(os.homedir(), '.claude', 'projects')
-  if (!fs.existsSync(claudeDir)) return []
+export function listProjects(claudeDir?: string): ProjectInfo[] {
+  const dir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
+  if (!fs.existsSync(dir)) return []
 
   return fs
-    .readdirSync(claudeDir, { withFileTypes: true })
+    .readdirSync(dir, { withFileTypes: true })
     .filter(e => e.isDirectory())
     .map(e => {
       const projectPath = resolveProjectPath(e.name)
@@ -106,15 +106,16 @@ export function listProjects(): ProjectInfo[] {
     })
 }
 
-export function listSessions(encodedName: string): SessionInfo[] {
-  const claudeDir = path.join(os.homedir(), '.claude', 'projects', encodedName)
-  if (!fs.existsSync(claudeDir)) return []
+export function listSessions(encodedName: string, claudeDir?: string): SessionInfo[] {
+  const projectsDir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
+  const sessionDir = path.join(projectsDir, encodedName)
+  if (!fs.existsSync(sessionDir)) return []
 
   return fs
-    .readdirSync(claudeDir)
+    .readdirSync(sessionDir)
     .filter(f => f.endsWith('.jsonl'))
     .map(f => {
-      const filePath = path.join(claudeDir, f)
+      const filePath = path.join(sessionDir, f)
       const stat = fs.statSync(filePath)
       return { sessionId: f.replace('.jsonl', ''), filePath, mtime: stat.mtimeMs }
     })

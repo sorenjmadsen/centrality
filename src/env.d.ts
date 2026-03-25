@@ -1,11 +1,15 @@
 interface Window {
   api: {
+    getProjectSettings(encodedName: string): Promise<unknown>
+    setProjectSettings(encodedName: string, settings: unknown): Promise<void>
+    getGlobalSettings(): Promise<unknown>
+    setGlobalSettings(settings: unknown): Promise<void>
     listProjects(): Promise<unknown>
     listSessions(encodedName: string): Promise<unknown>
     loadSession(filePath: string): Promise<unknown>
-    scanCodebase(projectPath: string): Promise<unknown>
+    scanCodebase(projectPath: string, encodedName: string): Promise<unknown>
     onSessionUpdate(callback: (data: unknown) => void): () => void
-    gitLog(projectPath: string): Promise<unknown>
+    gitLog(projectPath: string, encodedName: string): Promise<unknown>
     gitDiff(projectPath: string, commitHash: string): Promise<unknown>
     gitInlineDiff(oldStr: string, newStr: string, filePath: string): Promise<unknown>
     gitWatch(projectPath: string): Promise<void>
