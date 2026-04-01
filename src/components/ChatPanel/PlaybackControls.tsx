@@ -5,23 +5,31 @@ import { useUiStore, useChatStore } from '../../stores/tab-stores'
 const SPARKLINE_H = 20
 const SPARKLINE_COLOR = '#a1a1aa'
 
-function computeExchangeCost(usage: { input: number; output: number; cacheRead?: number; cacheWrite?: number }): number {
+function getRate(model?: string) {
+  const m = (model ?? '').toLowerCase()
+  if (m.includes('opus'))  return { input: 15,  output: 75, cacheRead: 1.5,  cacheWrite: 18.75 }
+  if (m.includes('haiku')) return { input: 0.8, output: 4,  cacheRead: 0.08, cacheWrite: 1 }
+  return                          { input: 3,   output: 15, cacheRead: 0.3,  cacheWrite: 3.75 }
+}
+
+function computeExchangeCost(usage: { input: number; output: number; cacheRead?: number; cacheWrite?: number }, model?: string): number {
+  const r = getRate(model)
   return (
-    usage.input * 3 +
-    usage.output * 15 +
-    (usage.cacheRead ?? 0) * 0.3 +
-    (usage.cacheWrite ?? 0) * 3.75
+    usage.input * r.input +
+    usage.output * r.output +
+    (usage.cacheRead ?? 0) * r.cacheRead +
+    (usage.cacheWrite ?? 0) * r.cacheWrite
   ) / 1_000_000
 }
 
-function TokenSparkline({ exchanges }: { exchanges: { assistantMessage: { tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number } } }[] }) {
+function TokenSparkline({ exchanges }: { exchanges: { assistantMessage: { model?: string; tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number } } }[] }) {
   // Compute cumulative costs
   const costs = useMemo(() => {
     let cumulative = 0
     return exchanges.map(ex => {
       const usage = ex.assistantMessage.tokenUsage
       if (usage) {
-        cumulative += computeExchangeCost(usage)
+        cumulative += computeExchangeCost(usage, ex.assistantMessage.model)
       }
       return cumulative
     })

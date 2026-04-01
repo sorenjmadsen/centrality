@@ -3,6 +3,7 @@ import { Minimize2, RefreshCcw, Terminal } from 'lucide-react'
 import { useChatStore, useUiStore, useGitStore, useSearchStore, useTabId } from '../../stores/tab-stores'
 import { useTabsStore } from '../../stores/tabs-store'
 import { ChatMessageBubble } from './ChatMessage'
+import { TokenUsagePopover } from './TokenUsagePopover'
 import { GitCommitMarker } from './GitCommitMarker'
 import type { ChatExchange, ChatMarker } from '../../types/chat'
 import type { GitCommit } from '../../types/git'
@@ -43,16 +44,6 @@ function buildTimeline(
   return items
 }
 
-function computeCost(exchange: ChatExchange): number {
-  const usage = exchange.assistantMessage.tokenUsage
-  if (!usage) return 0
-  return (
-    usage.input * 3 +
-    usage.output * 15 +
-    (usage.cacheRead ?? 0) * 0.3 +
-    (usage.cacheWrite ?? 0) * 3.75
-  ) / 1_000_000
-}
 
 export function ChatPanel() {
   const { exchanges, markers } = useChatStore()
@@ -179,7 +170,6 @@ export function ChatPanel() {
           const isSelected = exchange.id === selectedExchangeId
           const isSearchMatch = searchResultIds.has(exchange.id)
           const isActiveSearch = exchange.id === activeSearchId
-          const cost = computeCost(exchange)
           const usage = exchange.assistantMessage.tokenUsage
 
           return (
@@ -211,10 +201,8 @@ export function ChatPanel() {
               <div className="my-2 border-t border-zinc-800" />
               <ChatMessageBubble message={exchange.assistantMessage} isHighlighted={isPlaybackCurrent || isSelected} />
               {usage && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-600">
-                  <span>{usage.input.toLocaleString()}↓</span>
-                  <span>{usage.output.toLocaleString()}↑</span>
-                  <span className="text-zinc-500">~${cost.toFixed(4)}</span>
+                <div className="mt-1.5 flex items-center text-xs">
+                  <TokenUsagePopover usage={usage} model={exchange.assistantMessage.model} />
                 </div>
               )}
             </div>

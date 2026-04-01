@@ -31,11 +31,6 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
         <span className="text-xs text-zinc-700">
           {new Date(message.timestamp).toLocaleTimeString()}
         </span>
-        {message.tokenUsage && (
-          <span className="text-xs text-zinc-700 ml-auto">
-            {message.tokenUsage.input.toLocaleString()} / {message.tokenUsage.output.toLocaleString()} tok
-          </span>
-        )}
       </div>
 
       {displayText && (
