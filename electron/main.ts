@@ -3,8 +3,8 @@ import { join } from 'path'
 import { listProjects, listSessions, parseSession } from './ipc/jsonl-parser'
 import { scanCodebase } from './ipc/codebase-scanner'
 import { startSessionWatcher } from './ipc/session-watcher'
-import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher } from './ipc/git-integration'
-import { startCodebaseWatcher, stopCodebaseWatcher } from './ipc/codebase-watcher'
+import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher, stopGitWatcher } from './ipc/git-integration'
+import { startCodebaseWatcher, stopCodebaseWatcher, stopAllCodebaseWatchers } from './ipc/codebase-watcher'
 import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
 import {
@@ -14,6 +14,14 @@ import {
 import type { ProjectSettings, GlobalSettings } from '../src/types/settings'
 
 const isDev = process.env['NODE_ENV'] === 'development'
+
+// Raise the open-file-descriptor soft limit from the macOS default (256) to
+// something large enough to accommodate chokidar watchers + tree-sitter + IPC.
+try {
+  process.setrlimit('nofile', { soft: 8192, hard: 8192 })
+} catch {
+  // Older Node / unsupported platform — proceed with system default
+}
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -99,8 +107,10 @@ function registerIpcHandlers(): void {
     startCodebaseWatcher(projectPath, encodedName)
   })
 
-  ipcMain.handle('codebase:unwatch', (_event, projectPath: string) => {
-    stopCodebaseWatcher(projectPath)
+  ipcMain.on('codebase:unwatch', (_event, projectPath: string) => {
+    // Defer to the next event-loop tick so FSEvents teardown doesn't block
+    // the IPC handler and cause a beach ball in the renderer.
+    setImmediate(() => stopCodebaseWatcher(projectPath))
   })
 
   ipcMain.handle('dep:scan', (_event, projectPath: string, filePaths: string[]) =>
@@ -120,9 +130,18 @@ function registerIpcHandlers(): void {
 app.whenReady().then(() => {
   registerIpcHandlers()
   createWindow()
-  startSessionWatcher()
+  const stopSessionWatcher = startSessionWatcher()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+
+  // Close all persistent watchers before the process exits. Without this,
+  // chokidar's persistent:true handles keep the Node.js event loop alive and
+  // the app either hangs on quit or exits with an error.
+  app.on('before-quit', () => {
+    stopSessionWatcher()
+    stopGitWatcher()
+    stopAllCodebaseWatchers()
   })
 })
 

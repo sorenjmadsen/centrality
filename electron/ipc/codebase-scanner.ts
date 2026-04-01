@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import * as path from 'path'
 import ignore, { type Ignore } from 'ignore'
 import { extractSymbols } from './tree-sitter-pool'
@@ -30,12 +31,11 @@ function buildExtraIg(extraExclude?: string[]): Ignore | null {
 
 // Loads a .gitignore file into an Ignore instance scoped to `dir`.
 // Returns null if no .gitignore exists there.
-function loadGitignoreAt(dir: string): Ignore | null {
+async function loadGitignoreAt(dir: string): Promise<Ignore | null> {
   const gitignorePath = path.join(dir, '.gitignore')
-  if (!fs.existsSync(gitignorePath)) return null
   try {
     const ig = ignore()
-    ig.add(fs.readFileSync(gitignorePath, 'utf8'))
+    ig.add(await fsp.readFile(gitignorePath, 'utf8'))
     return ig
   } catch {
     return null
@@ -62,7 +62,11 @@ function getLanguage(filename: string): string | undefined {
 }
 
 export async function scanCodebase(projectPath: string, extraExclude?: string[]): Promise<FsNode[]> {
-  if (!fs.existsSync(projectPath)) return []
+  try {
+    await fsp.access(projectPath)
+  } catch {
+    return []
+  }
 
   const extraIg = buildExtraIg(extraExclude)
   const nodes: FsNode[] = []
@@ -78,12 +82,12 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
   }
   nodes.push(rootNode)
 
-  // Collect all file paths first (sync walk), then extract symbols async
+  // Collect all file paths first (async walk), then extract symbols async
   const filePaths: Array<{ relPath: string; absPath: string; language: string }> = []
 
   // Stack of {baseRel, ig} pairs — each .gitignore is checked relative to its own directory
   const igStack: Array<{ baseRel: string; ig: Ignore }> = []
-  const rootIg = loadGitignoreAt(projectPath)
+  const rootIg = await loadGitignoreAt(projectPath)
   if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
 
   function isIgnored(relPath: string): boolean {
@@ -95,11 +99,11 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
     return false
   }
 
-  function walkSync(absPath: string, relPath: string, parentId: string | undefined) {
+  async function walkAsync(absPath: string, relPath: string, parentId: string | undefined) {
     // Load .gitignore for this directory (skip root, already loaded above)
     let pushedIg = false
     if (relPath !== '') {
-      const dirIg = loadGitignoreAt(absPath)
+      const dirIg = await loadGitignoreAt(absPath)
       if (dirIg) {
         igStack.push({ baseRel: relPath, ig: dirIg })
         pushedIg = true
@@ -108,13 +112,14 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
 
     let entries: fs.Dirent[]
     try {
-      entries = fs.readdirSync(absPath, { withFileTypes: true })
+      entries = await fsp.readdir(absPath, { withFileTypes: true })
     } catch {
       if (pushedIg) igStack.pop()
       return
     }
 
     const children: string[] = []
+    const subdirs: Array<{ childAbs: string; childRel: string }> = []
 
     for (const entry of entries) {
       if (EXCLUDE.has(entry.name) || entry.name.startsWith('.')) continue
@@ -135,7 +140,7 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
         }
         nodes.push(dirNode)
         children.push(childRel)
-        walkSync(childAbs, childRel, childRel)
+        subdirs.push({ childAbs, childRel })
       } else if (entry.isFile()) {
         const language = getLanguage(entry.name)
         const fileNode: FsNode = {
@@ -162,10 +167,15 @@ export async function scanCodebase(projectPath: string, extraExclude?: string[])
       if (parentNode) parentNode.children.push(...children)
     }
 
+    // Recurse into subdirectories sequentially to keep igStack consistent
+    for (const { childAbs, childRel } of subdirs) {
+      await walkAsync(childAbs, childRel, childRel)
+    }
+
     if (pushedIg) igStack.pop()
   }
 
-  walkSync(projectPath, '', '')
+  await walkAsync(projectPath, '', '')
 
   // Extract symbols in parallel (capped to avoid overwhelming the process)
   const CONCURRENCY = 8

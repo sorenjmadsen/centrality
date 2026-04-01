@@ -13,6 +13,12 @@ electron.contextBridge.exposeInMainWorld("api", {
     electron.ipcRenderer.on("session:update", (_event, data) => callback(data));
     return () => electron.ipcRenderer.removeAllListeners("session:update");
   },
+  watchCodebase: (projectPath, encodedName) => electron.ipcRenderer.invoke("codebase:watch", projectPath, encodedName),
+  unwatchCodebase: (projectPath) => electron.ipcRenderer.send("codebase:unwatch", projectPath),
+  onCodebaseUpdate: (callback) => {
+    electron.ipcRenderer.on("codebase:update", (_event, data) => callback(data));
+    return () => electron.ipcRenderer.removeAllListeners("codebase:update");
+  },
   gitLog: (projectPath, encodedName) => electron.ipcRenderer.invoke("git:log", projectPath, encodedName),
   gitDiff: (projectPath, commitHash) => electron.ipcRenderer.invoke("git:diff", projectPath, commitHash),
   gitInlineDiff: (oldStr, newStr, filePath) => electron.ipcRenderer.invoke("git:inline-diff", oldStr, newStr, filePath),
