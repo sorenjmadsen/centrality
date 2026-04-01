@@ -77,23 +77,36 @@ function tryResolve(base, remaining) {
   }
   return null;
 }
-function listProjects(claudeDir) {
+async function listProjects(claudeDir) {
   const dir = claudeDir ?? path__namespace.join(os__namespace.homedir(), ".claude", "projects");
-  if (!fs__namespace.existsSync(dir)) return [];
-  return fs__namespace.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => {
+  try {
+    await fs__namespace.promises.access(dir);
+  } catch {
+    return [];
+  }
+  const entries = await fs__namespace.promises.readdir(dir, { withFileTypes: true });
+  return entries.filter((e) => e.isDirectory()).map((e) => {
     const projectPath = resolveProjectPath(e.name);
     return { encodedName: e.name, projectPath, displayName: projectPath };
   });
 }
-function listSessions(encodedName, claudeDir) {
+async function listSessions(encodedName, claudeDir) {
   const projectsDir = claudeDir ?? path__namespace.join(os__namespace.homedir(), ".claude", "projects");
   const sessionDir = path__namespace.join(projectsDir, encodedName);
-  if (!fs__namespace.existsSync(sessionDir)) return [];
-  return fs__namespace.readdirSync(sessionDir).filter((f) => f.endsWith(".jsonl")).map((f) => {
-    const filePath = path__namespace.join(sessionDir, f);
-    const stat = fs__namespace.statSync(filePath);
-    return { sessionId: f.replace(".jsonl", ""), filePath, mtime: stat.mtimeMs };
-  }).sort((a, b) => b.mtime - a.mtime);
+  try {
+    await fs__namespace.promises.access(sessionDir);
+  } catch {
+    return [];
+  }
+  const files = (await fs__namespace.promises.readdir(sessionDir)).filter((f) => f.endsWith(".jsonl"));
+  const results = await Promise.all(
+    files.map(async (f) => {
+      const filePath = path__namespace.join(sessionDir, f);
+      const stat = await fs__namespace.promises.stat(filePath);
+      return { sessionId: f.replace(".jsonl", ""), filePath, mtime: stat.mtimeMs };
+    })
+  );
+  return results.sort((a, b) => b.mtime - a.mtime);
 }
 function inferActionType(toolName, input, result) {
   switch (toolName) {
@@ -497,7 +510,7 @@ function walk(node, ctx, lang) {
 const symbolCache = /* @__PURE__ */ new Map();
 async function extractSymbols(absPath, language) {
   try {
-    const stat = fs__namespace.statSync(absPath);
+    const stat = await fs__namespace.promises.stat(absPath);
     const cached = symbolCache.get(absPath);
     if (cached && cached.mtime === stat.mtimeMs) return cached.symbols;
     await ensureInit();
@@ -505,7 +518,7 @@ async function extractSymbols(absPath, language) {
     if (!lang) return [];
     const parser = new Parser();
     parser.setLanguage(lang);
-    const src = fs__namespace.readFileSync(absPath, "utf8");
+    const src = await fs__namespace.promises.readFile(absPath, "utf8");
     if (src.length > 5e5) return [];
     const tree = parser.parse(src);
     const ctx = { fileId: absPath, symbols: [] };
@@ -534,12 +547,11 @@ function buildExtraIg(extraExclude) {
   if (!extraExclude?.length) return null;
   return ignore().add(extraExclude);
 }
-function loadGitignoreAt(dir) {
+async function loadGitignoreAt(dir) {
   const gitignorePath = path__namespace.join(dir, ".gitignore");
-  if (!fs__namespace.existsSync(gitignorePath)) return null;
   try {
     const ig = ignore();
-    ig.add(fs__namespace.readFileSync(gitignorePath, "utf8"));
+    ig.add(await fs.promises.readFile(gitignorePath, "utf8"));
     return ig;
   } catch {
     return null;
@@ -576,7 +588,11 @@ function getLanguage(filename) {
   return ext ? LANG_MAP[ext] : void 0;
 }
 async function scanCodebase(projectPath, extraExclude) {
-  if (!fs__namespace.existsSync(projectPath)) return [];
+  try {
+    await fs.promises.access(projectPath);
+  } catch {
+    return [];
+  }
   const extraIg = buildExtraIg(extraExclude);
   const nodes = [];
   const rootName = path__namespace.basename(projectPath);
@@ -590,7 +606,7 @@ async function scanCodebase(projectPath, extraExclude) {
   nodes.push(rootNode);
   const filePaths = [];
   const igStack = [];
-  const rootIg = loadGitignoreAt(projectPath);
+  const rootIg = await loadGitignoreAt(projectPath);
   if (rootIg) igStack.push({ baseRel: "", ig: rootIg });
   function isIgnored(relPath) {
     if (extraIg?.ignores(relPath)) return true;
@@ -600,10 +616,10 @@ async function scanCodebase(projectPath, extraExclude) {
     }
     return false;
   }
-  function walkSync(absPath, relPath, parentId) {
+  async function walkAsync(absPath, relPath, parentId) {
     let pushedIg = false;
     if (relPath !== "") {
-      const dirIg = loadGitignoreAt(absPath);
+      const dirIg = await loadGitignoreAt(absPath);
       if (dirIg) {
         igStack.push({ baseRel: relPath, ig: dirIg });
         pushedIg = true;
@@ -611,12 +627,13 @@ async function scanCodebase(projectPath, extraExclude) {
     }
     let entries;
     try {
-      entries = fs__namespace.readdirSync(absPath, { withFileTypes: true });
+      entries = await fs.promises.readdir(absPath, { withFileTypes: true });
     } catch {
       if (pushedIg) igStack.pop();
       return;
     }
     const children = [];
+    const subdirs = [];
     for (const entry of entries) {
       if (EXCLUDE.has(entry.name) || entry.name.startsWith(".")) continue;
       const childRel = relPath ? `${relPath}/${entry.name}` : entry.name;
@@ -633,7 +650,7 @@ async function scanCodebase(projectPath, extraExclude) {
         };
         nodes.push(dirNode);
         children.push(childRel);
-        walkSync(childAbs, childRel, childRel);
+        subdirs.push({ childAbs, childRel });
       } else if (entry.isFile()) {
         const language = getLanguage(entry.name);
         const fileNode = {
@@ -656,9 +673,12 @@ async function scanCodebase(projectPath, extraExclude) {
       const parentNode = nodes.find((n) => n.id === parentId);
       if (parentNode) parentNode.children.push(...children);
     }
+    for (const { childAbs, childRel } of subdirs) {
+      await walkAsync(childAbs, childRel, childRel);
+    }
     if (pushedIg) igStack.pop();
   }
-  walkSync(projectPath, "", "");
+  await walkAsync(projectPath, "", "");
   const CONCURRENCY = 8;
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   async function processFile(info) {
@@ -706,52 +726,54 @@ async function scanCodebase(projectPath, extraExclude) {
   }
   return nodes;
 }
-const fileOffsets = /* @__PURE__ */ new Map();
-async function tailNewLines(filePath) {
-  const offset = fileOffsets.get(filePath) ?? 0;
-  const stat = fs__namespace.statSync(filePath);
-  if (stat.size <= offset) return [];
-  const buf = Buffer.alloc(stat.size - offset);
-  const fd = fs__namespace.openSync(filePath, "r");
-  fs__namespace.readSync(fd, buf, 0, buf.length, offset);
-  fs__namespace.closeSync(fd);
-  fileOffsets.set(filePath, stat.size);
-  return buf.toString("utf8").split("\n").filter((l) => l.trim());
-}
-function sendToRenderer(channel, data) {
+const debounceTimers = /* @__PURE__ */ new Map();
+function sendToRenderer$1(channel, data) {
   electron.BrowserWindow.getAllWindows().forEach((w) => {
     if (!w.isDestroyed()) w.webContents.send(channel, data);
   });
 }
+function tryRealpath(p) {
+  try {
+    return fs__namespace.realpathSync(p);
+  } catch {
+    return p;
+  }
+}
 function startSessionWatcher() {
-  const claudeDir = path__namespace.join(os__namespace.homedir(), ".claude", "projects");
-  if (!fs__namespace.existsSync(claudeDir)) return () => {
+  const rawClaudeDir = path__namespace.join(os__namespace.homedir(), ".claude", "projects");
+  if (!fs__namespace.existsSync(rawClaudeDir)) return () => {
   };
-  const watcher = chokidar.watch(`${claudeDir}/**/*.jsonl`, {
+  const claudeDir = tryRealpath(rawClaudeDir);
+  const watcher = chokidar.watch(claudeDir, {
     persistent: true,
     ignoreInitial: true,
-    // don't fire for existing files on startup
-    awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 }
+    depth: 1
   });
-  watcher.on("add", async (filePath) => {
-    try {
-      const stat = fs__namespace.statSync(filePath);
-      fileOffsets.set(filePath, stat.size);
-      const result = await parseSession(filePath);
-      sendToRenderer("session:new", { filePath, ...result });
-    } catch {
-    }
+  function scheduleReparse(filePath, channel) {
+    const existing = debounceTimers.get(filePath);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(async () => {
+      debounceTimers.delete(filePath);
+      try {
+        const realPath = tryRealpath(filePath);
+        const result = await parseSession(realPath);
+        sendToRenderer$1(channel, { filePath: realPath, ...result });
+      } catch {
+      }
+    }, 100);
+    debounceTimers.set(filePath, timer);
+  }
+  watcher.on("add", (fp) => {
+    if (fp.endsWith(".jsonl")) scheduleReparse(fp, "session:new");
   });
-  watcher.on("change", async (filePath) => {
-    try {
-      const newLines = await tailNewLines(filePath);
-      if (newLines.length === 0) return;
-      const result = await parseSession(filePath);
-      sendToRenderer("session:update", { filePath, ...result });
-    } catch {
-    }
+  watcher.on("change", (fp) => {
+    if (fp.endsWith(".jsonl")) scheduleReparse(fp, "session:update");
   });
-  return () => watcher.close();
+  return () => {
+    watcher.close();
+    for (const t of debounceTimers.values()) clearTimeout(t);
+    debounceTimers.clear();
+  };
 }
 function isGitRepo(projectPath) {
   return fs__namespace.existsSync(path__namespace.join(projectPath, ".git"));
@@ -900,12 +922,180 @@ function startGitWatcher(projectPath) {
   return stopGitWatcher;
 }
 function stopGitWatcher() {
-  headWatcher?.close();
+  headWatcher?.close().catch(() => {
+  });
   headWatcher = null;
+}
+const DEFAULT_PROJECT_SETTINGS = {
+  excludePatterns: [],
+  gitHistoryDays: null
+};
+const DEFAULT_GLOBAL_SETTINGS = {
+  claudeDir: null
+};
+const BASE_DIR = path__namespace.join(os__namespace.homedir(), ".claude-vertex");
+const PROJECTS_DIR = path__namespace.join(BASE_DIR, "projects");
+const GLOBAL_PATH = path__namespace.join(BASE_DIR, "config.json");
+function readJson(filePath, defaults) {
+  try {
+    return { ...defaults, ...JSON.parse(fs__namespace.readFileSync(filePath, "utf8")) };
+  } catch {
+    return { ...defaults };
+  }
+}
+function writeJson(filePath, data) {
+  fs__namespace.mkdirSync(path__namespace.dirname(filePath), { recursive: true });
+  fs__namespace.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+function getProjectSettings(encodedName) {
+  return readJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), DEFAULT_PROJECT_SETTINGS);
+}
+function setProjectSettings(encodedName, settings) {
+  writeJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), settings);
+}
+function getGlobalSettings() {
+  return readJson(GLOBAL_PATH, DEFAULT_GLOBAL_SETTINGS);
+}
+function setGlobalSettings(settings) {
+  writeJson(GLOBAL_PATH, settings);
+}
+const watchers = /* @__PURE__ */ new Map();
+function sendToRenderer(channel, data) {
+  electron.BrowserWindow.getAllWindows().forEach((w) => {
+    if (!w.isDestroyed()) w.webContents.send(channel, data);
+  });
+}
+function startCodebaseWatcher(projectPath, encodedName) {
+  if (watchers.has(projectPath)) return;
+  if (!fs__namespace.existsSync(projectPath)) return;
+  const { excludePatterns } = getProjectSettings(encodedName);
+  const SOURCE_EXTS = /* @__PURE__ */ new Set([
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "mjs",
+    "cjs",
+    "py",
+    "rs",
+    "go",
+    "rb",
+    "java",
+    "kt",
+    "swift",
+    "cs",
+    "cpp",
+    "cc",
+    "c",
+    "h",
+    "hpp",
+    "json",
+    "toml",
+    "yaml",
+    "yml",
+    "env",
+    "sh",
+    "bash",
+    "zsh",
+    "css",
+    "scss",
+    "sass",
+    "less",
+    "html",
+    "svelte",
+    "vue",
+    "md",
+    "mdx",
+    "txt",
+    "sql",
+    "dockerfile",
+    "makefile",
+    "gemfile",
+    "rakefile"
+  ]);
+  const watcher = chokidar.watch(projectPath, {
+    persistent: true,
+    ignoreInitial: true,
+    ignored: (filePath) => {
+      const rel = filePath.slice(projectPath.length + 1);
+      if (!rel) return false;
+      const first = rel.split("/")[0];
+      if ([
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        "out",
+        ".next",
+        ".nuxt",
+        "coverage",
+        ".cache",
+        "__pycache__",
+        ".venv",
+        "venv",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        // Common ML/data directories that can contain millions of files
+        "artifacts",
+        "data",
+        "dataset",
+        "datasets",
+        "raw_data",
+        "models",
+        "weights",
+        "checkpoints",
+        "ckpt",
+        "logs",
+        "wandb",
+        "mlruns",
+        "runs"
+      ].includes(first) || first.startsWith(".")) return true;
+      for (const pat of excludePatterns) {
+        if (rel.includes(pat)) return true;
+      }
+      const dotIdx = rel.lastIndexOf(".");
+      if (dotIdx !== -1) {
+        const ext = rel.slice(dotIdx + 1).toLowerCase();
+        if (!SOURCE_EXTS.has(ext)) return true;
+      }
+      return false;
+    }
+  });
+  const entry = { watcher, debounceTimer: null };
+  watchers.set(projectPath, entry);
+  function scheduleScan() {
+    if (entry.debounceTimer) clearTimeout(entry.debounceTimer);
+    entry.debounceTimer = setTimeout(async () => {
+      entry.debounceTimer = null;
+      try {
+        const nodes = await scanCodebase(projectPath, excludePatterns.length ? excludePatterns : void 0);
+        sendToRenderer("codebase:update", { projectPath, nodes });
+      } catch {
+      }
+    }, 2e3);
+  }
+  watcher.on("add", scheduleScan);
+  watcher.on("change", scheduleScan);
+  watcher.on("unlink", scheduleScan);
+  watcher.on("addDir", scheduleScan);
+  watcher.on("unlinkDir", scheduleScan);
+}
+function stopAllCodebaseWatchers() {
+  for (const projectPath of [...watchers.keys()]) {
+    stopCodebaseWatcher(projectPath);
+  }
+}
+function stopCodebaseWatcher(projectPath) {
+  const entry = watchers.get(projectPath);
+  if (!entry) return;
+  if (entry.debounceTimer) clearTimeout(entry.debounceTimer);
+  watchers.delete(projectPath);
+  entry.watcher.close().catch(() => {
+  });
 }
 const TS_JS_IMPORT_RE = /(?:import|export)\s+(?:.*?\s+from\s+)?['"]([^'"]+)['"]/g;
 const TS_JS_REQUIRE_RE = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
-const PY_FROM_RE = /^from\s+(\.+[\w./]*)\s+import/gm;
 const TS_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
 const PY_EXTENSIONS = [".py"];
 function resolveRelativeImport(sourceFile, importPath, projectPath, knownFiles) {
@@ -946,55 +1136,71 @@ function parseTsJsImports(sourceFile, content, projectPath, knownFiles) {
 function parsePyImports(sourceFile, content, projectPath, knownFiles) {
   const edges = [];
   const sourceDir = path.dirname(path.join(projectPath, sourceFile));
-  PY_FROM_RE.lastIndex = 0;
+  function tryResolve2(relPath) {
+    for (const candidate of [relPath + ".py", relPath + "/__init__.py"]) {
+      if (knownFiles.has(candidate) && candidate !== sourceFile) return candidate;
+    }
+    return null;
+  }
   let m;
-  while ((m = PY_FROM_RE.exec(content)) !== null) {
+  const relFromRe = /^from\s+(\.+[\w.]*)\s+import/gm;
+  while ((m = relFromRe.exec(content)) !== null) {
     const mod = m[1];
-    if (!mod) continue;
-    const dots = mod.match(/^\.+/)?.[0].length ?? 0;
-    if (dots === 0) continue;
+    const dots = mod.match(/^\.+/)[0].length;
     const modPart = mod.slice(dots).replace(/\./g, "/");
     let base = sourceDir;
     for (let i = 1; i < dots; i++) base = path.dirname(base);
-    const importPath = modPart ? path.join(base, modPart) : base;
-    const relPath = path.relative(projectPath, importPath);
-    const candidates = [
-      relPath + ".py",
-      relPath + "/__init__.py"
-    ];
-    for (const candidate of candidates) {
-      if (knownFiles.has(candidate) && candidate !== sourceFile) {
-        edges.push({ source: sourceFile, target: candidate });
-        break;
-      }
-    }
+    const absPath = modPart ? path.join(base, modPart) : base;
+    const relPath = path.relative(projectPath, absPath);
+    const target = tryResolve2(relPath);
+    if (target) edges.push({ source: sourceFile, target });
+  }
+  const absFromRe = /^from\s+([A-Za-z_][\w.]*)\s+import/gm;
+  while ((m = absFromRe.exec(content)) !== null) {
+    const target = tryResolve2(m[1].replace(/\./g, "/"));
+    if (target) edges.push({ source: sourceFile, target });
+  }
+  const absImportRe = /^import\s+([A-Za-z_][\w.]*)/gm;
+  while ((m = absImportRe.exec(content)) !== null) {
+    const target = tryResolve2(m[1].replace(/\./g, "/"));
+    if (target) edges.push({ source: sourceFile, target });
   }
   return edges;
 }
-function scanDeps(projectPath, filePaths) {
+const inFlightScans = /* @__PURE__ */ new Map();
+async function scanDeps(projectPath, filePaths) {
+  const existing = inFlightScans.get(projectPath);
+  if (existing) return existing;
+  const promise = _scanDeps(projectPath, filePaths).finally(() => inFlightScans.delete(projectPath));
+  inFlightScans.set(projectPath, promise);
+  return promise;
+}
+async function _scanDeps(projectPath, filePaths) {
   const knownFiles = new Set(filePaths);
-  const allEdges = [];
   const seen = /* @__PURE__ */ new Set();
-  for (const relPath of filePaths) {
-    const ext = path.extname(relPath);
-    const isTsJs = TS_EXTENSIONS.includes(ext);
-    const isPy = PY_EXTENSIONS.includes(ext);
-    if (!isTsJs && !isPy) continue;
-    let content;
-    try {
-      content = fs.readFileSync(path.join(projectPath, relPath), "utf8");
-    } catch {
-      continue;
-    }
-    const edges = isTsJs ? parseTsJsImports(relPath, content, projectPath, knownFiles) : parsePyImports(relPath, content, projectPath, knownFiles);
-    for (const edge of edges) {
-      const key = `${edge.source}→${edge.target}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        allEdges.push(edge);
+  const allEdges = [];
+  await Promise.all(
+    filePaths.map(async (relPath) => {
+      const ext = path.extname(relPath);
+      const isTsJs = TS_EXTENSIONS.includes(ext);
+      const isPy = PY_EXTENSIONS.includes(ext);
+      if (!isTsJs && !isPy) return;
+      let content;
+      try {
+        content = await fs.promises.readFile(path.join(projectPath, relPath), "utf8");
+      } catch {
+        return;
       }
-    }
-  }
+      const edges = isTsJs ? parseTsJsImports(relPath, content, projectPath, knownFiles) : parsePyImports(relPath, content, projectPath, knownFiles);
+      for (const edge of edges) {
+        const key = `${edge.source}→${edge.target}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          allEdges.push(edge);
+        }
+      }
+    })
+  );
   return allEdges;
 }
 async function exportMarkdown(projectPath, sessionPath, exchanges) {
@@ -1049,40 +1255,11 @@ async function captureScreenshot() {
   fs.writeFileSync(filePath, image.toPNG());
   return { success: true, filePath };
 }
-const DEFAULT_PROJECT_SETTINGS = {
-  excludePatterns: [],
-  gitHistoryDays: null
-};
-const DEFAULT_GLOBAL_SETTINGS = {
-  claudeDir: null
-};
-const BASE_DIR = path__namespace.join(os__namespace.homedir(), ".claude-vertex");
-const PROJECTS_DIR = path__namespace.join(BASE_DIR, "projects");
-const GLOBAL_PATH = path__namespace.join(BASE_DIR, "config.json");
-function readJson(filePath, defaults) {
-  try {
-    return { ...defaults, ...JSON.parse(fs__namespace.readFileSync(filePath, "utf8")) };
-  } catch {
-    return { ...defaults };
-  }
-}
-function writeJson(filePath, data) {
-  fs__namespace.mkdirSync(path__namespace.dirname(filePath), { recursive: true });
-  fs__namespace.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-function getProjectSettings(encodedName) {
-  return readJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), DEFAULT_PROJECT_SETTINGS);
-}
-function setProjectSettings(encodedName, settings) {
-  writeJson(path__namespace.join(PROJECTS_DIR, `${encodedName}.json`), settings);
-}
-function getGlobalSettings() {
-  return readJson(GLOBAL_PATH, DEFAULT_GLOBAL_SETTINGS);
-}
-function setGlobalSettings(settings) {
-  writeJson(GLOBAL_PATH, settings);
-}
 const isDev = process.env["NODE_ENV"] === "development";
+try {
+  process.setrlimit("nofile", { soft: 8192, hard: 8192 });
+} catch {
+}
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
     width: 1400,
@@ -1146,6 +1323,12 @@ function registerIpcHandlers() {
   electron.ipcMain.handle("git:watch", (_event, projectPath) => {
     startGitWatcher(projectPath);
   });
+  electron.ipcMain.handle("codebase:watch", (_event, projectPath, encodedName) => {
+    startCodebaseWatcher(projectPath, encodedName);
+  });
+  electron.ipcMain.on("codebase:unwatch", (_event, projectPath) => {
+    setImmediate(() => stopCodebaseWatcher(projectPath));
+  });
   electron.ipcMain.handle(
     "dep:scan",
     (_event, projectPath, filePaths) => scanDeps(projectPath, filePaths)
@@ -1156,9 +1339,14 @@ function registerIpcHandlers() {
 electron.app.whenReady().then(() => {
   registerIpcHandlers();
   createWindow();
-  startSessionWatcher();
+  const stopSessionWatcher = startSessionWatcher();
   electron.app.on("activate", () => {
     if (electron.BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+  electron.app.on("before-quit", () => {
+    stopSessionWatcher();
+    stopGitWatcher();
+    stopAllCodebaseWatchers();
   });
 });
 electron.app.on("window-all-closed", () => {

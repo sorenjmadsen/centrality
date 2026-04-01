@@ -93,12 +93,16 @@ function tryResolve(base: string, remaining: string): string | null {
   return null
 }
 
-export function listProjects(claudeDir?: string): ProjectInfo[] {
+export async function listProjects(claudeDir?: string): Promise<ProjectInfo[]> {
   const dir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
-  if (!fs.existsSync(dir)) return []
+  try {
+    await fs.promises.access(dir)
+  } catch {
+    return []
+  }
 
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
+  const entries = await fs.promises.readdir(dir, { withFileTypes: true })
+  return entries
     .filter(e => e.isDirectory())
     .map(e => {
       const projectPath = resolveProjectPath(e.name)
@@ -106,20 +110,24 @@ export function listProjects(claudeDir?: string): ProjectInfo[] {
     })
 }
 
-export function listSessions(encodedName: string, claudeDir?: string): SessionInfo[] {
+export async function listSessions(encodedName: string, claudeDir?: string): Promise<SessionInfo[]> {
   const projectsDir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
   const sessionDir = path.join(projectsDir, encodedName)
-  if (!fs.existsSync(sessionDir)) return []
+  try {
+    await fs.promises.access(sessionDir)
+  } catch {
+    return []
+  }
 
-  return fs
-    .readdirSync(sessionDir)
-    .filter(f => f.endsWith('.jsonl'))
-    .map(f => {
+  const files = (await fs.promises.readdir(sessionDir)).filter(f => f.endsWith('.jsonl'))
+  const results = await Promise.all(
+    files.map(async f => {
       const filePath = path.join(sessionDir, f)
-      const stat = fs.statSync(filePath)
+      const stat = await fs.promises.stat(filePath)
       return { sessionId: f.replace('.jsonl', ''), filePath, mtime: stat.mtimeMs }
     })
-    .sort((a, b) => b.mtime - a.mtime)
+  )
+  return results.sort((a, b) => b.mtime - a.mtime)
 }
 
 function inferActionType(toolName: string, input: Record<string, unknown>, result?: string): string {

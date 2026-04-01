@@ -25,12 +25,13 @@ export function startSessionWatcher(): () => void {
   if (!fs.existsSync(rawClaudeDir)) return () => {}
   const claudeDir = tryRealpath(rawClaudeDir)
 
-  // Watch the directory directly (not a glob) — more reliable with macOS FSEvents.
-  // Glob patterns can suppress FSEvents notifications on macOS.
+  // depth: 1 watches claudeDir (depth 0) and the per-project subdirs (depth 1)
+  // where *.jsonl files live. We don't need to go deeper, and each extra level
+  // opens additional file descriptors via FSEvents on macOS.
   const watcher = chokidar.watch(claudeDir, {
     persistent: true,
     ignoreInitial: true,
-    depth: 2,  // project-dir (depth 0) → session-dir (depth 1) → *.jsonl (depth 2)
+    depth: 1,
   })
 
   function scheduleReparse(filePath: string, channel: 'session:new' | 'session:update') {

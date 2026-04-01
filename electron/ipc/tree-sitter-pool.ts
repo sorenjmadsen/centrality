@@ -236,7 +236,7 @@ const symbolCache = new Map<string, CacheEntry>()
 
 export async function extractSymbols(absPath: string, language: string): Promise<SymbolInfo[]> {
   try {
-    const stat = fs.statSync(absPath)
+    const stat = await fs.promises.stat(absPath)
     const cached = symbolCache.get(absPath)
     if (cached && cached.mtime === stat.mtimeMs) return cached.symbols
 
@@ -247,7 +247,7 @@ export async function extractSymbols(absPath: string, language: string): Promise
     const parser = new Parser()
     parser.setLanguage(lang)
 
-    const src = fs.readFileSync(absPath, 'utf8')
+    const src = await fs.promises.readFile(absPath, 'utf8')
     // Skip very large files (> 500 KB) to avoid blocking
     if (src.length > 500_000) return []
 

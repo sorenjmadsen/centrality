@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('api', {
   watchCodebase: (projectPath: string, encodedName: string) =>
     ipcRenderer.invoke('codebase:watch', projectPath, encodedName),
   unwatchCodebase: (projectPath: string) =>
-    ipcRenderer.invoke('codebase:unwatch', projectPath),
+    ipcRenderer.send('codebase:unwatch', projectPath),
   onCodebaseUpdate: (callback: (data: unknown) => void) => {
     ipcRenderer.on('codebase:update', (_event, data) => callback(data))
     return () => ipcRenderer.removeAllListeners('codebase:update')

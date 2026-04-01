@@ -12604,7 +12604,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$v = [
+const __iconNode$t = [
   ["path", { d: "M12 8V4H8", key: "hb8ula" }],
   ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2", key: "enze0r" }],
   ["path", { d: "M2 14h2", key: "vft8re" }],
@@ -12612,26 +12612,7 @@ const __iconNode$v = [
   ["path", { d: "M15 13v2", key: "1xurst" }],
   ["path", { d: "M9 13v2", key: "rq6x2g" }]
 ];
-const Bot = createLucideIcon("bot", __iconNode$v);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$u = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$u);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$t = [
-  ["path", { d: "m17 18-6-6 6-6", key: "1yerx2" }],
-  ["path", { d: "M7 6v12", key: "1p53r6" }]
-];
-const ChevronFirst = createLucideIcon("chevron-first", __iconNode$t);
+const Bot = createLucideIcon("bot", __iconNode$t);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12639,37 +12620,35 @@ const ChevronFirst = createLucideIcon("chevron-first", __iconNode$t);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$s = [
-  ["path", { d: "m7 18 6-6-6-6", key: "lwmzdw" }],
-  ["path", { d: "M17 6v12", key: "1o0aio" }]
+  ["line", { x1: "18", x2: "18", y1: "20", y2: "10", key: "1xfpm4" }],
+  ["line", { x1: "12", x2: "12", y1: "20", y2: "4", key: "be30l9" }],
+  ["line", { x1: "6", x2: "6", y1: "20", y2: "14", key: "1r4le6" }]
 ];
-const ChevronLast = createLucideIcon("chevron-last", __iconNode$s);
+const ChartNoAxesColumn = createLucideIcon("chart-no-axes-column", __iconNode$s);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$r);
+const __iconNode$r = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$q);
+const __iconNode$q = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$q);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
-];
-const Clock = createLucideIcon("clock", __iconNode$p);
+const __iconNode$p = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$p);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12677,11 +12656,10 @@ const Clock = createLucideIcon("clock", __iconNode$p);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$o = [
-  ["path", { d: "M12 15V3", key: "m9g1x1" }],
-  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
-  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Download = createLucideIcon("download", __iconNode$o);
+const Clock = createLucideIcon("clock", __iconNode$o);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12689,6 +12667,18 @@ const Download = createLucideIcon("download", __iconNode$o);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$n = [
+  ["path", { d: "M12 15V3", key: "m9g1x1" }],
+  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+];
+const Download = createLucideIcon("download", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
   [
     "path",
     {
@@ -12698,14 +12688,14 @@ const __iconNode$n = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$n);
+const Eye = createLucideIcon("eye", __iconNode$m);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$l = [
   ["path", { d: "M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5", key: "1couwa" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
   [
@@ -12716,20 +12706,7 @@ const __iconNode$m = [
     }
   ]
 ];
-const FilePen = createLucideIcon("file-pen", __iconNode$m);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$l = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M9 15h6", key: "cctwl0" }],
-  ["path", { d: "M12 18v-6", key: "17g6i2" }]
-];
-const FilePlus = createLucideIcon("file-plus", __iconNode$l);
+const FilePen = createLucideIcon("file-pen", __iconNode$l);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12739,11 +12716,10 @@ const FilePlus = createLucideIcon("file-plus", __iconNode$l);
 const __iconNode$k = [
   ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
   ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M10 9H8", key: "b1mrlr" }],
-  ["path", { d: "M16 13H8", key: "t4e002" }],
-  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+  ["path", { d: "M9 15h6", key: "cctwl0" }],
+  ["path", { d: "M12 18v-6", key: "17g6i2" }]
 ];
-const FileText = createLucideIcon("file-text", __iconNode$k);
+const FilePlus = createLucideIcon("file-plus", __iconNode$k);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12751,6 +12727,36 @@ const FileText = createLucideIcon("file-text", __iconNode$k);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$j = [
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  [
+    "path",
+    { d: "M4.268 21a2 2 0 0 0 1.727 1H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3", key: "ms7g94" }
+  ],
+  ["path", { d: "m9 18-1.5-1.5", key: "1j6qii" }],
+  ["circle", { cx: "5", cy: "14", r: "3", key: "ufru5t" }]
+];
+const FileSearch = createLucideIcon("file-search", __iconNode$j);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$i = [
+  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
+  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
+  ["path", { d: "M10 9H8", key: "b1mrlr" }],
+  ["path", { d: "M16 13H8", key: "t4e002" }],
+  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+];
+const FileText = createLucideIcon("file-text", __iconNode$i);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$h = [
   [
     "path",
     {
@@ -12759,14 +12765,14 @@ const __iconNode$j = [
     }
   ]
 ];
-const FolderOpen = createLucideIcon("folder-open", __iconNode$j);
+const FolderOpen = createLucideIcon("folder-open", __iconNode$h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$i = [
+const __iconNode$g = [
   [
     "path",
     {
@@ -12775,32 +12781,7 @@ const __iconNode$i = [
     }
   ]
 ];
-const Folder = createLucideIcon("folder", __iconNode$i);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$h = [
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
-  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
-  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
-];
-const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$h);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$g = [
-  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
-  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
-  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
-  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
-];
-const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$g);
+const Folder = createLucideIcon("folder", __iconNode$g);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12808,10 +12789,11 @@ const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$g);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$f = [
-  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
-  ["path", { d: "M7 11V7a5 5 0 0 1 9.9-1", key: "1mm8w8" }]
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+  ["line", { x1: "3", x2: "9", y1: "12", y2: "12", key: "1dyftd" }],
+  ["line", { x1: "15", x2: "21", y1: "12", y2: "12", key: "oup4p8" }]
 ];
-const LockOpen = createLucideIcon("lock-open", __iconNode$f);
+const GitCommitHorizontal = createLucideIcon("git-commit-horizontal", __iconNode$f);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12819,10 +12801,11 @@ const LockOpen = createLucideIcon("lock-open", __iconNode$f);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$e = [
-  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
-  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
+  ["path", { d: "M2 12h20", key: "9i4pu4" }]
 ];
-const Lock = createLucideIcon("lock", __iconNode$e);
+const Globe = createLucideIcon("globe", __iconNode$e);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12830,12 +12813,11 @@ const Lock = createLucideIcon("lock", __iconNode$e);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$d = [
-  ["path", { d: "m14 10 7-7", key: "oa77jy" }],
-  ["path", { d: "M20 10h-6V4", key: "mjg0md" }],
-  ["path", { d: "m3 21 7-7", key: "tjx5ai" }],
-  ["path", { d: "M4 14h6v6", key: "rmj7iw" }]
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 16v-4", key: "1dtifu" }],
+  ["path", { d: "M12 8h.01", key: "e9boi3" }]
 ];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$d);
+const Info$1 = createLucideIcon("info", __iconNode$d);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12843,18 +12825,23 @@ const Minimize2 = createLucideIcon("minimize-2", __iconNode$d);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$c = [
-  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
-  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
 ];
-const Pause = createLucideIcon("pause", __iconNode$c);
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$b = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$b);
+const __iconNode$b = [
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 9.9-1", key: "1mm8w8" }]
+];
+const LockOpen = createLucideIcon("lock-open", __iconNode$b);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12862,10 +12849,10 @@ const Play = createLucideIcon("play", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
 ];
-const Plus = createLucideIcon("plus", __iconNode$a);
+const Lock = createLucideIcon("lock", __iconNode$a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12873,12 +12860,12 @@ const Plus = createLucideIcon("plus", __iconNode$a);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$9 = [
-  ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
-  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
-  ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
-  ["path", { d: "M16 16h5v5", key: "ccwih5" }]
+  ["path", { d: "m14 10 7-7", key: "oa77jy" }],
+  ["path", { d: "M20 10h-6V4", key: "mjg0md" }],
+  ["path", { d: "m3 21 7-7", key: "tjx5ai" }],
+  ["path", { d: "M4 14h6v6", key: "rmj7iw" }]
 ];
-const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$9);
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$9);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12886,12 +12873,10 @@ const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$9);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$8 = [
-  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
-  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
-  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
-  ["path", { d: "M8 16H3v5", key: "1cv678" }]
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
 ];
-const RefreshCw = createLucideIcon("refresh-cw", __iconNode$8);
+const Plus = createLucideIcon("plus", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12899,10 +12884,12 @@ const RefreshCw = createLucideIcon("refresh-cw", __iconNode$8);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$7 = [
-  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
-  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+  ["path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "14sxne" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
+  ["path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16", key: "1hlbsb" }],
+  ["path", { d: "M16 16h5v5", key: "ccwih5" }]
 ];
-const Search = createLucideIcon("search", __iconNode$7);
+const RefreshCcw = createLucideIcon("refresh-ccw", __iconNode$7);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -12910,6 +12897,30 @@ const Search = createLucideIcon("search", __iconNode$7);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$6 = [
+  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+  ["path", { d: "M8 16H3v5", key: "1cv678" }]
+];
+const RefreshCw = createLucideIcon("refresh-cw", __iconNode$6);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$5 = [
+  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
+  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+];
+const Search = createLucideIcon("search", __iconNode$5);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$4 = [
   [
     "path",
     {
@@ -12919,29 +12930,7 @@ const __iconNode$6 = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Settings = createLucideIcon("settings", __iconNode$6);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$5 = [
-  ["polygon", { points: "19 20 9 12 19 4 19 20", key: "o2sva" }],
-  ["line", { x1: "5", x2: "5", y1: "19", y2: "5", key: "1ocqjk" }]
-];
-const SkipBack = createLucideIcon("skip-back", __iconNode$5);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$4 = [
-  ["polygon", { points: "5 4 15 12 5 20 5 4", key: "16p6eg" }],
-  ["line", { x1: "19", x2: "19", y1: "5", y2: "19", key: "futhcm" }]
-];
-const SkipForward = createLucideIcon("skip-forward", __iconNode$4);
+const Settings = createLucideIcon("settings", __iconNode$4);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -13034,18 +13023,17 @@ const createImpl = (createState2) => {
 };
 const create$2 = ((createState2) => createState2 ? createImpl(createState2) : createImpl);
 function makeUiStore() {
-  return createStore$2((set2, get2) => ({
+  return createStore$2((set2) => ({
     selectedProjectEncoded: null,
     selectedProjectPath: null,
     selectedSessionPath: null,
     selectedNodeId: null,
     selectedExchangeId: null,
     playbackIndex: null,
-    isPlaying: false,
-    playbackSpeed: 1,
     activeNodeIds: /* @__PURE__ */ new Set(),
     actionTypeFilter: /* @__PURE__ */ new Set(),
     granularity: "files",
+    isContextBreakdownOpen: false,
     setSelectedProject: (encoded, projectPath) => set2({
       selectedProjectEncoded: encoded,
       selectedProjectPath: projectPath,
@@ -13053,41 +13041,25 @@ function makeUiStore() {
       selectedNodeId: null,
       selectedExchangeId: null,
       playbackIndex: null,
-      isPlaying: false,
       activeNodeIds: /* @__PURE__ */ new Set()
     }),
     setSelectedSession: (path2) => set2({
       selectedSessionPath: path2,
       playbackIndex: null,
-      isPlaying: false,
       activeNodeIds: /* @__PURE__ */ new Set()
     }),
     setSelectedNode: (id2) => set2({ selectedNodeId: id2 }),
     setSelectedExchange: (id2) => set2({ selectedExchangeId: id2 }),
     setPlaybackIndex: (i) => set2({ playbackIndex: i }),
-    setPlaying: (v) => set2({ isPlaying: v }),
-    setPlaybackSpeed: (s) => set2({ playbackSpeed: s }),
     setActiveNodeIds: (ids) => set2({ activeNodeIds: ids }),
-    stepForward: (maxIndex) => {
-      const { playbackIndex } = get2();
-      set2({ playbackIndex: playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex) });
-    },
-    stepBack: (maxIndex) => {
-      const { playbackIndex } = get2();
-      if (playbackIndex === null) {
-        set2({ playbackIndex: maxIndex });
-        return;
-      }
-      const prev = Math.max(playbackIndex - 1, 0);
-      set2({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev });
-    },
     toggleActionTypeFilter: (type) => set2((s) => {
       const next = new Set(s.actionTypeFilter);
       next.has(type) ? next.delete(type) : next.add(type);
       return { actionTypeFilter: next };
     }),
     clearActionTypeFilter: () => set2({ actionTypeFilter: /* @__PURE__ */ new Set() }),
-    setGranularity: (g) => set2({ granularity: g })
+    setGranularity: (g) => set2({ granularity: g }),
+    setContextBreakdownOpen: (v) => set2({ isContextBreakdownOpen: v })
   }));
 }
 function makeChatStore() {
@@ -13721,6 +13693,19 @@ function SettingsButton() {
       }
     )
   ] });
+}
+function ContextBreakdownButton() {
+  const { selectedSessionPath, setContextBreakdownOpen } = useUiStore();
+  if (!selectedSessionPath) return null;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "button",
+    {
+      onClick: () => setContextBreakdownOpen(true),
+      className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
+      title: "Context breakdown",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChartNoAxesColumn, { size: 14 })
+    }
+  );
 }
 function cc(names) {
   if (typeof names === "string" || typeof names === "number") return "" + names;
@@ -35443,6 +35428,159 @@ function ToolCallBlock({ toolCall }) {
     ] })
   ] });
 }
+function groupToolCalls(toolCalls) {
+  const edited = /* @__PURE__ */ new Set();
+  const created = /* @__PURE__ */ new Set();
+  const read = /* @__PURE__ */ new Set();
+  const commands = [];
+  const searches = [];
+  const agents = [];
+  const web = [];
+  for (const tc of toolCalls) {
+    const fp = tc.input["file_path"];
+    const short = fp ? fp.split("/").slice(-2).join("/") : null;
+    switch (tc.toolName) {
+      case "Edit":
+      case "MultiEdit":
+        if (short) edited.add(short);
+        break;
+      case "Write":
+        if (short) created.add(short);
+        break;
+      case "Read":
+        if (short) read.add(short);
+        break;
+      case "Bash": {
+        const cmd = tc.input["command"];
+        if (cmd) commands.push(cmd.slice(0, 80).split("\n")[0]);
+        break;
+      }
+      case "Grep": {
+        const pattern = tc.input["pattern"];
+        if (pattern) searches.push(`grep: ${pattern.slice(0, 60)}`);
+        break;
+      }
+      case "Glob": {
+        const pattern = tc.input["pattern"];
+        if (pattern) searches.push(`glob: ${pattern.slice(0, 60)}`);
+        break;
+      }
+      case "LS": {
+        const path2 = tc.input["path"];
+        if (path2) searches.push(`ls: ${path2.slice(0, 60)}`);
+        break;
+      }
+      case "Agent": {
+        const desc = tc.input["description"];
+        agents.push(desc?.slice(0, 80) ?? "sub-agent");
+        break;
+      }
+      case "WebFetch":
+      case "WebSearch": {
+        const url = tc.input["url"] ?? tc.input["query"];
+        web.push(url?.slice(0, 80) ?? tc.toolName);
+        break;
+      }
+    }
+  }
+  const groups = [];
+  if (edited.size > 0)
+    groups.push({
+      label: "Modified",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(FilePen, { size: 11 }),
+      color: "text-yellow-400",
+      items: [...edited]
+    });
+  if (created.size > 0)
+    groups.push({
+      label: "Created",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(FilePlus, { size: 11 }),
+      color: "text-green-400",
+      items: [...created]
+    });
+  if (read.size > 0)
+    groups.push({
+      label: "Read",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(FileSearch, { size: 11 }),
+      color: "text-blue-400",
+      items: [...read]
+    });
+  if (commands.length > 0)
+    groups.push({
+      label: "Ran",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Terminal, { size: 11 }),
+      color: "text-purple-400",
+      items: commands
+    });
+  if (searches.length > 0)
+    groups.push({
+      label: "Searched",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { size: 11 }),
+      color: "text-zinc-400",
+      items: searches
+    });
+  if (agents.length > 0)
+    groups.push({
+      label: "Agents",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Bot, { size: 11 }),
+      color: "text-cyan-400",
+      items: agents
+    });
+  if (web.length > 0)
+    groups.push({
+      label: "Web",
+      icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { size: 11 }),
+      color: "text-sky-400",
+      items: web
+    });
+  return groups;
+}
+function ExchangeChangeSummary({ toolCalls }) {
+  const [showRaw, setShowRaw] = reactExports.useState(false);
+  const { setSelectedNode } = useUiStore();
+  if (toolCalls.length === 0) return null;
+  const groups = groupToolCalls(toolCalls);
+  if (groups.length === 0) return null;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-1.5 space-y-1", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded border border-zinc-800 bg-zinc-900/40 px-2 py-1.5 space-y-1", children: groups.map((group) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-1.5 text-xs min-w-0", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `mt-0.5 shrink-0 ${group.color}`, children: group.icon }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `shrink-0 font-medium w-14 ${group.color}`, children: group.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-x-2 gap-y-0.5 text-zinc-400 font-mono leading-snug min-w-0 overflow-hidden", children: group.items.map((item, i) => {
+        const isFile = group.label === "Modified" || group.label === "Created" || group.label === "Read";
+        return isFile ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            className: "hover:text-zinc-200 cursor-pointer truncate max-w-full",
+            onClick: (e) => {
+              e.stopPropagation();
+              setSelectedNode(item);
+            },
+            title: item,
+            children: item
+          },
+          i
+        ) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-500 break-all", children: item }, i);
+      }) })
+    ] }, group.label)) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        className: "flex items-center gap-1 text-[10px] text-zinc-600 hover:text-zinc-400",
+        onClick: (e) => {
+          e.stopPropagation();
+          setShowRaw((r) => !r);
+        },
+        children: [
+          showRaw ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { size: 10 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { size: 10 }),
+          toolCalls.length,
+          " tool call",
+          toolCalls.length !== 1 ? "s" : ""
+        ]
+      }
+    ),
+    showRaw && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-0.5", children: toolCalls.map((tc) => /* @__PURE__ */ jsxRuntimeExports.jsx(ToolCallBlock, { toolCall: tc }, tc.id)) })
+  ] });
+}
 const COLLAPSE_THRESHOLD = 300;
 function ChatMessageBubble({ message, isHighlighted }) {
   const isUser = message.role === "user";
@@ -35452,13 +35590,7 @@ function ChatMessageBubble({ message, isHighlighted }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-sm ${isHighlighted ? "bg-zinc-800/50 rounded-lg p-1 -mx-1" : ""}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 mb-1", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `text-xs font-semibold uppercase tracking-wide ${isUser ? "text-zinc-500" : "text-zinc-400"}`, children: isUser ? "User" : message.model?.split("-").slice(0, 2).join("-") ?? "Claude" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-700", children: new Date(message.timestamp).toLocaleTimeString() }),
-      message.tokenUsage && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-700 ml-auto", children: [
-        message.tokenUsage.input.toLocaleString(),
-        " / ",
-        message.tokenUsage.output.toLocaleString(),
-        " tok"
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-700", children: new Date(message.timestamp).toLocaleTimeString() })
     ] }),
     displayText && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `prose prose-invert prose-sm max-w-none text-zinc-300
@@ -35485,7 +35617,109 @@ function ChatMessageBubble({ message, isHighlighted }) {
         }
       )
     ] }),
-    message.toolCalls.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1.5 space-y-0.5", children: message.toolCalls.map((tc) => /* @__PURE__ */ jsxRuntimeExports.jsx(ToolCallBlock, { toolCall: tc }, tc.id)) })
+    /* @__PURE__ */ jsxRuntimeExports.jsx(ExchangeChangeSummary, { toolCalls: message.toolCalls })
+  ] });
+}
+function getPricing(model) {
+  const m = (model ?? "").toLowerCase();
+  if (m.includes("opus")) {
+    return { input: 15, output: 75, cacheRead: 1.5, cacheWrite: 18.75 };
+  }
+  if (m.includes("haiku")) {
+    return { input: 0.8, output: 4, cacheRead: 0.08, cacheWrite: 1 };
+  }
+  return { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 };
+}
+function computeCost(usage, pricing) {
+  return (usage.input * pricing.input + usage.output * pricing.output + (usage.cacheRead ?? 0) * pricing.cacheRead + (usage.cacheWrite ?? 0) * pricing.cacheWrite) / 1e6;
+}
+function TokenUsagePopover({ usage, model }) {
+  const [visible, setVisible] = reactExports.useState(false);
+  const [pos, setPos] = reactExports.useState({ top: 0, left: 0 });
+  const ref = reactExports.useRef(null);
+  const pricing = getPricing(model);
+  const cost = computeCost(usage, pricing);
+  const rows = [
+    {
+      label: "Input",
+      count: usage.input,
+      desc: "Newly processed tokens, not served from cache",
+      colorClass: "text-zinc-300"
+    },
+    ...usage.cacheWrite ? [{
+      label: "Cache write",
+      count: usage.cacheWrite,
+      desc: "Tokens written to the prompt cache this turn",
+      colorClass: "text-amber-400"
+    }] : [],
+    ...usage.cacheRead ? [{
+      label: "Cache read",
+      count: usage.cacheRead,
+      desc: "Tokens served from cache (10× cheaper than input)",
+      colorClass: "text-emerald-400"
+    }] : [],
+    {
+      label: "Output",
+      count: usage.output,
+      desc: "Tokens generated by the model",
+      colorClass: "text-zinc-300"
+    }
+  ];
+  const handleMouseEnter = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.top - 8, left: rect.left });
+    }
+    setVisible(true);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "span",
+      {
+        ref,
+        className: "flex items-center gap-1.5 cursor-default select-none",
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: () => setVisible(false),
+        onClick: (e) => e.stopPropagation(),
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-zinc-600", children: [
+            usage.input.toLocaleString(),
+            "↓"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-zinc-600", children: [
+            usage.output.toLocaleString(),
+            "↑"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-zinc-500", children: [
+            "~$",
+            cost.toFixed(3)
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Info$1, { size: 10, className: "text-zinc-600 hover:text-zinc-400 transition-colors" })
+        ]
+      }
+    ),
+    visible && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "fixed z-50 pointer-events-none",
+        style: { top: pos.top, left: pos.left, transform: "translateY(-100%)" },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-2 bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-2xl text-xs w-72", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-zinc-300 font-semibold mb-2.5", children: "Token Usage" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1.5", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-[80px_1fr_auto] items-baseline gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `font-medium ${row.colorClass}`, children: row.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-500 leading-tight", children: row.desc }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-300 tabular-nums text-right", children: row.count.toLocaleString() })
+          ] }, row.label)) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2.5 pt-2 border-t border-zinc-700 flex justify-between items-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-zinc-500", children: "Estimated cost" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-zinc-300 font-medium tabular-nums", children: [
+              "~$",
+              cost.toFixed(3)
+            ] })
+          ] })
+        ] })
+      }
+    )
   ] });
 }
 function GitCommitMarker({ commit }) {
@@ -35578,11 +35812,6 @@ function buildTimeline(exchanges, commits, markers) {
   });
   return items;
 }
-function computeCost(exchange) {
-  const usage = exchange.assistantMessage.tokenUsage;
-  if (!usage) return 0;
-  return (usage.input * 3 + usage.output * 15 + (usage.cacheRead ?? 0) * 0.3 + (usage.cacheWrite ?? 0) * 3.75) / 1e6;
-}
 function ChatPanel() {
   const { exchanges, markers } = useChatStore();
   const { commits } = useGitStore();
@@ -35593,6 +35822,9 @@ function ChatPanel() {
   const saveTabViewState = useTabsStore((s) => s.saveTabViewState);
   const scrollRef = reactExports.useRef(null);
   const itemRefs = reactExports.useRef(/* @__PURE__ */ new Map());
+  const playbackIndexRef = reactExports.useRef(playbackIndex);
+  playbackIndexRef.current = playbackIndex;
+  const isLiveRef = reactExports.useRef(false);
   const timeline = reactExports.useMemo(() => buildTimeline(exchanges, commits, markers), [exchanges, commits, markers]);
   const searchResultIds = reactExports.useMemo(
     () => new Set(results.map((r) => r.exchangeId)),
@@ -35604,6 +35836,20 @@ function ChatPanel() {
     const saved = useTabsStore.getState().tabViewState[tabId]?.chatScrollTop;
     if (saved !== void 0) scrollRef.current.scrollTop = saved;
   }, [exchanges.length === 0 ? 0 : 1]);
+  reactExports.useEffect(() => {
+    if (exchanges.length === 0) {
+      isLiveRef.current = false;
+      return;
+    }
+    if (!isLiveRef.current) {
+      isLiveRef.current = true;
+      return;
+    }
+    const isViewingLatest = playbackIndexRef.current === exchanges.length - 1;
+    if (isViewingLatest && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [exchanges]);
   const activeId = playbackIndex !== null ? exchanges[playbackIndex]?.id : activeSearchId ?? selectedExchangeId;
   reactExports.useEffect(() => {
     if (!activeId) return;
@@ -35661,7 +35907,6 @@ function ChatPanel() {
     const isSelected = exchange.id === selectedExchangeId;
     const isSearchMatch = searchResultIds.has(exchange.id);
     const isActiveSearch = exchange.id === activeSearchId;
-    const cost = computeCost(exchange);
     const usage = exchange.assistantMessage.tokenUsage;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
@@ -35685,206 +35930,269 @@ function ChatPanel() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.userMessage }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "my-2 border-t border-zinc-800" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(ChatMessageBubble, { message: exchange.assistantMessage, isHighlighted: isPlaybackCurrent || isSelected }),
-          usage && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-1.5 flex items-center gap-1.5 text-xs text-zinc-600", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              usage.input.toLocaleString(),
-              "↓"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              usage.output.toLocaleString(),
-              "↑"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-zinc-500", children: [
-              "~$",
-              cost.toFixed(4)
-            ] })
-          ] })
+          usage && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1.5 flex items-center text-xs", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TokenUsagePopover, { usage, model: exchange.assistantMessage.model }) })
         ]
       },
       exchange.id
     );
   }) }) });
 }
-const SPARKLINE_H = 20;
-const SPARKLINE_COLOR = "#a1a1aa";
-function computeExchangeCost(usage) {
-  return (usage.input * 3 + usage.output * 15 + (usage.cacheRead ?? 0) * 0.3 + (usage.cacheWrite ?? 0) * 3.75) / 1e6;
+function getRate(model) {
+  const m = (model ?? "").toLowerCase();
+  if (m.includes("opus")) return { input: 15, output: 75, cacheRead: 1.5, cacheWrite: 18.75 };
+  if (m.includes("haiku")) return { input: 0.8, output: 4, cacheRead: 0.08, cacheWrite: 1 };
+  return { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 };
 }
-function TokenSparkline({ exchanges }) {
-  const costs = reactExports.useMemo(() => {
-    let cumulative = 0;
-    return exchanges.map((ex) => {
-      const usage = ex.assistantMessage.tokenUsage;
-      if (usage) {
-        cumulative += computeExchangeCost(usage);
-      }
-      return cumulative;
-    });
-  }, [exchanges]);
-  if (costs.length < 2) return null;
-  const maxCost = costs[costs.length - 1] ?? 0;
-  if (maxCost === 0) return null;
-  const n = costs.length;
-  const W = 100;
-  const points = costs.map((c, i) => {
-    const x = i / (n - 1) * W;
-    const y = SPARKLINE_H - c / maxCost * SPARKLINE_H;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
-  const totalCost = maxCost.toFixed(4);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-1", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 shrink-0 w-14", children: [
-      "~$",
-      totalCost
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "svg",
-      {
-        viewBox: `0 0 ${W} ${SPARKLINE_H}`,
-        preserveAspectRatio: "none",
-        className: "flex-1 h-5",
-        style: { height: SPARKLINE_H },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "polyline",
-          {
-            points,
-            fill: "none",
-            stroke: SPARKLINE_COLOR,
-            strokeWidth: "1.5",
-            vectorEffect: "non-scaling-stroke"
-          }
-        )
-      }
-    )
-  ] });
+function computeExchangeCost(usage, model) {
+  const r = getRate(model);
+  return (usage.input * r.input + usage.output * r.output + (usage.cacheRead ?? 0) * r.cacheRead + (usage.cacheWrite ?? 0) * r.cacheWrite) / 1e6;
 }
-function PlaybackControls() {
-  const { exchanges } = useChatStore();
-  const {
-    playbackIndex,
-    isPlaying,
-    playbackSpeed,
-    setPlaybackIndex,
-    setPlaying,
-    setPlaybackSpeed,
-    setSelectedExchange,
-    stepForward,
-    stepBack
-  } = useUiStore();
-  const maxIndex = Math.max(0, exchanges.length - 1);
-  const currentDisplay = playbackIndex === null ? exchanges.length : playbackIndex + 1;
-  const intervalRef = reactExports.useRef(null);
-  reactExports.useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (!isPlaying) return;
-    const ms = 1500 / playbackSpeed;
-    intervalRef.current = setInterval(() => {
-      const { playbackIndex: idx } = useUiStore.getState();
-      const nextIdx = idx === null ? 0 : idx + 1;
-      if (nextIdx > maxIndex) {
-        useUiStore.getState().setPlaying(false);
-        useUiStore.getState().setPlaybackIndex(maxIndex);
-      } else {
-        useUiStore.getState().setPlaybackIndex(nextIdx);
-      }
-    }, ms);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isPlaying, playbackSpeed, maxIndex]);
-  if (exchanges.length === 0) return null;
-  const sliderValue = playbackIndex === null ? exchanges.length : playbackIndex;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-zinc-800 px-3 py-2 bg-zinc-900/50 shrink-0", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(TokenSparkline, { exchanges }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-1.5", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 tabular-nums w-14 shrink-0", children: [
-        currentDisplay,
-        "/",
-        exchanges.length
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "range",
-          min: 0,
-          max: exchanges.length,
-          value: sliderValue,
-          onChange: (e) => {
-            const val = parseInt(e.target.value);
-            setPlaybackIndex(val >= exchanges.length ? null : val);
-            setPlaying(false);
-          },
-          className: "flex-1 h-1 accent-zinc-400 cursor-pointer"
-        }
-      )
+const CONTEXT_WINDOW_MAP = [
+  // Claude 1 family: 100k
+  ["claude-1", 1e5],
+  ["claude-instant-1", 1e5],
+  // Claude 2.0: 100k; Claude 2.1: 200k
+  ["claude-2.0", 1e5],
+  ["claude-2.1", 2e5],
+  ["claude-2", 1e5]
+  // Claude 3+ (haiku, sonnet, opus, 3.5, 4+): 200k
+];
+function getContextWindow(model) {
+  const m = (model ?? "").toLowerCase();
+  for (const [prefix, window2] of CONTEXT_WINDOW_MAP) {
+    if (m.includes(prefix)) return window2;
+  }
+  return 2e5;
+}
+const ACTION_HEX = {
+  read: "#60a5fa",
+  // blue-400
+  created: "#4ade80",
+  // green-400
+  edited: "#facc15",
+  // yellow-400
+  deleted: "#f87171",
+  // red-400
+  executed: "#c084fc",
+  // purple-400
+  searched: "#a1a1aa",
+  // zinc-400
+  spawned: "#22d3ee"
+  // cyan-400
+};
+const TOKEN_HEX = {
+  cacheRead: "#10b981",
+  // emerald-500
+  cacheWrite: "#f59e0b",
+  // amber-500
+  input: "#71717a",
+  // zinc-500 (uncached input)
+  output: "#6366f1"
+  // indigo-400 (output — distinct from action colors)
+};
+function fmt(n) {
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}k`;
+  return `${n}`;
+}
+function computeStats(exchange) {
+  const usage = exchange.assistantMessage.tokenUsage;
+  const model = exchange.assistantMessage.model;
+  const input = usage?.input ?? 0;
+  const cacheRead = usage?.cacheRead ?? 0;
+  const cacheWrite = usage?.cacheWrite ?? 0;
+  const output = usage?.output ?? 0;
+  const totalContext = input + cacheRead + cacheWrite;
+  const actionCounts = {};
+  for (const action of exchange.actions) {
+    const type = action.type;
+    actionCounts[type] = (actionCounts[type] ?? 0) + 1;
+  }
+  const totalActions = Object.values(actionCounts).reduce((s, c) => s + c, 0);
+  const cost = usage ? computeExchangeCost(usage, model) : 0;
+  return { totalContext, input, cacheRead, cacheWrite, output, actionCounts, totalActions, cost, model };
+}
+function TokenBar({ stats, contextWindow }) {
+  const totalFill = Math.min(stats.totalContext / contextWindow, 1);
+  const outputFill = Math.min(stats.output / contextWindow, 1);
+  const cacheReadPct = stats.totalContext > 0 ? stats.cacheRead / stats.totalContext * totalFill * 100 : 0;
+  const cacheWritePct = stats.totalContext > 0 ? stats.cacheWrite / stats.totalContext * totalFill * 100 : 0;
+  const inputPct = stats.totalContext > 0 ? stats.input / stats.totalContext * totalFill * 100 : 0;
+  const outputPct = outputFill * 100;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 h-3 bg-zinc-800 rounded-sm overflow-hidden flex", children: [
+      cacheReadPct > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { width: `${cacheReadPct}%`, background: TOKEN_HEX.cacheRead } }),
+      cacheWritePct > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { width: `${cacheWritePct}%`, background: TOKEN_HEX.cacheWrite } }),
+      inputPct > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { width: `${inputPct}%`, background: TOKEN_HEX.input } }),
+      outputPct > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { width: `${outputPct}%`, background: TOKEN_HEX.output, opacity: 0.6 } })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-0.5", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          onClick: () => {
-            setPlaybackIndex(0);
-            setPlaying(false);
-          },
-          className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
-          title: "Reset",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronFirst, { size: 14 })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          onClick: () => stepBack(maxIndex),
-          className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
-          title: "Step back",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipBack, { size: 14 })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          onClick: () => setPlaying(!isPlaying),
-          className: "p-1.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors mx-0.5",
-          children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { size: 13 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { size: 13 })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          onClick: () => stepForward(maxIndex),
-          className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
-          title: "Step forward",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { size: 14 })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          onClick: () => {
-            setPlaybackIndex(maxIndex);
-            setSelectedExchange(exchanges[maxIndex]?.id ?? null);
-            setPlaying(false);
-          },
-          className: "p-1 text-zinc-500 hover:text-zinc-300 transition-colors",
-          title: "Go to last",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLast, { size: 14 })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ml-auto flex items-center gap-0.5", children: [1, 2, 4].map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          onClick: () => setPlaybackSpeed(s),
-          className: `px-1.5 py-0.5 rounded text-xs font-mono transition-colors
-                ${playbackSpeed === s ? "bg-zinc-600 text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`,
-          children: [
-            s,
-            "×"
-          ]
-        },
-        s
-      )) })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-500 tabular-nums w-24 shrink-0 text-right", children: [
+      fmt(stats.totalContext),
+      " / ",
+      fmt(contextWindow),
+      " (",
+      Math.round(stats.totalContext / contextWindow * 100),
+      "%)"
     ] })
   ] });
+}
+function ActionBar({ stats }) {
+  if (stats.totalActions === 0) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-2 bg-zinc-800/60 rounded-sm" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-700 w-24 shrink-0 text-right", children: "no actions" })
+    ] });
+  }
+  const segments = Object.entries(stats.actionCounts).map(([type, count]) => ({
+    type,
+    pct: count / stats.totalActions * 100,
+    color: ACTION_HEX[type] ?? "#71717a"
+  }));
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-2 bg-zinc-800 rounded-sm overflow-hidden flex", children: segments.map((seg) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: { width: `${seg.pct}%`, background: seg.color },
+        title: `${seg.type}: ${stats.actionCounts[seg.type]}`
+      },
+      seg.type
+    )) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 w-24 shrink-0 text-right", children: [
+      stats.totalActions,
+      " action",
+      stats.totalActions !== 1 ? "s" : ""
+    ] })
+  ] });
+}
+function ContextBreakdownModal() {
+  const { isContextBreakdownOpen, setContextBreakdownOpen } = useUiStore();
+  const { exchanges } = useChatStore();
+  const [view, setView] = reactExports.useState("tokens");
+  const allStats = reactExports.useMemo(() => exchanges.map(computeStats), [exchanges]);
+  const contextWindow = reactExports.useMemo(() => {
+    const model = exchanges.find((e) => e.assistantMessage.model)?.assistantMessage.model;
+    return getContextWindow(model);
+  }, [exchanges]);
+  const summary = reactExports.useMemo(() => {
+    const withUsage = allStats.filter((s) => s.totalContext > 0);
+    if (withUsage.length === 0) return null;
+    const peak = Math.max(...withUsage.map((s) => s.totalContext));
+    const avg = withUsage.reduce((s, c) => s + c.totalContext, 0) / withUsage.length;
+    const totalCost = allStats.reduce((s, c) => s + c.cost, 0);
+    const model = exchanges.find((e) => e.assistantMessage.model)?.assistantMessage.model;
+    return { peak, avg, totalCost, model };
+  }, [allStats, exchanges]);
+  if (!isContextBreakdownOpen) return null;
+  const avgPct = summary ? summary.avg / contextWindow * 100 : 0;
+  const tokenLegend = [
+    { label: "Cache read", color: TOKEN_HEX.cacheRead },
+    { label: "Cache write", color: TOKEN_HEX.cacheWrite },
+    { label: "Input", color: TOKEN_HEX.input },
+    { label: "Output", color: TOKEN_HEX.output }
+  ];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "fixed inset-0 z-50 flex items-center justify-center",
+      onClick: () => setContextBreakdownOpen(false),
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-black/60 backdrop-blur-sm" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: "relative bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl w-[680px] max-h-[80vh] flex flex-col",
+            onClick: (e) => e.stopPropagation(),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-5 pt-4 pb-3 border-b border-zinc-800 shrink-0", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-sm font-semibold text-zinc-200", children: "Context Breakdown" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center rounded-md bg-zinc-800 p-0.5 text-xs", children: ["tokens", "actions"].map((v) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        onClick: () => setView(v),
+                        className: `px-2.5 py-1 rounded transition-colors capitalize ${view === v ? "bg-zinc-600 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`,
+                        children: v
+                      },
+                      v
+                    )) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        onClick: () => setContextBreakdownOpen(false),
+                        className: "p-1 text-zinc-600 hover:text-zinc-300 transition-colors",
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 14 })
+                      }
+                    )
+                  ] })
+                ] }),
+                summary && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4 text-xs text-zinc-500", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                    summary.model ?? "claude",
+                    " · ",
+                    fmt(contextWindow),
+                    " token window"
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                    "Peak: ",
+                    fmt(summary.peak),
+                    " (",
+                    Math.round(summary.peak / contextWindow * 100),
+                    "%)"
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                    "Avg: ",
+                    fmt(Math.round(summary.avg)),
+                    " (",
+                    Math.round(avgPct),
+                    "%)"
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                    "~$",
+                    summary.totalCost.toFixed(3)
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-5 py-2 border-b border-zinc-800/60 shrink-0 flex items-center gap-3 text-xs text-zinc-600 flex-wrap", children: view === "tokens" ? tokenLegend.map(({ label, color: color2 }) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-2.5 h-2.5 rounded-sm shrink-0", style: { background: color2 } }),
+                label
+              ] }, label)) : Object.entries(ACTION_HEX).map(([type, color2]) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-2 h-2 rounded-sm shrink-0", style: { background: color2 } }),
+                type
+              ] }, type)) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "overflow-y-auto flex-1 px-5 py-3 space-y-3", children: [
+                exchanges.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-zinc-600 text-sm text-center py-8", children: "No exchanges loaded." }),
+                exchanges.map((exchange, idx) => {
+                  const stats = allStats[idx];
+                  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
+                    view === "tokens" && summary && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "absolute top-0 bottom-0 w-px bg-zinc-600/50 pointer-events-none",
+                        style: { left: `calc(${avgPct}% * (100% - 6rem) / 100)` },
+                        title: `avg: ${fmt(Math.round(summary.avg))}`
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-1", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-600 tabular-nums w-6 shrink-0 text-right", children: [
+                        "#",
+                        idx + 1
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-zinc-600 truncate flex-1", children: exchange.userMessage.textContent.slice(0, 60) || "—" }),
+                      stats.cost > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-zinc-700 shrink-0", children: [
+                        "~$",
+                        stats.cost.toFixed(3)
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pl-8", children: view === "tokens" ? /* @__PURE__ */ jsxRuntimeExports.jsx(TokenBar, { stats, contextWindow }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ActionBar, { stats }) })
+                  ] }, exchange.id);
+                })
+              ] })
+            ]
+          }
+        )
+      ]
+    }
+  );
 }
 const useTabCacheStore = create$2((set2, get2) => ({
   cache: /* @__PURE__ */ new Map(),
@@ -36144,8 +36452,26 @@ function useGraphSync() {
       try {
         const saved = JSON.parse(localStorage.getItem(savedKey) ?? "{}");
         if (Object.keys(saved).length > 0) {
+          let maxSavedBottom = -Infinity;
+          const unsavedNodes = [];
           for (const n of rfNodes) {
-            if (saved[n.id]) n.position = saved[n.id];
+            if (saved[n.id]) {
+              n.position = saved[n.id];
+              const bottom = n.position.y + 68;
+              if (bottom > maxSavedBottom) maxSavedBottom = bottom;
+            } else {
+              unsavedNodes.push(n);
+            }
+          }
+          if (unsavedNodes.length > 0 && maxSavedBottom !== -Infinity) {
+            let yAccum = maxSavedBottom + 20;
+            const newSaved = { ...saved };
+            for (const n of unsavedNodes) {
+              n.position = { x: n.position.x, y: yAccum };
+              newSaved[n.id] = n.position;
+              yAccum += 68 + 10;
+            }
+            localStorage.setItem(savedKey, JSON.stringify(newSaved));
           }
         }
       } catch {
@@ -36239,6 +36565,18 @@ function TabBar() {
         setActiveTab(null);
       }
     }
+    const closingStores = tabStoreMap.get(id2);
+    if (closingStores) {
+      const projectPath = closingStores.ui.getState().selectedProjectPath;
+      if (projectPath) {
+        const stillUsed = currentTabs.some(
+          (t) => t.id !== id2 && tabStoreMap.get(t.id)?.ui.getState().selectedProjectPath === projectPath
+        );
+        if (!stillUsed) {
+          window.api.unwatchCodebase(projectPath);
+        }
+      }
+    }
     closeTab(id2);
     tabStoreMap.delete(id2);
   };
@@ -36326,6 +36664,7 @@ const useSessionStore = create$2((set2) => ({
     }
   }
 }));
+const scanningProjects = /* @__PURE__ */ new Map();
 function useOpenSession() {
   const { openTab, recordRecentProject } = useTabsStore();
   return async (params) => {
@@ -36354,8 +36693,6 @@ function useOpenSession() {
         selectedNodeId: "selectedNodeId" in savedUi ? savedUi.selectedNodeId ?? null : null,
         selectedExchangeId: "selectedExchangeId" in savedUi ? savedUi.selectedExchangeId ?? null : null,
         playbackIndex: "playbackIndex" in savedUi ? savedUi.playbackIndex ?? null : null,
-        isPlaying: false,
-        playbackSpeed: savedUi.playbackSpeed ?? 1,
         activeNodeIds: /* @__PURE__ */ new Set(),
         actionTypeFilter: savedUi.actionTypeFilter ?? /* @__PURE__ */ new Set(),
         granularity: savedUi.granularity ?? "files"
@@ -36397,43 +36734,59 @@ function useOpenSession() {
         sessions
       });
     } else {
-      let sharedNodes = null;
-      let sharedRootIds = null;
-      for (const [tid, stores] of tabStoreMap) {
-        if (tid !== newTabId && stores.ui.getState().selectedProjectPath === params.projectPath && stores.codebase.getState().nodes.size > 0) {
-          sharedNodes = stores.codebase.getState().nodes;
-          sharedRootIds = stores.codebase.getState().rootIds;
-          break;
+      let scanPromise = scanningProjects.get(params.projectPath);
+      if (!scanPromise) {
+        let sharedNodes = null;
+        let sharedRootIds = null;
+        for (const [tid, stores] of tabStoreMap) {
+          if (tid !== newTabId && stores.ui.getState().selectedProjectPath === params.projectPath && stores.codebase.getState().nodes.size > 0) {
+            sharedNodes = stores.codebase.getState().nodes;
+            sharedRootIds = stores.codebase.getState().rootIds;
+            break;
+          }
+        }
+        if (sharedNodes && sharedRootIds) {
+          scanPromise = Promise.resolve({ nodes: sharedNodes, rootIds: sharedRootIds });
+        } else {
+          tabStores.codebase.getState().clear();
+          tabStores.codebase.setState({ isLoading: true });
+          const p = window.api.scanCodebase(params.projectPath, params.projectEncoded).then((raw) => {
+            const nodes = new Map(raw.map((n) => [n.id, n]));
+            const rootIds = raw.filter((n) => n.parent == null).map((n) => n.id);
+            return { nodes, rootIds };
+          }).finally(() => scanningProjects.delete(params.projectPath));
+          scanningProjects.set(params.projectPath, p);
+          scanPromise = p;
         }
       }
-      if (sharedNodes && sharedRootIds) {
-        tabStores.codebase.setState({
-          nodes: sharedNodes,
-          rootIds: sharedRootIds,
-          restoredFromCache: true
-        });
-        useTabCacheStore.getState().patch(params.sessionPath, {
-          codebaseNodes: sharedNodes,
-          codebaseRootIds: sharedRootIds
-        });
-      } else {
-        tabStores.codebase.getState().clear();
-        tabStores.codebase.getState().scanProject(params.projectPath, params.projectEncoded).then(() => {
-          const { nodes, rootIds } = tabStores.codebase.getState();
-          useTabCacheStore.getState().patch(params.sessionPath, { codebaseNodes: nodes, codebaseRootIds: rootIds });
-        });
-      }
+      scanPromise.then(({ nodes, rootIds }) => {
+        tabStores.codebase.setState({ nodes, rootIds, isLoading: false });
+        useTabCacheStore.getState().patch(params.sessionPath, { codebaseNodes: nodes, codebaseRootIds: rootIds });
+      });
       window.api.listSessions(params.projectEncoded).then((raw) => {
         const sessions = raw;
         useTabCacheStore.getState().patch(params.sessionPath, { sessions });
         tabStores.session.setState({ sessions });
       });
-      tabStores.git.getState().clear();
-      tabStores.git.getState().loadCommits(params.projectPath, params.projectEncoded).then(() => {
-        const { commits } = tabStores.git.getState();
-        useTabCacheStore.getState().patch(params.sessionPath, { commits });
-      });
+      let sharedCommits = null;
+      for (const [tid, stores] of tabStoreMap) {
+        if (tid !== newTabId && stores.ui.getState().selectedProjectPath === params.projectPath && stores.git.getState().commits.length > 0) {
+          sharedCommits = stores.git.getState().commits;
+          break;
+        }
+      }
+      if (sharedCommits) {
+        tabStores.git.setState({ commits: sharedCommits });
+        useTabCacheStore.getState().patch(params.sessionPath, { commits: sharedCommits });
+      } else {
+        tabStores.git.getState().clear();
+        tabStores.git.getState().loadCommits(params.projectPath, params.projectEncoded).then(() => {
+          const { commits } = tabStores.git.getState();
+          useTabCacheStore.getState().patch(params.sessionPath, { commits });
+        });
+      }
       window.api.gitWatch(params.projectPath);
+      window.api.watchCodebase(params.projectPath, params.projectEncoded);
     }
     tabStores.ui.getState().setSelectedSession(params.sessionPath);
     try {
@@ -36692,6 +37045,7 @@ function SessionView() {
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ContextBreakdownButton, {}),
       /* @__PURE__ */ jsxRuntimeExports.jsx(SettingsButton, {}),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 w-px bg-zinc-700 shrink-0" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(ExportMenu, {})
@@ -36713,11 +37067,11 @@ function SessionView() {
           style: { width: chatWidth },
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1.5 border-b border-zinc-800 text-sm font-semibold text-zinc-500 uppercase tracking-wide shrink-0", children: "Conversation" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChatPanel, {}) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(PlaybackControls, {})
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChatPanel, {}) })
           ]
         }
-      )
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ContextBreakdownModal, {})
     ] })
   ] });
 }
@@ -36736,13 +37090,43 @@ function AppInner() {
     return window.api.onSessionUpdate((data) => {
       const d = data;
       for (const [, stores] of tabStoreMap) {
-        if (stores.ui.getState().selectedSessionPath === d.filePath) {
+        const storedPath = stores.ui.getState().selectedSessionPath;
+        const normalizedStored = storedPath?.replace(/^\/private/, "") ?? null;
+        const normalizedIncoming = d.filePath.replace(/^\/private/, "");
+        if (normalizedStored === normalizedIncoming) {
+          const last = d.exchanges[d.exchanges.length - 1];
+          if (last && !last.assistantMessage.textContent.trim() && last.assistantMessage.toolCalls.length === 0 && last.actions.length === 0) {
+            continue;
+          }
           const current = stores.chat.getState().exchanges;
-          const isNew = d.exchanges.length !== current.length || d.exchanges.length > 0 && current.length > 0 && d.exchanges[d.exchanges.length - 1].id !== current[current.length - 1].id;
+          const currentLast = current[current.length - 1];
+          const isNew = d.exchanges.length !== current.length || last && currentLast && (last.id !== currentLast.id || // Also update when existing exchange's content grows (response completed)
+          last.assistantMessage.textContent.length > currentLast.assistantMessage.textContent.length || last.assistantMessage.toolCalls.length > currentLast.assistantMessage.toolCalls.length);
           if (isNew) {
+            const prevLastId = current[current.length - 1]?.id ?? null;
+            const prevLastIdx = current.length - 1;
+            const uiState = stores.ui.getState();
+            const userIsAtLatest = uiState.selectedExchangeId === null && uiState.playbackIndex === null || uiState.selectedExchangeId === prevLastId || uiState.playbackIndex === prevLastIdx;
             stores.chat.getState().setExchanges(d.exchanges, d.markers ?? []);
             stores.session.setState({ actions: d.actions });
+            if (userIsAtLatest && d.exchanges.length > 0) {
+              const newLastIdx = d.exchanges.length - 1;
+              uiState.setSelectedExchange(d.exchanges[newLastIdx].id);
+              uiState.setPlaybackIndex(newLastIdx);
+            }
           }
+        }
+      }
+    });
+  }, []);
+  React.useEffect(() => {
+    return window.api.onCodebaseUpdate((data) => {
+      const d = data;
+      for (const [, stores] of tabStoreMap) {
+        if (stores.ui.getState().selectedProjectPath === d.projectPath) {
+          const nodeMap = new Map(d.nodes.map((n) => [n.id, n]));
+          const rootIds = d.nodes.filter((n) => n.parent == null).map((n) => n.id);
+          stores.codebase.setState({ nodes: nodeMap, rootIds, restoredFromCache: false });
         }
       }
     });

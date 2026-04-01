@@ -26,6 +26,20 @@ export function TabBar() {
       }
     }
 
+    // Stop the codebase watcher if no other tab is using the same project
+    const closingStores = tabStoreMap.get(id)
+    if (closingStores) {
+      const projectPath = closingStores.ui.getState().selectedProjectPath
+      if (projectPath) {
+        const stillUsed = currentTabs.some(
+          t => t.id !== id && tabStoreMap.get(t.id)?.ui.getState().selectedProjectPath === projectPath
+        )
+        if (!stillUsed) {
+          window.api.unwatchCodebase(projectPath)
+        }
+      }
+    }
+
     closeTab(id)
     tabStoreMap.delete(id)
   }

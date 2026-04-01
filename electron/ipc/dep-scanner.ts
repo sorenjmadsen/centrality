@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { promises as fsp } from 'fs'
 import { join, dirname, extname, resolve, relative } from 'path'
 
 export interface DepEdge {
@@ -120,37 +120,52 @@ function parsePyImports(
   return edges
 }
 
-export function scanDeps(projectPath: string, filePaths: string[]): DepEdge[] {
+// Dedup in-flight dep scans: if two tabs open the same project simultaneously,
+// only one scan runs and the second awaits the same promise.
+const inFlightScans = new Map<string, Promise<DepEdge[]>>()
+
+export async function scanDeps(projectPath: string, filePaths: string[]): Promise<DepEdge[]> {
+  const existing = inFlightScans.get(projectPath)
+  if (existing) return existing
+
+  const promise = _scanDeps(projectPath, filePaths)
+    .finally(() => inFlightScans.delete(projectPath))
+  inFlightScans.set(projectPath, promise)
+  return promise
+}
+
+async function _scanDeps(projectPath: string, filePaths: string[]): Promise<DepEdge[]> {
   const knownFiles = new Set(filePaths)
-  const allEdges: DepEdge[] = []
   const seen = new Set<string>()
+  const allEdges: DepEdge[] = []
 
-  for (const relPath of filePaths) {
-    const ext = extname(relPath)
-    const isTsJs = TS_EXTENSIONS.includes(ext)
-    const isPy = PY_EXTENSIONS.includes(ext)
+  await Promise.all(
+    filePaths.map(async relPath => {
+      const ext = extname(relPath)
+      const isTsJs = TS_EXTENSIONS.includes(ext)
+      const isPy = PY_EXTENSIONS.includes(ext)
+      if (!isTsJs && !isPy) return
 
-    if (!isTsJs && !isPy) continue
-
-    let content: string
-    try {
-      content = readFileSync(join(projectPath, relPath), 'utf8')
-    } catch {
-      continue
-    }
-
-    const edges = isTsJs
-      ? parseTsJsImports(relPath, content, projectPath, knownFiles)
-      : parsePyImports(relPath, content, projectPath, knownFiles)
-
-    for (const edge of edges) {
-      const key = `${edge.source}→${edge.target}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        allEdges.push(edge)
+      let content: string
+      try {
+        content = await fsp.readFile(join(projectPath, relPath), 'utf8')
+      } catch {
+        return
       }
-    }
-  }
+
+      const edges = isTsJs
+        ? parseTsJsImports(relPath, content, projectPath, knownFiles)
+        : parsePyImports(relPath, content, projectPath, knownFiles)
+
+      for (const edge of edges) {
+        const key = `${edge.source}→${edge.target}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          allEdges.push(edge)
+        }
+      }
+    })
+  )
 
   return allEdges
 }

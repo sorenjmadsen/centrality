@@ -194,7 +194,7 @@ export function startGitWatcher(projectPath: string): () => void {
   return stopGitWatcher
 }
 
-function stopGitWatcher(): void {
-  headWatcher?.close()
+export function stopGitWatcher(): void {
+  headWatcher?.close().catch(() => {})
   headWatcher = null
 }
