@@ -35,7 +35,7 @@ export function ChatMessageBubble({ message, isHighlighted }: ChatMessageProps) 
 
       {displayText && (
         <div>
-          <div className={`prose prose-invert prose-sm max-w-none text-zinc-300
+          <div className={`prose prose-invert prose-sm max-w-none text-zinc-300 break-words
             prose-p:my-1
             prose-ul:my-1 prose-ol:my-1 prose-li:my-0
             prose-headings:text-zinc-200 prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1

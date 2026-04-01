@@ -29,13 +29,9 @@ export function computeExchangeCost(
 // Source: https://docs.anthropic.com/en/docs/about-claude/models/overview
 // Update this map when new models are released with different context windows.
 const CONTEXT_WINDOW_MAP: Array<[string, number]> = [
-  // Claude 1 family: 100k
-  ['claude-1',          100_000],
-  ['claude-instant-1',  100_000],
-  // Claude 2.0: 100k; Claude 2.1: 200k
-  ['claude-2.0',        100_000],
-  ['claude-2.1',        200_000],
-  ['claude-2',          100_000],
+  // Claude 4.6 models: 1M context window
+  ['claude-sonnet-4-6', 1_000_000],
+  ['claude-opus-4-6',   1_000_000],
   // Claude 3+ (haiku, sonnet, opus, 3.5, 4+): 200k
 ]
 

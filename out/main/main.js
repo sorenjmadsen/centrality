@@ -305,11 +305,12 @@ async function parseSession(filePath) {
       if (e.message?.model) pendingAssistantModel = e.message.model;
       if (e.message?.usage) {
         const u = e.message.usage;
+        const prev = pendingAssistantUsage ?? { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
         pendingAssistantUsage = {
-          input: u["input_tokens"] ?? 0,
-          output: u["output_tokens"] ?? 0,
-          cacheRead: u["cache_read_input_tokens"] ?? void 0,
-          cacheWrite: u["cache_creation_input_tokens"] ?? void 0
+          input: prev.input + (u["input_tokens"] ?? 0),
+          output: prev.output + (u["output_tokens"] ?? 0),
+          cacheRead: (prev.cacheRead ?? 0) + (u["cache_read_input_tokens"] ?? 0),
+          cacheWrite: (prev.cacheWrite ?? 0) + (u["cache_creation_input_tokens"] ?? 0)
         };
       }
     }
