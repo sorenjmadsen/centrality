@@ -134,7 +134,7 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
                   onChange={() => setProjectSettings(s => ({ ...s, gitHistoryDays: null }))}
                   className="accent-accent"
                 />
-                <span className="text-xs text-zinc-300">Default (200 most recent commits)</span>
+                <span className="text-xs text-zinc-300">Default (10 most recent commits)</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input

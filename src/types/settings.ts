@@ -1,7 +1,7 @@
 export interface ProjectSettings {
   /** Additional dirs/files to exclude beyond the hardcoded EXCLUDE set */
   excludePatterns: string[]
-  /** Load git commits from this many days back. null = use default --max-count=200 */
+  /** Load git commits from this many days back. null = use default --max-count=10 */
   gitHistoryDays: number | null
 }
 

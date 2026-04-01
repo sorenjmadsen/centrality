@@ -31,7 +31,7 @@ export async function getGitLog(projectPath: string, historyDays?: number): Prom
 
   try {
     const git = simpleGit(projectPath)
-    const countArg = historyDays != null ? `--after=${historyDays}.days.ago` : '--max-count=200'
+    const countArg = historyDays != null ? `--after=${historyDays}.days.ago` : '--max-count=10'
     const rawOutput = await git.raw([
       'log',
       countArg,
