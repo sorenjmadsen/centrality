@@ -173,6 +173,7 @@ interface RawEntry {
   type: string
   uuid?: string
   parentUuid?: string
+  requestId?: string
   timestamp?: string
   sessionId?: string
   summary?: string
@@ -246,12 +247,24 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
   let pendingAssistantToolCalls: ToolCallEntry[] = []
   let pendingAssistantText = ''
   let pendingAssistantModel: string | undefined
-  let pendingAssistantUsage: { input: number; output: number; cacheRead?: number; cacheWrite?: number } | undefined
+  // requestId → last-seen usage for that API call (last entry has cumulative output count)
+  let pendingRequestUsage: Map<string, Record<string, number>> = new Map()
   let pendingAssistantId = ''
   let pendingAssistantTs = ''
 
   function flushExchange() {
     if (!pendingUserMsg) return
+    // Sum usage across unique requestIds (deduplicates multi-block API responses)
+    let pendingAssistantUsage: { input: number; output: number; cacheRead: number; cacheWrite: number } | undefined
+    for (const u of pendingRequestUsage.values()) {
+      const prev = pendingAssistantUsage ?? { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
+      pendingAssistantUsage = {
+        input:      prev.input      + (u['input_tokens']                ?? 0),
+        output:     prev.output     + (u['output_tokens']               ?? 0),
+        cacheRead:  prev.cacheRead  + (u['cache_read_input_tokens']     ?? 0),
+        cacheWrite: prev.cacheWrite + (u['cache_creation_input_tokens'] ?? 0),
+      }
+    }
     const assistantMsg: ChatMessage = {
       id: pendingAssistantId || pendingUserMsg.id + '-assistant',
       role: 'assistant',
@@ -290,7 +303,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     pendingAssistantToolCalls = []
     pendingAssistantText = ''
     pendingAssistantModel = undefined
-    pendingAssistantUsage = undefined
+    pendingRequestUsage = new Map()
     pendingAssistantId = ''
     pendingAssistantTs = ''
   }
@@ -374,14 +387,11 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       }
       if (e.message?.model) pendingAssistantModel = e.message.model
       if (e.message?.usage) {
-        const u = e.message.usage
-        const prev = pendingAssistantUsage ?? { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
-        pendingAssistantUsage = {
-          input: prev.input + (u['input_tokens'] ?? 0),
-          output: prev.output + (u['output_tokens'] ?? 0),
-          cacheRead: (prev.cacheRead ?? 0) + (u['cache_read_input_tokens'] ?? 0),
-          cacheWrite: (prev.cacheWrite ?? 0) + (u['cache_creation_input_tokens'] ?? 0),
-        }
+        // Each unique requestId is one API call; multiple JSONL entries share the same requestId
+        // (one per content block: thinking, text, tool_use). The last entry has the final
+        // cumulative output token count, so we overwrite rather than sum within a requestId.
+        const rid = e.requestId ?? e.uuid ?? ''
+        pendingRequestUsage.set(rid, e.message.usage)
       }
     }
   }
