@@ -4,9 +4,10 @@ import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
 import { SettingsButton } from './components/TopBar/SettingsButton'
+import { ContextBreakdownButton } from './components/TopBar/ContextBreakdownButton'
 import { CodebaseGraph } from './components/Graph/CodebaseGraph'
 import { ChatPanel } from './components/ChatPanel/ChatPanel'
-import { PlaybackControls } from './components/ChatPanel/PlaybackControls'
+import { ContextBreakdownModal } from './components/ChatPanel/ContextBreakdownModal'
 import { useGraphSync } from './lib/use-graph-sync'
 import { GranularityControl } from './components/Controls/GranularityControl'
 import { TabBar } from './components/TabBar/TabBar'
@@ -100,6 +101,7 @@ function SessionView(): React.ReactElement {
           </button>
         )}
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
+        <ContextBreakdownButton />
         <SettingsButton />
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <ExportMenu />
@@ -130,8 +132,8 @@ function SessionView(): React.ReactElement {
           <div className="flex-1 overflow-hidden">
             <ChatPanel />
           </div>
-          <PlaybackControls />
         </div>
+        <ContextBreakdownModal />
       </div>
     </>
   )

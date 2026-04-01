@@ -18,7 +18,6 @@ export interface TabViewState {
   selectedNodeId?: string | null
   selectedExchangeId?: string | null
   playbackIndex?: number | null
-  playbackSpeed?: 1 | 2 | 4
   actionTypeFilter?: Set<string>
   granularity?: 'files' | 'symbols'
 }

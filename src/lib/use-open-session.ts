@@ -52,8 +52,6 @@ export function useOpenSession() {
         selectedNodeId: 'selectedNodeId' in savedUi ? savedUi.selectedNodeId ?? null : null,
         selectedExchangeId: 'selectedExchangeId' in savedUi ? savedUi.selectedExchangeId ?? null : null,
         playbackIndex: 'playbackIndex' in savedUi ? savedUi.playbackIndex ?? null : null,
-        isPlaying: false,
-        playbackSpeed: savedUi.playbackSpeed ?? 1,
         activeNodeIds: new Set(),
         actionTypeFilter: savedUi.actionTypeFilter ?? new Set(),
         granularity: savedUi.granularity ?? 'files',
