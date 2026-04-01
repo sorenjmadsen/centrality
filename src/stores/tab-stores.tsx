@@ -33,24 +33,20 @@ export interface UiStore {
   selectedNodeId: string | null
   selectedExchangeId: string | null
   playbackIndex: number | null
-  isPlaying: boolean
-  playbackSpeed: 1 | 2 | 4
   activeNodeIds: Set<string>
   actionTypeFilter: Set<string>
   granularity: 'files' | 'symbols'
+  isContextBreakdownOpen: boolean
   setSelectedProject(encoded: string, projectPath: string): void
   setSelectedSession(path: string): void
   setSelectedNode(id: string | null): void
   setSelectedExchange(id: string | null): void
   setPlaybackIndex(i: number | null): void
-  setPlaying(v: boolean): void
-  setPlaybackSpeed(s: 1 | 2 | 4): void
   setActiveNodeIds(ids: Set<string>): void
-  stepForward(maxIndex: number): void
-  stepBack(maxIndex: number): void
   toggleActionTypeFilter(type: string): void
   clearActionTypeFilter(): void
   setGranularity(g: 'files' | 'symbols'): void
+  setContextBreakdownOpen(v: boolean): void
 }
 
 export interface ChatStore {
@@ -128,18 +124,17 @@ export interface TabStores {
 // ─── Individual Store Factories ───────────────────────────────────────────────
 
 function makeUiStore(): StoreApi<UiStore> {
-  return createStore<UiStore>((set, get) => ({
+  return createStore<UiStore>(set => ({
     selectedProjectEncoded: null,
     selectedProjectPath: null,
     selectedSessionPath: null,
     selectedNodeId: null,
     selectedExchangeId: null,
     playbackIndex: null,
-    isPlaying: false,
-    playbackSpeed: 1,
     activeNodeIds: new Set(),
     actionTypeFilter: new Set(),
     granularity: 'files',
+    isContextBreakdownOpen: false,
 
     setSelectedProject: (encoded, projectPath) => set({
       selectedProjectEncoded: encoded,
@@ -148,31 +143,17 @@ function makeUiStore(): StoreApi<UiStore> {
       selectedNodeId: null,
       selectedExchangeId: null,
       playbackIndex: null,
-      isPlaying: false,
       activeNodeIds: new Set(),
     }),
     setSelectedSession: path => set({
       selectedSessionPath: path,
       playbackIndex: null,
-      isPlaying: false,
       activeNodeIds: new Set(),
     }),
     setSelectedNode: id => set({ selectedNodeId: id }),
     setSelectedExchange: id => set({ selectedExchangeId: id }),
     setPlaybackIndex: i => set({ playbackIndex: i }),
-    setPlaying: v => set({ isPlaying: v }),
-    setPlaybackSpeed: s => set({ playbackSpeed: s }),
     setActiveNodeIds: ids => set({ activeNodeIds: ids }),
-    stepForward: maxIndex => {
-      const { playbackIndex } = get()
-      set({ playbackIndex: playbackIndex === null ? 0 : Math.min(playbackIndex + 1, maxIndex) })
-    },
-    stepBack: maxIndex => {
-      const { playbackIndex } = get()
-      if (playbackIndex === null) { set({ playbackIndex: maxIndex }); return }
-      const prev = Math.max(playbackIndex - 1, 0)
-      set({ playbackIndex: prev === 0 && playbackIndex === 0 ? null : prev })
-    },
     toggleActionTypeFilter: type => set(s => {
       const next = new Set(s.actionTypeFilter)
       next.has(type) ? next.delete(type) : next.add(type)
@@ -180,6 +161,7 @@ function makeUiStore(): StoreApi<UiStore> {
     }),
     clearActionTypeFilter: () => set({ actionTypeFilter: new Set() }),
     setGranularity: g => set({ granularity: g }),
+    setContextBreakdownOpen: v => set({ isContextBreakdownOpen: v }),
   }))
 }
 
