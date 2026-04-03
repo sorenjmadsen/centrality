@@ -12,8 +12,8 @@ export interface GlobalSettings {
   launchAtLogin: boolean
   /** Show the app in the macOS dock */
   showDockIcon: boolean
-  /** UI color theme (placeholder — not yet applied) */
-  colorTheme: 'dark' | 'system'
+  /** UI color theme */
+  colorTheme: 'dark' | 'light' | 'terracotta'
 }
 
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {

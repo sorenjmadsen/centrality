@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { ProjectSettings, GlobalSettings } from '../types/settings'
 import { DEFAULT_PROJECT_SETTINGS, DEFAULT_GLOBAL_SETTINGS } from '../types/settings'
+import { applyTheme, getTheme } from '../lib/themes'
 
 interface SettingsStore {
   projectSettings: Record<string, ProjectSettings>
@@ -34,11 +35,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     const s = await window.api.getGlobalSettings() as GlobalSettings
     const settings = { ...DEFAULT_GLOBAL_SETTINGS, ...s }
     set({ globalSettings: settings })
+    applyTheme(getTheme(settings.colorTheme))
     return settings
   },
 
   saveGlobalSettings: async (settings) => {
     await window.api.setGlobalSettings(settings)
     set({ globalSettings: settings })
+    applyTheme(getTheme(settings.colorTheme))
   },
 }))

@@ -3,8 +3,8 @@
 
 /* Accent color tokens — overridden at runtime via applyTheme() in lib/themes.ts */
 @theme {
-  --color-accent: #3b82f6;      /* blue-500 equivalent */
-  --color-accent-deep: #2563eb; /* blue-600 equivalent */
+  --color-accent: #D97B4A;      /* Claude orange */
+  --color-accent-deep: #BF6435; /* Claude orange deep */
 }
 
 @keyframes pulse-opacity {
@@ -43,4 +43,22 @@
 }
 .react-flow__controls button:hover {
   background-color: #27272a !important;
+}
+
+[data-theme="light"] .react-flow__controls button {
+  background-color: #f4f4f5 !important;
+  border-color: #d4d4d8 !important;
+  color: #52525b !important;
+}
+[data-theme="light"] .react-flow__controls button:hover {
+  background-color: #e4e4e7 !important;
+}
+
+[data-theme="terracotta"] .react-flow__controls button {
+  background-color: #1A1008 !important;
+  border-color: #3D2518 !important;
+  color: #A87552 !important;
+}
+[data-theme="terracotta"] .react-flow__controls button:hover {
+  background-color: #281810 !important;
 }
