@@ -15,6 +15,7 @@ import { Dashboard } from './components/Dashboard/Dashboard'
 import { SettingsPage } from './components/Settings/SettingsPage'
 import { useTabsStore } from './stores/tabs-store'
 import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useChatStore } from './stores/tab-stores'
+import { useSettingsStore } from './stores/settings-store'
 import type { GitCommit } from './types/git'
 import type { ChatExchange, ChatMarker } from './types/chat'
 import type { ClaudeAction } from './types/actions'
@@ -143,6 +144,13 @@ function SessionView(): React.ReactElement {
 function AppInner(): React.ReactElement {
   const tabs = useTabsStore(s => s.tabs)
   const activeTabId = useTabsStore(s => s.activeTabId)
+  const { loadGlobalSettings } = useSettingsStore()
+
+  // Apply saved theme on startup
+  React.useEffect(() => {
+    loadGlobalSettings()
+  }, [loadGlobalSettings])
+
   // Live git HEAD listener — updates all mounted tabs for the affected project
   React.useEffect(() => {
     return window.api.onGitHeadChanged((data: unknown) => {

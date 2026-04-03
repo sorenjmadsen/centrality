@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings, Zap } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings } from 'lucide-react'
 import { useSessionStore, type ProjectInfo, type SessionInfo } from '../../stores/session-store'
 import { useTabsStore } from '../../stores/tabs-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -79,22 +79,14 @@ export function Dashboard() {
     <div className="flex-1 overflow-y-auto scrollable bg-zinc-950">
       <div className="max-w-3xl mx-auto px-8 py-10">
         {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-1">
-            <Zap size={18} className="text-blue-400" />
-            <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">Claude Vertex</h1>
-            <div className="flex-1" />
-            <button
-              onClick={openSettings}
-              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-2 py-1 rounded hover:bg-zinc-800"
-            >
-              <Settings size={13} />
-              <span>Settings</span>
-            </button>
-          </div>
-          <p className="text-sm text-zinc-500 ml-[26px]">
-            Visualize Claude Code sessions as interactive code graphs
-          </p>
+        <div className="mb-10 flex justify-end">
+          <button
+            onClick={openSettings}
+            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-2 py-1 rounded hover:bg-zinc-800"
+          >
+            <Settings size={13} />
+            <span>Settings</span>
+          </button>
         </div>
 
         {/* Recent section */}
@@ -123,7 +115,7 @@ export function Dashboard() {
                   >
                     <FolderOpen
                       size={15}
-                      className="text-blue-400 shrink-0 mt-0.5 group-hover:text-blue-300 transition-colors"
+                      className="text-accent shrink-0 mt-0.5 transition-colors"
                     />
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-zinc-200 truncate leading-snug">

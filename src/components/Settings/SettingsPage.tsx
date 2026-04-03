@@ -3,6 +3,8 @@ import { Settings, Wifi, Download, Upload, FolderOpen } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { GlobalSettings } from '../../types/settings'
 import { DEFAULT_GLOBAL_SETTINGS } from '../../types/settings'
+import { THEMES, applyTheme, getTheme } from '../../lib/themes'
+import type { ThemeName } from '../../lib/themes'
 
 type SettingsTab = 'general' | 'remote' | 'configuration'
 
@@ -134,14 +136,55 @@ function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch
         title="Color Theme"
         description="Customize the Vertex interface appearance."
       >
-        <div className="rounded-lg border border-zinc-700/60 bg-zinc-800/40 px-4 py-3 flex items-center gap-3">
-          <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center shrink-0">
-            <span className="text-zinc-400 text-xs">✦</span>
-          </div>
-          <div>
-            <div className="text-sm text-zinc-400">Theme customization coming soon</div>
-            <div className="text-xs text-zinc-600 mt-0.5">Additional themes will be available in a future update</div>
-          </div>
+        <div className="flex gap-3">
+          {THEMES.map(theme => {
+            const isSelected = draft.colorTheme === theme.name
+            // Pick representative colors for the mini preview
+            const previewBg = theme.zinc?.['950'] ?? '#09090b'
+            const previewPanel = theme.zinc?.['900'] ?? '#18181b'
+            const previewBorder = theme.zinc?.['700'] ?? '#3f3f46'
+            return (
+              <button
+                key={theme.name}
+                onClick={() => {
+                  applyTheme(getTheme(theme.name as ThemeName))
+                  onChange({ colorTheme: theme.name as ThemeName })
+                }}
+                className={[
+                  'flex-1 rounded-lg border-2 p-3 text-left transition-all',
+                  isSelected
+                    ? 'border-accent'
+                    : 'border-zinc-700 hover:border-zinc-500',
+                ].join(' ')}
+              >
+                {/* Mini preview */}
+                <div
+                  className="w-full h-12 rounded mb-2.5 overflow-hidden relative"
+                  style={{ backgroundColor: previewBg, border: `1px solid ${previewBorder}` }}
+                >
+                  {/* Simulated panel strip */}
+                  <div
+                    className="absolute inset-y-0 right-0 w-2/5"
+                    style={{ backgroundColor: previewPanel, borderLeft: `1px solid ${previewBorder}` }}
+                  />
+                  {/* Accent dot */}
+                  <div
+                    className="absolute bottom-2 left-2 w-2 h-2 rounded-full"
+                    style={{ backgroundColor: theme.accent }}
+                  />
+                  {/* Accent bar (simulated top bar) */}
+                  <div
+                    className="absolute top-0 inset-x-0 h-1.5"
+                    style={{ backgroundColor: previewPanel, borderBottom: `1px solid ${previewBorder}` }}
+                  />
+                </div>
+                <div className="text-xs font-medium text-zinc-300">{theme.label}</div>
+                {isSelected && (
+                  <div className="text-accent text-[10px] mt-0.5 font-medium">Active</div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </Section>
     </div>
