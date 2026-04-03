@@ -1,4 +1,5 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, shell, ipcMain } from 'electron'
+import * as fs from 'fs'
 import { join } from 'path'
 import { listProjects, listSessions, parseSession } from './ipc/jsonl-parser'
 import { scanCodebase } from './ipc/codebase-scanner'
@@ -60,9 +61,22 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('settings:get-global', () => getGlobalSettings())
 
-  ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) =>
+  ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) => {
     setGlobalSettings(settings)
-  )
+    // Apply system-level effects
+    try {
+      app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin ?? false })
+    } catch {
+      // Unsupported on this platform — ignore
+    }
+    if (app.dock) {
+      if (settings.showDockIcon ?? true) {
+        app.dock.show()
+      } else {
+        app.dock.hide()
+      }
+    }
+  })
 
   ipcMain.handle('projects:list', () => {
     const { claudeDir } = getGlobalSettings()
@@ -125,6 +139,73 @@ function registerIpcHandlers(): void {
   ) => exportMarkdown(projectPath, sessionPath, exchanges))
 
   ipcMain.handle('export:screenshot', () => captureScreenshot())
+
+  ipcMain.handle('settings:pick-directory', async (_event) => {
+    const win = BrowserWindow.getFocusedWindow()
+    const result = await dialog.showOpenDialog(win ?? BrowserWindow.getAllWindows()[0], {
+      title: 'Select Claude Projects Directory',
+      properties: ['openDirectory'],
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+
+    const dirPath = result.filePaths[0]
+
+    // Validate: should look like ~/.claude — containing a projects/ subdir with
+    // encoded project dirs (e.g. "-Users-soren-my-project") that hold .jsonl session files.
+    let warning: string | null = null
+    try {
+      const projectsPath = `${dirPath}/projects`
+      if (!fs.existsSync(projectsPath)) {
+        warning = 'This doesn\'t look like a Claude directory.'
+      } else {
+        const entries = fs.readdirSync(projectsPath, { withFileTypes: true })
+        const encodedProjectDirs = entries.filter(
+          e => e.isDirectory() && e.name.startsWith('-') && !/[\s.]/.test(e.name)
+        )
+        const hasJsonl = encodedProjectDirs.some(sub => {
+          try {
+            return fs.readdirSync(`${projectsPath}/${sub.name}`).some(f => f.endsWith('.jsonl'))
+          } catch { return false }
+        })
+        if (!hasJsonl) {
+          warning = 'This doesn\'t look like a Claude directory.'
+        }
+      }
+    } catch {
+      warning = 'Could not read the selected directory.'
+    }
+
+    return { path: dirPath, warning }
+  })
+
+  ipcMain.handle('settings:export', async (_event) => {
+    const win = BrowserWindow.getFocusedWindow()
+    const result = await dialog.showSaveDialog(win ?? BrowserWindow.getAllWindows()[0], {
+      title: 'Export Vertex Settings',
+      defaultPath: 'vertex-settings.json',
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    })
+    if (result.cancelled || !result.filePath) return { success: false, cancelled: true }
+    const settings = getGlobalSettings()
+    fs.writeFileSync(result.filePath, JSON.stringify(settings, null, 2))
+    return { success: true, cancelled: false }
+  })
+
+  ipcMain.handle('settings:import', async (_event) => {
+    const win = BrowserWindow.getFocusedWindow()
+    const result = await dialog.showOpenDialog(win ?? BrowserWindow.getAllWindows()[0], {
+      title: 'Import Vertex Settings',
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+      properties: ['openFile'],
+    })
+    if (result.cancelled || result.filePaths.length === 0) return null
+    try {
+      const raw = fs.readFileSync(result.filePaths[0], 'utf8')
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
+  })
 }
 
 app.whenReady().then(() => {

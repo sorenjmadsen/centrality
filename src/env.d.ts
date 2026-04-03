@@ -29,5 +29,8 @@ interface Window {
       }>
     ): Promise<unknown>
     exportScreenshot(): Promise<unknown>
+    exportSettings(): Promise<{ success: boolean; cancelled: boolean }>
+    importSettings(): Promise<unknown>
+    pickDirectory(): Promise<{ path: string; warning: string | null } | null>
   }
 }

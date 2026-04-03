@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, FolderOpen, Zap } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings, Zap } from 'lucide-react'
 import { useSessionStore, type ProjectInfo, type SessionInfo } from '../../stores/session-store'
 import { useTabsStore } from '../../stores/tabs-store'
+import { useSettingsStore } from '../../stores/settings-store'
 import { useOpenSession } from '../../lib/use-open-session'
 
 export function Dashboard() {
   const { projects, loadProjects, isLoadingProjects } = useSessionStore()
-  const { recentProjects } = useTabsStore()
+  const { recentProjects, openSettings } = useTabsStore()
+  const { globalSettings, loadGlobalSettings } = useSettingsStore()
   const openSession = useOpenSession()
+
+  useEffect(() => { loadGlobalSettings() }, [loadGlobalSettings])
 
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [projectSessions, setProjectSessions] = useState<Record<string, SessionInfo[]>>({})
@@ -79,6 +83,14 @@ export function Dashboard() {
           <div className="flex items-center gap-2.5 mb-1">
             <Zap size={18} className="text-blue-400" />
             <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">Claude Vertex</h1>
+            <div className="flex-1" />
+            <button
+              onClick={openSettings}
+              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-2 py-1 rounded hover:bg-zinc-800"
+            >
+              <Settings size={13} />
+              <span>Settings</span>
+            </button>
           </div>
           <p className="text-sm text-zinc-500 ml-[26px]">
             Visualize Claude Code sessions as interactive code graphs
@@ -141,7 +153,7 @@ export function Dashboard() {
             <div className="text-sm text-zinc-600 animate-pulse py-4">Scanning ~/.claude/projects/…</div>
           ) : sortedProjects.length === 0 ? (
             <div className="text-sm text-zinc-600 py-4">
-              No projects found in <code className="text-zinc-500">~/.claude/projects/</code>
+              No projects found in <code className="text-zinc-500">{globalSettings.claudeDir ?? '~/.claude'}/projects/</code>
             </div>
           ) : (
             <div className="space-y-1">

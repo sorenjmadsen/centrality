@@ -94,7 +94,7 @@ function tryResolve(base: string, remaining: string): string | null {
 }
 
 export async function listProjects(claudeDir?: string): Promise<ProjectInfo[]> {
-  const dir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
+  const dir = claudeDir ? path.join(claudeDir, 'projects') : path.join(os.homedir(), '.claude', 'projects')
   try {
     await fs.promises.access(dir)
   } catch {
@@ -111,7 +111,7 @@ export async function listProjects(claudeDir?: string): Promise<ProjectInfo[]> {
 }
 
 export async function listSessions(encodedName: string, claudeDir?: string): Promise<SessionInfo[]> {
-  const projectsDir = claudeDir ?? path.join(os.homedir(), '.claude', 'projects')
+  const projectsDir = claudeDir ? path.join(claudeDir, 'projects') : path.join(os.homedir(), '.claude', 'projects')
   const sessionDir = path.join(projectsDir, encodedName)
   try {
     await fs.promises.access(sessionDir)

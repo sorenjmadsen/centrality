@@ -12,6 +12,7 @@ import { useGraphSync } from './lib/use-graph-sync'
 import { GranularityControl } from './components/Controls/GranularityControl'
 import { TabBar } from './components/TabBar/TabBar'
 import { Dashboard } from './components/Dashboard/Dashboard'
+import { SettingsPage } from './components/Settings/SettingsPage'
 import { useTabsStore } from './stores/tabs-store'
 import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useChatStore } from './stores/tab-stores'
 import type { GitCommit } from './types/git'
@@ -223,6 +224,9 @@ function AppInner(): React.ReactElement {
 
       {/* Dashboard — shown when no tab is active */}
       {activeTabId === null && <Dashboard />}
+
+      {/* Settings page — shown when settings tab is active */}
+      {activeTabId === '__settings__' && <SettingsPage />}
 
       {/* All open tabs — CSS-mounted so switching is zero-render */}
       {tabs.map(tab => (
