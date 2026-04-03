@@ -6,8 +6,14 @@ export interface ProjectSettings {
 }
 
 export interface GlobalSettings {
-  /** Override for the Claude projects directory. null = ~/.claude/projects */
+  /** Override for the Claude base directory. null = ~/.claude */
   claudeDir: string | null
+  /** Launch the app automatically at login */
+  launchAtLogin: boolean
+  /** Show the app in the macOS dock */
+  showDockIcon: boolean
+  /** UI color theme (placeholder — not yet applied) */
+  colorTheme: 'dark' | 'system'
 }
 
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
@@ -17,4 +23,7 @@ export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
 
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   claudeDir: null,
+  launchAtLogin: false,
+  showDockIcon: true,
+  colorTheme: 'dark',
 }

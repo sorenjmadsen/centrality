@@ -50,7 +50,8 @@ function saveRecent(projects: RecentProject[]) {
 
 interface TabsStore {
   tabs: SessionTab[]
-  activeTabId: string | null  // null = dashboard
+  activeTabId: string | null  // null = dashboard, '__settings__' = settings page
+  settingsTabOpen: boolean
   recentProjects: RecentProject[]
   tabViewState: Record<string, TabViewState>
 
@@ -61,6 +62,10 @@ interface TabsStore {
   closeTab(id: string): void
   recordRecentProject(p: Omit<RecentProject, 'lastOpened'>): void
   saveTabViewState(id: string, patch: Partial<TabViewState>): void
+  /** Open the settings tab (or focus it if already open). */
+  openSettings(): void
+  /** Close the settings tab and revert to the last session tab or dashboard. */
+  closeSettings(): void
 }
 
 let _seq = 0
@@ -68,6 +73,7 @@ let _seq = 0
 export const useTabsStore = create<TabsStore>((set, get) => ({
   tabs: [],
   activeTabId: null,
+  settingsTabOpen: false,
   recentProjects: loadRecent(),
   tabViewState: {},
 
@@ -104,5 +110,20 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
     const updated = [{ ...project, lastOpened: Date.now() }, ...filtered].slice(0, MAX_RECENT)
     saveRecent(updated)
     set({ recentProjects: updated })
+  },
+
+  openSettings: () => {
+    const { settingsTabOpen } = get()
+    if (settingsTabOpen) {
+      set({ activeTabId: '__settings__' })
+    } else {
+      set({ settingsTabOpen: true, activeTabId: '__settings__' })
+    }
+  },
+
+  closeSettings: () => {
+    const { tabs } = get()
+    const revertTo = tabs.length > 0 ? tabs[tabs.length - 1].id : null
+    set({ settingsTabOpen: false, activeTabId: revertTo })
   },
 }))

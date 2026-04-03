@@ -1,10 +1,10 @@
 import React from 'react'
-import { LayoutDashboard, X } from 'lucide-react'
+import { LayoutDashboard, Settings, X } from 'lucide-react'
 import { useTabsStore, type SessionTab } from '../../stores/tabs-store'
 import { tabStoreMap } from '../../stores/tab-stores'
 
 export function TabBar() {
-  const { tabs, activeTabId, setActiveTab, closeTab } = useTabsStore()
+  const { tabs, activeTabId, settingsTabOpen, setActiveTab, closeTab, openSettings, closeSettings } = useTabsStore()
 
   const handleTabClick = (tab: SessionTab) => {
     if (tab.id === activeTabId) return
@@ -96,6 +96,53 @@ export function TabBar() {
           </button>
         )
       })}
+
+      {/* Settings tab — visible when open */}
+      {settingsTabOpen && (
+        <button
+          onClick={() => setActiveTab('__settings__')}
+          className={[
+            'group flex items-center gap-2 pl-3.5 pr-2 text-base shrink-0 border-r border-zinc-800',
+            'relative transition-colors select-none',
+            activeTabId === '__settings__'
+              ? 'text-zinc-100 bg-zinc-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-accent'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60',
+          ].join(' ')}
+        >
+          <Settings size={12} />
+          <span>Settings</span>
+          <span
+            role="button"
+            aria-label="Close settings tab"
+            onClick={e => { e.stopPropagation(); closeSettings() }}
+            className={[
+              'flex items-center justify-center w-4 h-4 rounded transition-colors ml-0.5',
+              activeTabId === '__settings__'
+                ? 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100'
+                : 'text-transparent group-hover:text-zinc-500 hover:!text-zinc-200 hover:bg-zinc-700',
+            ].join(' ')}
+          >
+            <X size={10} />
+          </span>
+        </button>
+      )}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Gear button — always visible, right-pinned */}
+      <button
+        onClick={openSettings}
+        title="Settings"
+        className={[
+          'flex items-center justify-center w-9 shrink-0 border-l border-zinc-800 transition-colors',
+          activeTabId === '__settings__'
+            ? 'text-zinc-300 bg-zinc-900'
+            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/60',
+        ].join(' ')}
+      >
+        <Settings size={14} />
+      </button>
     </div>
   )
 }

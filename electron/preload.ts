@@ -5,6 +5,9 @@ export type IpcChannels =
   | 'settings:set-project'
   | 'settings:get-global'
   | 'settings:set-global'
+  | 'settings:export'
+  | 'settings:import'
+  | 'settings:pick-directory'
   | 'projects:list'
   | 'session:list'
   | 'session:load'
@@ -58,6 +61,9 @@ contextBridge.exposeInMainWorld('api', {
     }>
   ) => ipcRenderer.invoke('export:markdown', projectPath, sessionPath, exchanges),
   exportScreenshot: () => ipcRenderer.invoke('export:screenshot'),
+  exportSettings: () => ipcRenderer.invoke('settings:export'),
+  importSettings: () => ipcRenderer.invoke('settings:import'),
+  pickDirectory: () => ipcRenderer.invoke('settings:pick-directory'),
 })
 
 // Type declaration lives in src/env.d.ts for the renderer
