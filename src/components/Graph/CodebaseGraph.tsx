@@ -34,7 +34,7 @@ const edgeTypes = {
 }
 
 function positionsKey(sessionPath: string, granularity: string) {
-  return `claude-vertex:positions:${sessionPath}:${granularity}`
+  return `centrality:positions:${sessionPath}:${granularity}`
 }
 
 function loadSavedPositions(sessionPath: string, granularity: string): Record<string, { x: number; y: number }> {

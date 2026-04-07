@@ -80,7 +80,7 @@
 
 ## Configuration
 
-Store user preferences in `~/.claude-vertex/config.json`:
+Store user preferences in `~/.centrality/config.json`:
 
 ```json
 {

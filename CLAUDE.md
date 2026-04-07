@@ -1,4 +1,4 @@
-# Claude Vertex
+# Centrality
 
 Cross-platform Electron app that visualizes how Claude Code interacts with a codebase. Parses session transcripts from `~/.claude/projects/` and overlays Claude's actions onto an interactive graph of the code structure (files → classes → functions). The full conversation appears in a right sidebar with inline tool call blocks, bidirectionally linked to the graph.
 

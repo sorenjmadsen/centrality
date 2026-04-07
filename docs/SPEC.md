@@ -262,7 +262,7 @@ Use a debounced watcher (500ms) to batch rapid changes (e.g., during `npm instal
 ## Directory Structure
 
 ```
-claude-vertex/
+centrality/
 ├── electron/
 │   ├── main.ts                  # Electron main process
 │   ├── preload.ts               # Context bridge for IPC

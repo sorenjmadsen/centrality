@@ -4,7 +4,7 @@ import * as os from 'os'
 import type { ProjectSettings, GlobalSettings } from '../../src/types/settings'
 import { DEFAULT_PROJECT_SETTINGS, DEFAULT_GLOBAL_SETTINGS } from '../../src/types/settings'
 
-const BASE_DIR = path.join(os.homedir(), '.claude-vertex')
+const BASE_DIR = path.join(os.homedir(), '.centrality')
 const PROJECTS_DIR = path.join(BASE_DIR, 'projects')
 const GLOBAL_PATH = path.join(BASE_DIR, 'config.json')
 

@@ -63,7 +63,7 @@ export async function captureScreenshot(): Promise<{ success: boolean; filePath?
   const image = await win.webContents.capturePage()
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: 'Save Screenshot',
-    defaultPath: 'claude-vertex-screenshot.png',
+    defaultPath: 'centrality-screenshot.png',
     filters: [{ name: 'PNG Image', extensions: ['png'] }],
   })
 

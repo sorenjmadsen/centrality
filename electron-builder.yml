@@ -1,5 +1,5 @@
-appId: com.claude-vertex.app
-productName: Claude Vertex
+appId: com.centrality.app
+productName: Centrality
 directories:
   buildResources: build
 files:
@@ -17,5 +17,5 @@ linux:
   target:
     - AppImage
     - deb
-  maintainer: claude-vertex
+  maintainer: centrality
   category: Development

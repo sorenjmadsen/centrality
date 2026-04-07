@@ -1,3 +1,3 @@
-# claude-vertex
+# centrality
 
-Vertex is a desktop app that allows you to trace how Claude uses and modifies your codebase.
+Centrality is a desktop app that allows you to trace how Claude uses and modifies your codebase.

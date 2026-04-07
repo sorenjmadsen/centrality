@@ -207,7 +207,7 @@ export function useGraphSync() {
     // Apply saved node positions from localStorage.
     // New nodes (no saved position) are stacked below all saved nodes to avoid overlaps.
     if (selectedSessionPath) {
-      const savedKey = `claude-vertex:positions:${selectedSessionPath}:${granularity}`
+      const savedKey = `centrality:positions:${selectedSessionPath}:${granularity}`
       try {
         const saved = JSON.parse(localStorage.getItem(savedKey) ?? '{}') as Record<string, { x: number; y: number }>
         if (Object.keys(saved).length > 0) {

@@ -72,20 +72,20 @@ function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch
     <div>
       <Section
         title="System"
-        description="Control how Vertex behaves on your machine."
+        description="Control how Centrality behaves on your machine."
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm text-zinc-300">Launch at login</div>
-              <div className="text-xs text-zinc-500 mt-0.5">Automatically open Vertex when you log in</div>
+              <div className="text-xs text-zinc-500 mt-0.5">Automatically open Centrality when you log in</div>
             </div>
             <Toggle checked={draft.launchAtLogin} onChange={v => onChange({ launchAtLogin: v })} />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm text-zinc-300">Show dock icon</div>
-              <div className="text-xs text-zinc-500 mt-0.5">Display Vertex in the macOS dock</div>
+              <div className="text-xs text-zinc-500 mt-0.5">Display Centrality in the macOS dock</div>
             </div>
             <Toggle checked={draft.showDockIcon} onChange={v => onChange({ showDockIcon: v })} />
           </div>
@@ -134,7 +134,7 @@ function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch
 
       <Section
         title="Color Theme"
-        description="Customize the Vertex interface appearance."
+        description="Customize the Centrality interface appearance."
       >
         <div className="flex gap-3">
           {THEMES.map(theme => {
@@ -198,7 +198,7 @@ function RemoteTab() {
     <div>
       <Section
         title="SSH Connection"
-        description="Connect Vertex to Claude Code sessions running on a remote machine over SSH."
+        description="Connect Centrality to Claude Code sessions running on a remote machine over SSH."
       >
         <div className="space-y-3">
           <div>
@@ -276,7 +276,7 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
     <div>
       <Section
         title="Export Settings"
-        description="Save your current Vertex global settings to a JSON file."
+        description="Save your current Centrality global settings to a JSON file."
       >
         <div className="flex items-center gap-3">
           <button
@@ -293,7 +293,7 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
 
       <Section
         title="Import Settings"
-        description="Load settings from a previously exported Vertex JSON file."
+        description="Load settings from a previously exported Centrality JSON file."
       >
         <div className="flex items-center gap-3">
           <button
@@ -374,7 +374,7 @@ export function SettingsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">Settings</h1>
-            <p className="text-sm text-zinc-500 mt-0.5">Manage Vertex preferences</p>
+            <p className="text-sm text-zinc-500 mt-0.5">Manage Centrality preferences</p>
           </div>
           {saveStatus === 'saved' && (
             <span className="text-xs text-zinc-500 animate-pulse">Saved</span>

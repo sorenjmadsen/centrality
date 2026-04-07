@@ -181,8 +181,8 @@ function registerIpcHandlers(): void {
   ipcMain.handle('settings:export', async (_event) => {
     const win = BrowserWindow.getFocusedWindow()
     const result = await dialog.showSaveDialog(win ?? BrowserWindow.getAllWindows()[0], {
-      title: 'Export Vertex Settings',
-      defaultPath: 'vertex-settings.json',
+      title: 'Export Centrality Settings',
+      defaultPath: 'centrality-settings.json',
       filters: [{ name: 'JSON', extensions: ['json'] }],
     })
     if (result.cancelled || !result.filePath) return { success: false, cancelled: true }
@@ -194,7 +194,7 @@ function registerIpcHandlers(): void {
   ipcMain.handle('settings:import', async (_event) => {
     const win = BrowserWindow.getFocusedWindow()
     const result = await dialog.showOpenDialog(win ?? BrowserWindow.getAllWindows()[0], {
-      title: 'Import Vertex Settings',
+      title: 'Import Centrality Settings',
       filters: [{ name: 'JSON', extensions: ['json'] }],
       properties: ['openFile'],
     })

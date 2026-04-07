@@ -32,7 +32,7 @@ export interface RecentProject {
   lastSessionMtime: number
 }
 
-const STORAGE_KEY = 'claude-vertex:recent-projects'
+const STORAGE_KEY = 'centrality:recent-projects'
 const MAX_RECENT = 10
 
 function loadRecent(): RecentProject[] {

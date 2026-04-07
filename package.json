@@ -1,5 +1,5 @@
 {
-  "name": "claude-vertex",
+  "name": "centrality",
   "version": "0.1.0",
   "main": "out/main/main.js",
   "scripts": {
