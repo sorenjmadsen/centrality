@@ -1,5 +1,6 @@
 interface Window {
   api: {
+    platform: string
     getProjectSettings(encodedName: string): Promise<unknown>
     setProjectSettings(encodedName: string, settings: unknown): Promise<void>
     getGlobalSettings(): Promise<unknown>

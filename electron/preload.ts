@@ -20,6 +20,7 @@ export type IpcChannels =
   | 'export:screenshot'
 
 contextBridge.exposeInMainWorld('api', {
+  platform: process.platform,
   getProjectSettings: (encodedName: string) => ipcRenderer.invoke('settings:get-project', encodedName),
   setProjectSettings: (encodedName: string, settings: unknown) => ipcRenderer.invoke('settings:set-project', encodedName, settings),
   getGlobalSettings: () => ipcRenderer.invoke('settings:get-global'),

@@ -45,10 +45,14 @@ export function TabBar() {
   }
 
   return (
-    <div className="flex items-stretch h-9 bg-zinc-950 border-b border-zinc-800 shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div
+      className="flex items-stretch h-9 bg-zinc-950 border-b border-zinc-800 shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      style={{ WebkitAppRegion: 'drag', paddingLeft: window.api.platform === 'darwin' ? 78 : 0 } as React.CSSProperties}
+    >
       {/* Dashboard tab */}
       <button
         onClick={() => setActiveTab(null)}
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         className={[
           'flex items-center gap-1.5 px-4 text-base shrink-0 border-r border-zinc-800 font-medium',
           'relative transition-colors select-none',
@@ -71,6 +75,7 @@ export function TabBar() {
           <button
             key={tab.id}
             onClick={() => handleTabClick(tab)}
+            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             className={[
               'group flex items-center gap-2 pl-4 pr-2 text-base shrink-0 border-r border-zinc-800',
               'relative transition-colors select-none',
@@ -101,6 +106,7 @@ export function TabBar() {
       {settingsTabOpen && (
         <button
           onClick={() => setActiveTab('__settings__')}
+          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           className={[
             'group flex items-center gap-2 pl-3.5 pr-2 text-base shrink-0 border-r border-zinc-800',
             'relative transition-colors select-none',
@@ -127,13 +133,14 @@ export function TabBar() {
         </button>
       )}
 
-      {/* Spacer */}
-      <div className="flex-1" />
+      {/* Spacer — drag region for moving the window */}
+      <div className="flex-1" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} />
 
       {/* Gear button — always visible, right-pinned */}
       <button
         onClick={openSettings}
         title="Settings"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         className={[
           'flex items-center justify-center w-9 shrink-0 border-l border-zinc-800 transition-colors',
           activeTabId === '__settings__'
