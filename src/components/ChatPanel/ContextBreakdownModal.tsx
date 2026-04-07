@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import { X, Info } from 'lucide-react'
 import { useUiStore, useChatStore } from '../../stores/tab-stores'
 import { computeExchangeCost, tokensFromChars, ATTRIBUTION_HEX, ATTRIBUTION_LABELS } from '../../lib/token-utils'
@@ -54,12 +54,6 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 
 // ─── Attribution types ────────────────────────────────────────────────────────
 
-interface ClaudeMdFile {
-  scope: string  // 'global' | 'project' | 'directory'
-  path: string
-  chars: number
-}
-
 type AttributionKey = keyof typeof ATTRIBUTION_HEX
 
 interface ToolBreakdown {
@@ -107,8 +101,7 @@ interface ExchangeAttribution {
 
 function computeAttribution(
   exchange: ChatExchange,
-  claudeMdTokens: number,
-  prevInputTotal: number,
+  cumulativeHistory: number,
 ): ExchangeAttribution {
   // Use context size (final API call) for the attribution breakdown, not the
   // total-billed sum. This answers "what was in the context at the end?"
@@ -131,18 +124,25 @@ function computeAttribution(
   const skills = 0
   const atMentions = 0
 
-  // History = the previous exchange's full context (it's entirely carried forward).
-  // For the first exchange there is no prior context, so fall back to residual.
-  const teamOverhead = prevInputTotal > 0
-    ? prevInputTotal
-    : Math.max(0, inputTotal - userText - toolIO - claudeMdTokens)
+  // Absolute per-turn attribution. All segments sum to inputTotal[N]:
+  //
+  //   inputTotal[N] = systemPrompt[N]  (CLAUDE.md + tool defs + reminders + plans…)
+  //                 + history[N]       (cumulative user+tool+output from prior turns)
+  //                 + userText[N]      (this turn's user message)
+  //                 + toolIO[N]        (this turn's tool I/O — replayed on the final call)
+  //
+  // So: systemPrompt[N] = inputTotal[N] − history[N] − userText[N] − toolIO[N].
+  // This is an absolute level, so plans being added *or removed* are both
+  // visible (shrinkage is real here, not an accounting artifact).
+  const teamOverhead = cumulativeHistory
+  const claudeMd = Math.max(0, inputTotal - teamOverhead - userText - toolIO)
 
   return {
     userText,
     toolIO,
     toolBreakdown,
     hasThinking,
-    claudeMd: claudeMdTokens,
+    claudeMd,
     skills,
     atMentions,
     teamOverhead,
@@ -197,22 +197,10 @@ function Cell({ tokens, color }: { tokens: number; color: string }) {
 type ModalTab = 'totals' | 'attribution'
 
 export function ContextBreakdownModal() {
-  const { isContextBreakdownOpen, setContextBreakdownOpen, setSelectedExchange, setPlaybackIndex, selectedProjectPath } = useUiStore()
+  const { isContextBreakdownOpen, setContextBreakdownOpen, setSelectedExchange, setPlaybackIndex } = useUiStore()
   const { exchanges } = useChatStore()
 
   const [activeTab, setActiveTab] = useState<ModalTab>('totals')
-  const [claudeMdFiles, setClaudeMdFiles] = useState<ClaudeMdFile[]>([])
-
-  // Load CLAUDE.md file sizes when attribution tab is opened
-  useEffect(() => {
-    if (!isContextBreakdownOpen || !selectedProjectPath) return
-    window.api.readClaudeMd(selectedProjectPath)
-      .then(raw => setClaudeMdFiles(raw as ClaudeMdFile[]))
-      .catch(() => setClaudeMdFiles([]))
-  }, [isContextBreakdownOpen, selectedProjectPath])
-
-  const claudeMdTotalChars = claudeMdFiles.reduce((s, f) => s + f.chars, 0)
-  const claudeMdTokens = tokensFromChars(claudeMdTotalChars)
 
   const allStats = useMemo(() => exchanges.map(computeStats), [exchanges])
 
@@ -229,12 +217,16 @@ export function ContextBreakdownModal() {
 
   const allAttribution = useMemo(() => {
     const result: ExchangeAttribution[] = []
+    let cumulativeHistory = 0
     for (let i = 0; i < exchanges.length; i++) {
-      const prevInputTotal = i > 0 ? result[i - 1].inputTotal : 0
-      result.push(computeAttribution(exchanges[i], claudeMdTokens, prevInputTotal))
+      const attr = computeAttribution(exchanges[i], cumulativeHistory)
+      result.push(attr)
+      // After this turn, its user text, tool I/O, and output all become
+      // history carried into the next turn's input.
+      cumulativeHistory += attr.userText + attr.toolIO + attr.outputTotal
     }
     return result
-  }, [exchanges, claudeMdTokens])
+  }, [exchanges])
 
   const totalAttr = useMemo(() => {
     const zero: ToolBreakdown = { reads: 0, writes: 0, bash: 0, search: 0, agents: 0 }
@@ -408,11 +400,17 @@ export function ContextBreakdownModal() {
                       )
                     })}
                   </div>
-                  <div className="flex items-center justify-end text-xs text-zinc-600">
-                    <div className="flex items-center gap-1">
-                      <Info size={10} />
-                      <span>estimated · totals across all exchanges</span>
-                    </div>
+                  <div className="flex items-start gap-1.5 text-xs text-zinc-600 leading-relaxed">
+                    <Info size={10} className="mt-0.5 shrink-0" />
+                    <span>
+                      Per-turn figures reflect the <span className="text-zinc-400">context window</span> at
+                      the end of each turn (final API call), and segments sum to that turn's input. The{' '}
+                      <span className="text-zinc-400">Totals</span> tab instead shows tokens{' '}
+                      <em>billed</em> — summed across every API call in an agentic loop — so those numbers
+                      are generally larger. User text and tool I/O are character-based estimates and won't
+                      exactly match the tokenizer; System absorbs that residual along with CLAUDE.md, tool
+                      definitions, and injected reminders/plans.
+                    </span>
                   </div>
                 </>
               )}
