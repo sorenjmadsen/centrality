@@ -41,6 +41,10 @@ export interface ChatMessage {
   toolCalls: ToolCallEntry[]
   model?: string
   tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number }
+  /** Character count of extended thinking blocks */
+  thinkingChars?: number
+  /** Final API call's usage — context size at exchange completion */
+  contextUsage?: { input: number; output: number; cacheRead: number; cacheWrite: number }
 }
 
 export interface ChatMarker {
@@ -247,6 +251,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
   let pendingAssistantToolCalls: ToolCallEntry[] = []
   let pendingAssistantText = ''
   let pendingAssistantModel: string | undefined
+  let pendingThinkingChars = 0
   // requestId → last-seen usage for that API call (last entry has cumulative output count)
   let pendingRequestUsage: Map<string, Record<string, number>> = new Map()
   let pendingAssistantId = ''
@@ -265,6 +270,15 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
         cacheWrite: prev.cacheWrite + (u['cache_creation_input_tokens'] ?? 0),
       }
     }
+    // Last entry in the Map = final API call (Maps preserve insertion order)
+    const lastU = Array.from(pendingRequestUsage.values()).at(-1)
+    const contextUsage = lastU ? {
+      input:      lastU['input_tokens']                ?? 0,
+      output:     lastU['output_tokens']               ?? 0,
+      cacheRead:  lastU['cache_read_input_tokens']     ?? 0,
+      cacheWrite: lastU['cache_creation_input_tokens'] ?? 0,
+    } : undefined
+
     const assistantMsg: ChatMessage = {
       id: pendingAssistantId || pendingUserMsg.id + '-assistant',
       role: 'assistant',
@@ -273,6 +287,8 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       toolCalls: pendingAssistantToolCalls,
       model: pendingAssistantModel,
       tokenUsage: pendingAssistantUsage,
+      contextUsage,
+      thinkingChars: pendingThinkingChars > 0 ? pendingThinkingChars : undefined,
     }
     const exchangeActions = pendingAssistantToolCalls
       .map(tc => {
@@ -303,6 +319,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     pendingAssistantToolCalls = []
     pendingAssistantText = ''
     pendingAssistantModel = undefined
+    pendingThinkingChars = 0
     pendingRequestUsage = new Map()
     pendingAssistantId = ''
     pendingAssistantTs = ''
@@ -362,7 +379,11 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       // tool_result entries are already handled in toolResults map above
     } else if (e.type === 'assistant' && Array.isArray(content)) {
       for (const block of content as Record<string, unknown>[]) {
-        if (block['type'] === 'text') {
+        if (block['type'] === 'thinking') {
+          pendingThinkingChars += ((block['thinking'] as string) ?? '').length
+          if (!pendingAssistantId) pendingAssistantId = e.uuid ?? ''
+          if (!pendingAssistantTs) pendingAssistantTs = ts
+        } else if (block['type'] === 'text') {
           const newText = (block['text'] as string) ?? ''
           if (newText) {
             pendingAssistantText = pendingAssistantText

@@ -44,6 +44,11 @@ export function getContextWindow(model?: string): number {
   return 200_000
 }
 
+/** Rough token estimate from character count (≈4 chars/token for English/code). */
+export function tokensFromChars(chars: number): number {
+  return Math.ceil(chars / 4)
+}
+
 // Hex colors for action types — matches ActionBadge.tsx Tailwind classes.
 // Using hex so bars can use inline styles (avoids Tailwind purge issues with dynamic class names).
 export const ACTION_HEX: Record<string, string> = {
@@ -54,6 +59,27 @@ export const ACTION_HEX: Record<string, string> = {
   executed: '#c084fc', // purple-400
   searched: '#a1a1aa', // zinc-400
   spawned:  '#22d3ee', // cyan-400
+}
+
+// Hex colors for the 7 attribution categories.
+export const ATTRIBUTION_HEX = {
+  claudeMd:     '#f472b6',  // pink-400
+  skills:       '#34d399',  // emerald-400
+  atMentions:   '#fb923c',  // orange-400
+  toolIO:       '#60a5fa',  // blue-400
+  thinking:     '#a78bfa',  // violet-400
+  teamOverhead: '#52525b',  // zinc-600
+  userText:     '#71717a',  // zinc-500
+}
+
+export const ATTRIBUTION_LABELS: Record<keyof typeof ATTRIBUTION_HEX, string> = {
+  claudeMd:     'System',
+  skills:       'Skills',
+  atMentions:   '@-files',
+  toolIO:       'Tool I/O',
+  thinking:     'Thinking',
+  teamOverhead: 'History',
+  userText:     'User text',
 }
 
 // Hex colors for token type segments in the context bar.

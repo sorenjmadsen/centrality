@@ -93,6 +93,44 @@ function registerIpcHandlers(): void {
     return await parseSession(filePath)
   })
 
+  ipcMain.handle('session:read-claude-md', async (_event, projectPath: string) => {
+    const homeDir = app.getPath('home')
+    interface ClaudeMdFile { scope: string; path: string; chars: number }
+    const results: ClaudeMdFile[] = []
+
+    async function tryRead(scope: string, filePath: string) {
+      try {
+        const content = await fs.promises.readFile(filePath, 'utf-8')
+        results.push({ scope, path: filePath, chars: content.length })
+      } catch { /* file not found — skip */ }
+    }
+
+    // Global and project-root CLAUDE.md
+    await tryRead('global', join(homeDir, '.claude', 'CLAUDE.md'))
+    await tryRead('project', join(projectPath, 'CLAUDE.md'))
+
+    // Directory-level: scan up to 3 levels deep within the project
+    async function scanDir(dir: string, depth: number) {
+      if (depth > 3) return
+      let entries: fs.Dirent[]
+      try { entries = await fs.promises.readdir(dir, { withFileTypes: true }) }
+      catch { return }
+      for (const entry of entries) {
+        if (entry.name.startsWith('.') || entry.name === 'node_modules') continue
+        const fullPath = join(dir, entry.name)
+        if (entry.isDirectory()) {
+          await scanDir(fullPath, depth + 1)
+        } else if (entry.name === 'CLAUDE.md' && depth > 0) {
+          // depth > 0 skips the project root (already handled)
+          await tryRead('directory', fullPath)
+        }
+      }
+    }
+    await scanDir(projectPath, 0)
+
+    return results
+  })
+
   ipcMain.handle('codebase:scan', (_event, projectPath: string, encodedName: string) => {
     const { excludePatterns } = getProjectSettings(encodedName)
     return scanCodebase(projectPath, excludePatterns.length ? excludePatterns : undefined)

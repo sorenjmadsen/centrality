@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('api', {
   listProjects: () => ipcRenderer.invoke('projects:list'),
   listSessions: (encodedName: string) => ipcRenderer.invoke('session:list', encodedName),
   loadSession: (sessionPath: string) => ipcRenderer.invoke('session:load', sessionPath),
+  readClaudeMd: (projectPath: string) => ipcRenderer.invoke('session:read-claude-md', projectPath),
   scanCodebase: (projectPath: string, encodedName: string) => ipcRenderer.invoke('codebase:scan', projectPath, encodedName),
   onSessionUpdate: (callback: (data: unknown) => void) => {
     ipcRenderer.on('session:update', (_event, data) => callback(data))

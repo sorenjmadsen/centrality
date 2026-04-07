@@ -8,6 +8,7 @@ interface Window {
     listProjects(): Promise<unknown>
     listSessions(encodedName: string): Promise<unknown>
     loadSession(filePath: string): Promise<unknown>
+    readClaudeMd(projectPath: string): Promise<unknown>
     scanCodebase(projectPath: string, encodedName: string): Promise<unknown>
     onSessionUpdate(callback: (data: unknown) => void): () => void
     watchCodebase(projectPath: string, encodedName: string): Promise<void>

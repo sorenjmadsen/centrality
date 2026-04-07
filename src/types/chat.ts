@@ -15,6 +15,15 @@ export interface ChatMessage {
     cacheRead?: number
     cacheWrite?: number
   }
+  /** Character count of extended thinking blocks in this assistant message */
+  thinkingChars?: number
+  /**
+   * Token usage of the *final* API call in the exchange (context size at completion).
+   * For single-call exchanges this equals tokenUsage. For agentic loops with many
+   * tool-use iterations, tokenUsage is the sum across all calls (total billed),
+   * while contextUsage reflects the actual context window at the end.
+   */
+  contextUsage?: { input: number; output: number; cacheRead: number; cacheWrite: number }
 }
 
 export interface ChatExchange {
