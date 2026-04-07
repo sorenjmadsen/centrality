@@ -41,8 +41,8 @@ export interface ChatMessage {
   toolCalls: ToolCallEntry[]
   model?: string
   tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number }
-  /** Character count of extended thinking blocks */
-  thinkingChars?: number
+  /** Estimated thinking output tokens (derived at flush time) */
+  thinkingTokens?: number
   /** Final API call's usage — context size at exchange completion */
   contextUsage?: { input: number; output: number; cacheRead: number; cacheWrite: number }
 }
@@ -251,7 +251,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
   let pendingAssistantToolCalls: ToolCallEntry[] = []
   let pendingAssistantText = ''
   let pendingAssistantModel: string | undefined
-  let pendingThinkingChars = 0
+  let pendingHasThinking = false
   // requestId → last-seen usage for that API call (last entry has cumulative output count)
   let pendingRequestUsage: Map<string, Record<string, number>> = new Map()
   let pendingAssistantId = ''
@@ -288,7 +288,9 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       model: pendingAssistantModel,
       tokenUsage: pendingAssistantUsage,
       contextUsage,
-      thinkingChars: pendingThinkingChars > 0 ? pendingThinkingChars : undefined,
+      thinkingTokens: pendingHasThinking
+        ? Math.max(0, (pendingAssistantUsage?.output ?? 0) - Math.ceil(pendingAssistantText.trim().length / 4))
+        : undefined,
     }
     const exchangeActions = pendingAssistantToolCalls
       .map(tc => {
@@ -319,7 +321,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     pendingAssistantToolCalls = []
     pendingAssistantText = ''
     pendingAssistantModel = undefined
-    pendingThinkingChars = 0
+    pendingHasThinking = false
     pendingRequestUsage = new Map()
     pendingAssistantId = ''
     pendingAssistantTs = ''
@@ -380,7 +382,7 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
     } else if (e.type === 'assistant' && Array.isArray(content)) {
       for (const block of content as Record<string, unknown>[]) {
         if (block['type'] === 'thinking') {
-          pendingThinkingChars += ((block['thinking'] as string) ?? '').length
+          pendingHasThinking = true
           if (!pendingAssistantId) pendingAssistantId = e.uuid ?? ''
           if (!pendingAssistantTs) pendingAssistantTs = ts
         } else if (block['type'] === 'text') {

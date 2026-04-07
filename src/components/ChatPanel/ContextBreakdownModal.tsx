@@ -124,7 +124,7 @@ function computeAttribution(
   }
   const toolIO = Object.values(toolBreakdown).reduce((s, n) => s + n, 0)
 
-  const thinking = tokensFromChars(exchange.assistantMessage.thinkingChars ?? 0)
+  const thinking = exchange.assistantMessage.thinkingTokens ?? 0
 
   const atMatches = exchange.userMessage.textContent.match(/@[\w./\\-]+/g) ?? []
   const atMentionCount = atMatches.length
@@ -357,9 +357,9 @@ export function ContextBreakdownModal() {
             <div className="px-5 py-3 border-b border-zinc-800 shrink-0">
               {peakAttr && (
                 <>
-                  {/* Row 1: System + User text */}
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    {(['claudeMd', 'userText'] as const).map(k => {
+                  {/* Row 1: System + Thinking + User text */}
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {(['claudeMd', 'thinking', 'userText'] as const).map(k => {
                       const tokens = peakAttr[k as keyof ExchangeAttribution] as number
                       const pct = peakAttr.inputTotal > 0 ? ((tokens / peakAttr.inputTotal) * 100).toFixed(0) : '—'
                       return (
@@ -413,7 +413,7 @@ export function ContextBreakdownModal() {
               )}
 
               {exchanges.length > 0 && (
-                <div className="grid grid-cols-[20px_1fr_64px_60px_60px_60px_60px_60px_64px_68px] gap-x-4 px-2 pb-1 text-xs text-zinc-600 uppercase tracking-wide">
+                <div className="grid grid-cols-[20px_1fr_64px_60px_60px_60px_60px_60px_64px_64px_68px] gap-x-3 px-2 pb-1 text-xs text-zinc-600 uppercase tracking-wide">
                   <span>#</span>
                   <span>Message</span>
                   <div className="flex items-center justify-end gap-1">
@@ -430,6 +430,10 @@ export function ContextBreakdownModal() {
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ATTRIBUTION_HEX.userText }} />
                     <span>User</span>
                   </div>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ATTRIBUTION_HEX.thinking }} />
+                    <span>{ATTRIBUTION_LABELS.thinking}</span>
+                  </div>
                   <span className="text-right">Context</span>
                 </div>
               )}
@@ -439,7 +443,7 @@ export function ContextBreakdownModal() {
                 return (
                   <div
                     key={exchange.id}
-                    className="grid grid-cols-[20px_1fr_64px_60px_60px_60px_60px_60px_64px_68px] gap-x-4 px-2 py-1.5 rounded-md hover:bg-zinc-800/40 transition-colors items-baseline cursor-pointer"
+                    className="grid grid-cols-[20px_1fr_64px_60px_60px_60px_60px_60px_64px_64px_68px] gap-x-3 px-2 py-1.5 rounded-md hover:bg-zinc-800/40 transition-colors items-baseline cursor-pointer"
                     onClick={() => {
                       setSelectedExchange(exchange.id)
                       setPlaybackIndex(idx)
@@ -458,6 +462,8 @@ export function ContextBreakdownModal() {
                     ))}
                     {/* User text */}
                     <Cell tokens={attr.userText} color={ATTRIBUTION_HEX.userText} />
+                    {/* Thinking */}
+                    <Cell tokens={attr.thinking} color={ATTRIBUTION_HEX.thinking} />
                     {/* Context total */}
                     <span className="text-xs text-zinc-400 tabular-nums text-right">
                       {attr.inputTotal > 0 ? fmt(attr.inputTotal) : '—'}

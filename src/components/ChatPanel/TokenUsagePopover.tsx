@@ -45,7 +45,7 @@ interface Row {
   colorClass: string
 }
 
-export function TokenUsagePopover({ usage, model }: { usage: TokenUsage; model?: string }) {
+export function TokenUsagePopover({ usage, model, thinkingTokens }: { usage: TokenUsage; model?: string; thinkingTokens?: number }) {
   const [visible, setVisible] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const ref = useRef<HTMLSpanElement>(null)
@@ -84,6 +84,7 @@ export function TokenUsagePopover({ usage, model }: { usage: TokenUsage; model?:
     },
   ]
 
+
   const handleMouseEnter = () => {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect()
@@ -116,11 +117,20 @@ export function TokenUsagePopover({ usage, model }: { usage: TokenUsage; model?:
             <p className="text-zinc-300 font-semibold mb-2.5">Token Usage</p>
             <div className="space-y-1.5">
               {rows.map(row => (
-                <div key={row.label} className="grid grid-cols-[80px_1fr_auto] items-baseline gap-2">
-                  <span className={`font-medium ${row.colorClass}`}>{row.label}</span>
-                  <span className="text-zinc-500 leading-tight">{row.desc}</span>
-                  <span className="text-zinc-300 tabular-nums text-right">{row.count.toLocaleString()}</span>
-                </div>
+                <React.Fragment key={row.label}>
+                  <div className="grid grid-cols-[80px_1fr_auto] items-baseline gap-2">
+                    <span className={`font-medium ${row.colorClass}`}>{row.label}</span>
+                    <span className="text-zinc-500 leading-tight">{row.desc}</span>
+                    <span className="text-zinc-300 tabular-nums text-right">{row.count.toLocaleString()}</span>
+                  </div>
+                  {row.label === 'Output' && thinkingTokens && thinkingTokens > 0 && (
+                    <div className="grid grid-cols-[80px_1fr_auto] items-baseline gap-2 pl-3">
+                      <span className="font-medium text-violet-400">↳ Thinking</span>
+                      <span className="text-zinc-500 leading-tight">Extended thinking (estimated)</span>
+                      <span className="text-violet-400 tabular-nums text-right">~{thinkingTokens.toLocaleString()}</span>
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
             </div>
             <div className="mt-2.5 pt-2 border-t border-zinc-700 flex justify-between items-center">

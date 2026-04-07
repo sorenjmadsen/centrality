@@ -15,8 +15,12 @@ export interface ChatMessage {
     cacheRead?: number
     cacheWrite?: number
   }
-  /** Character count of extended thinking blocks in this assistant message */
-  thinkingChars?: number
+  /**
+   * Estimated thinking output tokens. Present only when thinking blocks were
+   * detected. Computed as max(0, output_tokens − estimated_response_text_tokens)
+   * since the thinking content itself is redacted in the JSONL.
+   */
+  thinkingTokens?: number
   /**
    * Token usage of the *final* API call in the exchange (context size at completion).
    * For single-call exchanges this equals tokenUsage. For agentic loops with many
