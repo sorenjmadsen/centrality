@@ -44,10 +44,13 @@ export function TabBar() {
     tabStoreMap.delete(id)
   }
 
+  const isMac = window.api.platform === 'darwin'
+
   return (
+    <div className="relative shrink-0">
     <div
-      className="flex items-stretch h-9 bg-zinc-950 border-b border-zinc-800 shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      style={{ WebkitAppRegion: 'drag', paddingLeft: window.api.platform === 'darwin' ? 78 : 0 } as React.CSSProperties}
+      className="flex items-stretch h-9 bg-zinc-950 border-b border-zinc-800 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      style={{ WebkitAppRegion: 'drag', paddingLeft: isMac ? 78 : 0 } as React.CSSProperties}
     >
       {/* Dashboard tab */}
       <button
@@ -150,6 +153,13 @@ export function TabBar() {
       >
         <Settings size={14} />
       </button>
+    </div>
+    {isMac && (
+      <div
+        className="absolute top-0 left-0 h-9 bg-zinc-950 border-b border-zinc-800 pointer-events-none"
+        style={{ width: 78, WebkitAppRegion: 'drag' } as React.CSSProperties}
+      />
+    )}
     </div>
   )
 }

@@ -234,7 +234,7 @@ function GraphCanvas() {
             return baseColor
           }}
           maskColor="rgba(0,0,0,0.6)"
-          style={{ background: '#18181b', border: '1px solid #3f3f46' }}
+          style={{ background: 'var(--color-zinc-900)', border: '1px solid var(--color-zinc-700)' }}
         >
           <MinimapTrace />
         </MiniMap>

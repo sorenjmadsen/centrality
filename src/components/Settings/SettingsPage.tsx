@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Settings, Wifi, Download, Upload, FolderOpen } from 'lucide-react'
+import { Settings, Wifi, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import type { GlobalSettings } from '../../types/settings'
 import { DEFAULT_GLOBAL_SETTINGS } from '../../types/settings'
 import { THEMES, applyTheme, getTheme } from '../../lib/themes'
 import type { ThemeName } from '../../lib/themes'
+import centralityLogo from '../../assets/centrality-logo-512.png'
+import { version } from '../../../package.json'
 
 type SettingsTab = 'general' | 'remote' | 'configuration'
+
+// Persists across SettingsPage mounts so the user's selected tab survives navigation
+let lastActiveSettingsTab: SettingsTab = 'general'
 
 // ─── Toggle ─────────────────────────────────────────────────────────────────
 
@@ -242,9 +247,14 @@ function RemoteTab() {
 
 // ─── Configuration Tab ────────────────────────────────────────────────────────
 
+// TODO: Replace with actual GitHub repo URL once published
+const GITHUB_RELEASES_URL = 'https://github.com/OWNER/centrality/releases'
+const GITHUB_LATEST_API = 'https://api.github.com/repos/OWNER/centrality/releases/latest'
+
 function ConfigurationTab({ onReset }: { onReset(): void }) {
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [updateCheck, setUpdateCheck] = useState<{ status: 'checking' | 'up-to-date' | 'update-available' | 'error'; latest?: string }>({ status: 'checking' })
   const { loadGlobalSettings, saveGlobalSettings } = useSettingsStore()
 
   async function handleExport() {
@@ -271,6 +281,23 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
     }
     setTimeout(() => setImportStatus('idle'), 2500)
   }
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(GITHUB_LATEST_API)
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        const latest = (data.tag_name as string).replace(/^v/, '')
+        if (cancelled) return
+        setUpdateCheck(latest === version ? { status: 'up-to-date', latest } : { status: 'update-available', latest })
+      } catch {
+        if (!cancelled) setUpdateCheck({ status: 'error' })
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <div>
@@ -319,6 +346,44 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
           Reset to defaults
         </button>
       </Section>
+
+      <Section title="About">
+        <div className="flex items-center gap-3">
+          <img src={centralityLogo} alt="Centrality" className="w-10 h-10" />
+          <div>
+            <div className="text-sm font-medium text-zinc-300">Centrality</div>
+            <div className="text-xs text-zinc-500 font-mono">v{version}</div>
+          </div>
+          <div className="flex-1" />
+          {updateCheck.status === 'checking' && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
+              Checking for updates…
+            </div>
+          )}
+          {updateCheck.status === 'up-to-date' && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
+              Up to date
+            </div>
+          )}
+          {updateCheck.status === 'update-available' && (
+            <a
+              href={GITHUB_RELEASES_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded hover:border-zinc-500 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            >
+              <Download size={12} />
+              Download v{updateCheck.latest}
+              <ExternalLink size={10} />
+            </a>
+          )}
+          {updateCheck.status === 'error' && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
+              Could not check for updates
+            </div>
+          )}
+        </div>
+      </Section>
     </div>
   )
 }
@@ -326,8 +391,10 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general')
-  const [draft, setDraft] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS)
+  const [activeTab, setActiveTabState] = useState<SettingsTab>(lastActiveSettingsTab)
+  const setActiveTab = (tab: SettingsTab) => { lastActiveSettingsTab = tab; setActiveTabState(tab) }
+  const storedSettings = useSettingsStore(s => s.globalSettings)
+  const [draft, setDraft] = useState<GlobalSettings>(() => ({ ...DEFAULT_GLOBAL_SETTINGS, ...storedSettings }))
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -364,7 +431,7 @@ export function SettingsPage() {
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     { id: 'general', label: 'General', icon: <Settings size={13} /> },
     { id: 'remote', label: 'Remote', icon: <Wifi size={13} /> },
-    { id: 'configuration', label: 'Configuration', icon: <Download size={13} /> },
+    { id: 'configuration', label: 'Configuration', icon: <SlidersHorizontal size={13} /> },
   ]
 
   return (

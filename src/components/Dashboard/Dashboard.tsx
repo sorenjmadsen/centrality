@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings, Zap } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings } from 'lucide-react'
+import centralityLogo from '../../assets/centrality-logo-512.png'
 import { useSessionStore, type ProjectInfo, type SessionInfo } from '../../stores/session-store'
 import { useTabsStore } from '../../stores/tabs-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -80,8 +81,8 @@ export function Dashboard() {
       <div className="max-w-3xl mx-auto px-8 py-10">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-1">
-            <Zap size={18} className="text-accent" />
+          <div className="flex items-center gap-0 mb-1">
+            <img src={centralityLogo} alt="Centrality" className="w-8 h-8" />
             <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">Centrality</h1>
             <div className="flex-1" />
             <button
