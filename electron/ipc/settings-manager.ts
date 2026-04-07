@@ -34,5 +34,15 @@ export function getGlobalSettings(): GlobalSettings {
 }
 
 export function setGlobalSettings(settings: GlobalSettings): void {
-  writeJson(GLOBAL_PATH, settings)
+  // Never persist SSH passwords/passphrases to disk. The caller in main.ts
+  // may still hold the password in memory for the current session (it's
+  // needed by the remote watcher and SFTP client), but the on-disk config
+  // is sanitized so a stolen config.json doesn't leak creds.
+  const sanitized: GlobalSettings = {
+    ...settings,
+    remote: settings.remote
+      ? { ...settings.remote, password: '' }
+      : settings.remote,
+  }
+  writeJson(GLOBAL_PATH, sanitized)
 }

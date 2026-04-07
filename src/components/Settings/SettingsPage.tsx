@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Settings, Wifi, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal } from 'lucide-react'
+import { Settings, Wifi, WifiOff, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal, Loader2, AlertTriangle } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
-import type { GlobalSettings } from '../../types/settings'
-import { DEFAULT_GLOBAL_SETTINGS } from '../../types/settings'
+import { useSessionStore } from '../../stores/session-store'
+import type { GlobalSettings, RemoteSettings, SshAuthMethod } from '../../types/settings'
+import { DEFAULT_GLOBAL_SETTINGS, DEFAULT_REMOTE_SETTINGS } from '../../types/settings'
 import { THEMES, applyTheme, getTheme } from '../../lib/themes'
 import type { ThemeName } from '../../lib/themes'
 import centralityLogo from '../../assets/centrality-logo-512.png'
@@ -198,7 +199,89 @@ function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch
 
 // ─── Remote Tab ───────────────────────────────────────────────────────────────
 
-function RemoteTab() {
+const AUTH_METHODS: { value: SshAuthMethod; label: string; hint: string }[] = [
+  { value: 'auto', label: 'Auto (from SSH config)', hint: 'Use ~/.ssh/config, ssh-agent, or default identity files' },
+  { value: 'agent', label: 'SSH Agent', hint: 'Authenticate via the running ssh-agent (SSH_AUTH_SOCK)' },
+  { value: 'password', label: 'Password', hint: 'Plain password authentication' },
+  { value: 'key', label: 'Private Key', hint: 'Authenticate with a specific private key file' },
+]
+
+type TestStatus =
+  | { kind: 'idle' }
+  | { kind: 'testing' }
+  | { kind: 'success'; message: string; banner?: string }
+  | { kind: 'error'; message: string }
+
+// Persist the last test result across RemoteTab unmounts so navigating away
+// from Settings and back doesn't wipe the Connected/Error indicator.
+let lastRemoteTestStatus: TestStatus = { kind: 'idle' }
+
+function RemoteTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch: Partial<GlobalSettings>): void }) {
+  const remote: RemoteSettings = draft.remote ?? DEFAULT_REMOTE_SETTINGS
+  // If the persisted config says remote is enabled, reflect that in the
+  // button on first mount — the main process already spun up the poller at
+  // startup, so the user should see Connected without needing to click.
+  if (lastRemoteTestStatus.kind === 'idle' && remote.enabled) {
+    lastRemoteTestStatus = { kind: 'success', message: `Connected to ${remote.host}` }
+  }
+  const [status, setStatusState] = useState<TestStatus>(lastRemoteTestStatus)
+  const setStatus = (s: TestStatus) => { lastRemoteTestStatus = s; setStatusState(s) }
+
+  function update(patch: Partial<RemoteSettings>) {
+    // Editing any field while connected invalidates the active session — the
+    // new host/auth may not match what the server watcher is polling. Drop
+    // enabled and tear down the SSH client so the user has to reconnect.
+    const wasConnected = remote.enabled
+    const next = { ...remote, ...patch, enabled: wasConnected ? false : remote.enabled }
+    onChange({ remote: next })
+    if (wasConnected) { void window.api.sshDisconnect() }
+    setStatus({ kind: 'idle' })
+  }
+
+  async function handleTest() {
+    setStatus({ kind: 'testing' })
+    try {
+      const res = await window.api.sshTestConnection(remote)
+      if (res.success) {
+        // Persist remote.enabled = true synchronously so the main process
+        // starts routing listings through SSH before we reload projects.
+        const nextRemote = { ...remote, enabled: true }
+        const nextSettings = { ...draft, remote: nextRemote }
+        await useSettingsStore.getState().saveGlobalSettings(nextSettings)
+        onChange({ remote: nextRemote })
+        setStatus({ kind: 'success', message: res.message, banner: res.banner })
+        try { await useSessionStore.getState().loadProjects() } catch { /* noop */ }
+      } else {
+        setStatus({ kind: 'error', message: res.message })
+      }
+    } catch (err) {
+      setStatus({ kind: 'error', message: (err as Error).message ?? 'Connect failed' })
+    }
+  }
+
+  async function handleDisconnect() {
+    // Flip remote.enabled off synchronously so the main process routes
+    // projects:list / session:list back to the local filesystem before we
+    // refresh the session store. Going through the debounced onChange would
+    // leave a ~500ms window where the store still sees the remote config.
+    const nextRemote = { ...remote, enabled: false }
+    const nextSettings = { ...draft, remote: nextRemote }
+    await useSettingsStore.getState().saveGlobalSettings(nextSettings)
+    onChange({ remote: nextRemote })
+    try { await window.api.sshDisconnect() } catch { /* noop */ }
+    setStatus({ kind: 'idle' })
+    // Reload local projects into the session store so the Dashboard reflects
+    // them immediately instead of showing the stale remote list.
+    try { await useSessionStore.getState().loadProjects() } catch { /* noop */ }
+  }
+
+  const showKey = remote.authMethod === 'key'
+  const showPassword = remote.authMethod === 'password' || remote.authMethod === 'key'
+  const passwordLabel = remote.authMethod === 'key' ? 'Key passphrase (optional)' : 'Password'
+  const canTest = remote.host.trim().length > 0 && status.kind !== 'testing'
+
+  const inputCls = 'w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500'
+
   return (
     <div>
       <Section
@@ -206,39 +289,136 @@ function RemoteTab() {
         description="Connect Centrality to Claude Code sessions running on a remote machine over SSH."
       >
         <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">Host</label>
-            <input
-              type="text"
-              disabled
-              placeholder="user@hostname"
-              className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded px-3 py-1.5 text-sm text-zinc-500 placeholder-zinc-600 font-mono cursor-not-allowed"
-            />
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Host</label>
+              <input
+                type="text"
+                value={remote.host}
+                onChange={e => update({ host: e.target.value })}
+                placeholder="hostname or ssh config alias"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Port</label>
+              <input
+                type="number"
+                value={remote.port ?? ''}
+                onChange={e => {
+                  const v = e.target.value.trim()
+                  update({ port: v === '' ? null : parseInt(v, 10) || null })
+                }}
+                placeholder="22"
+                className={inputCls + ' w-20'}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">User</label>
+              <input
+                type="text"
+                value={remote.user}
+                onChange={e => update({ user: e.target.value })}
+                placeholder="(optional)"
+                className={inputCls + ' w-32'}
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1">SSH Key Path</label>
-            <input
-              type="text"
-              disabled
-              placeholder="~/.ssh/id_rsa"
-              className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded px-3 py-1.5 text-sm text-zinc-500 placeholder-zinc-600 font-mono cursor-not-allowed"
-            />
+            <label className="block text-xs font-medium text-zinc-400 mb-1">Authentication</label>
+            <select
+              value={remote.authMethod}
+              onChange={e => update({ authMethod: e.target.value as SshAuthMethod })}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm text-zinc-200 focus:outline-none focus:border-zinc-500"
+            >
+              {AUTH_METHODS.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-zinc-600 mt-1">
+              {AUTH_METHODS.find(m => m.value === remote.authMethod)?.hint}
+            </p>
           </div>
+
+          {showKey && (
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Private Key Path</label>
+              <input
+                type="text"
+                value={remote.privateKeyPath}
+                onChange={e => update({ privateKeyPath: e.target.value })}
+                placeholder="~/.ssh/id_ed25519"
+                className={inputCls}
+              />
+            </div>
+          )}
+
+          {showPassword && (
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">{passwordLabel}</label>
+              <input
+                type="password"
+                value={remote.password}
+                onChange={e => update({ password: e.target.value })}
+                placeholder={remote.authMethod === 'key' ? '(leave empty if unencrypted)' : ''}
+                className={inputCls}
+                autoComplete="new-password"
+              />
+              <p className="text-xs text-zinc-600 mt-1">
+                Kept in memory only — never written to disk. You'll need to re-enter it after restarting Centrality.
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1">Remote Claude Directory</label>
             <input
               type="text"
-              disabled
-              placeholder="~/.claude/projects"
-              className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded px-3 py-1.5 text-sm text-zinc-500 placeholder-zinc-600 font-mono cursor-not-allowed"
+              value={remote.remoteClaudeDir}
+              onChange={e => update({ remoteClaudeDir: e.target.value })}
+              placeholder="~/.claude  (default)"
+              className={inputCls}
             />
           </div>
         </div>
-        <div className="mt-4 rounded-lg border border-zinc-700/60 bg-zinc-800/40 px-4 py-3 flex items-center gap-3">
-          <Wifi size={15} className="text-zinc-500 shrink-0" />
-          <div className="text-sm text-zinc-500">
-            Remote session support is coming soon. SSH tunneling will let you view Claude Code sessions from any machine.
-          </div>
+
+        <div className="mt-5">
+          <button
+            onClick={status.kind === 'success' ? handleDisconnect : handleTest}
+            disabled={status.kind !== 'success' && !canTest}
+            className={[
+              'flex items-center gap-2 px-4 py-1.5 text-sm border rounded transition-colors',
+              status.kind === 'success' || canTest
+                ? 'bg-zinc-800 border-zinc-700 hover:border-zinc-500 hover:bg-zinc-700 text-zinc-300'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed',
+            ].join(' ')}
+          >
+            {status.kind === 'testing'
+              ? <Loader2 size={13} className="animate-spin" />
+              : status.kind === 'success'
+                ? <WifiOff size={13} />
+                : <Wifi size={13} />}
+            {status.kind === 'testing' ? 'Connecting…'
+              : status.kind === 'success' ? 'Disconnect'
+              : 'Connect'}
+          </button>
+
+          {status.kind === 'success' && (
+            <p className="text-xs text-zinc-500 mt-1.5">{status.message}</p>
+          )}
+          {status.kind === 'success' && status.banner && (
+            <pre className="mt-1 text-[11px] text-zinc-600 font-mono whitespace-pre-wrap">{status.banner}</pre>
+          )}
+          {status.kind === 'error' && (
+            <div className="mt-3 rounded-lg border border-red-900/60 bg-red-950/30 px-3 py-2 flex items-start gap-2">
+              <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-red-300 break-words">
+                <div className="font-medium mb-0.5">Connection failed</div>
+                <div className="text-red-400/80 font-mono">{status.message}</div>
+              </div>
+            </div>
+          )}
         </div>
       </Section>
     </div>
@@ -472,7 +652,7 @@ export function SettingsPage() {
           <GeneralTab draft={draft} onChange={handleChange} />
         )}
         {activeTab === 'remote' && (
-          <RemoteTab />
+          <RemoteTab draft={draft} onChange={handleChange} />
         )}
         {activeTab === 'configuration' && (
           <ConfigurationTab onReset={handleReset} />

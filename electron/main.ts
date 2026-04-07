@@ -12,7 +12,13 @@ import {
   getProjectSettings, setProjectSettings,
   getGlobalSettings, setGlobalSettings,
 } from './ipc/settings-manager'
-import type { ProjectSettings, GlobalSettings } from '../src/types/settings'
+import {
+  testConnection as sshTestConnection,
+  listRemoteProjects, listRemoteSessions, loadRemoteSession,
+  startRemoteWatcher, stopRemoteWatcher, closeRemoteConnection,
+  disconnectRemote, isRemotePath,
+} from './ipc/ssh-manager'
+import type { ProjectSettings, GlobalSettings, RemoteSettings } from '../src/types/settings'
 
 const isDev = process.env['NODE_ENV'] === 'development'
 
@@ -51,6 +57,19 @@ function createWindow(): void {
   }
 }
 
+// In-memory cache of the remote SSH password / key passphrase. We deliberately
+// strip this before persisting settings to disk (see settings-manager), so it
+// only lives for the duration of the process. Every place that needs the
+// *current* remote config for SSH should go through getActiveRemote() so it
+// gets the disk config merged with the cached secret.
+let cachedRemotePassword: string = ''
+
+function getActiveRemote(): RemoteSettings | null {
+  const { remote } = getGlobalSettings()
+  if (!remote) return null
+  return cachedRemotePassword ? { ...remote, password: cachedRemotePassword } : remote
+}
+
 function registerIpcHandlers(): void {
   ipcMain.handle('settings:get-project', (_event, encodedName: string) =>
     getProjectSettings(encodedName)
@@ -61,6 +80,18 @@ function registerIpcHandlers(): void {
   )
 
   ipcMain.handle('settings:get-global', () => getGlobalSettings())
+
+  ipcMain.handle('ssh:test-connection', (_event, remote: RemoteSettings) => {
+    // Cache the password in memory so subsequent listings/watcher can reuse
+    // it without asking the user again, while the disk config stays clean.
+    cachedRemotePassword = remote.password ?? ''
+    return sshTestConnection(remote)
+  })
+
+  ipcMain.handle('ssh:disconnect', () => {
+    cachedRemotePassword = ''
+    disconnectRemote()
+  })
 
   ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) => {
     setGlobalSettings(settings)
@@ -77,19 +108,34 @@ function registerIpcHandlers(): void {
         app.dock.hide()
       }
     }
+    // Remember any freshly-supplied password so the SFTP session can keep
+    // using it after settings are written to disk (where it's stripped).
+    if (settings.remote?.password) cachedRemotePassword = settings.remote.password
+    // Restart the remote watcher so it picks up new auth / host settings.
+    // Always tear down the cached SSH client first — its config may be stale.
+    closeRemoteConnection()
+    const active = getActiveRemote()
+    if (active?.enabled) startRemoteWatcher(active)
+    else stopRemoteWatcher()
   })
 
   ipcMain.handle('projects:list', () => {
-    const { claudeDir } = getGlobalSettings()
-    return listProjects(claudeDir ?? undefined)
+    const active = getActiveRemote()
+    if (active?.enabled) return listRemoteProjects(active)
+    return listProjects(getGlobalSettings().claudeDir ?? undefined)
   })
 
   ipcMain.handle('session:list', (_event, encodedName: string) => {
-    const { claudeDir } = getGlobalSettings()
-    return listSessions(encodedName, claudeDir ?? undefined)
+    const active = getActiveRemote()
+    if (active?.enabled) return listRemoteSessions(active, encodedName)
+    return listSessions(encodedName, getGlobalSettings().claudeDir ?? undefined)
   })
 
   ipcMain.handle('session:load', async (_event, filePath: string) => {
+    if (isRemotePath(filePath)) {
+      const active = getActiveRemote()
+      if (active?.enabled) return await loadRemoteSession(active, filePath)
+    }
     return await parseSession(filePath)
   })
 
@@ -251,6 +297,22 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   createWindow()
   const stopSessionWatcher = startSessionWatcher()
+
+  // If remote mode was enabled in the persisted config, try to start polling.
+  // Password auth can't resume automatically because we never persist the
+  // password — clear the enabled flag so the UI prompts for a fresh Connect.
+  // 'auto', 'agent', and 'key' (unencrypted or the user accepts the risk)
+  // can all attempt a reconnect without prior interaction.
+  const initialSettings = getGlobalSettings()
+  const initialRemote = initialSettings.remote
+  if (initialRemote?.enabled) {
+    if (initialRemote.authMethod === 'password') {
+      setGlobalSettings({ ...initialSettings, remote: { ...initialRemote, enabled: false } })
+    } else {
+      startRemoteWatcher(initialRemote)
+    }
+  }
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
@@ -262,6 +324,8 @@ app.whenReady().then(() => {
     stopSessionWatcher()
     stopGitWatcher()
     stopAllCodebaseWatchers()
+    stopRemoteWatcher()
+    closeRemoteConnection()
   })
 })
 
