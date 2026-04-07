@@ -20,6 +20,7 @@ export type IpcChannels =
   | 'dep:scan'
   | 'export:markdown'
   | 'export:screenshot'
+  | 'session:resume'
 
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform,
@@ -70,6 +71,8 @@ contextBridge.exposeInMainWorld('api', {
   pickDirectory: () => ipcRenderer.invoke('settings:pick-directory'),
   sshTestConnection: (remote: unknown) => ipcRenderer.invoke('ssh:test-connection', remote),
   sshDisconnect: () => ipcRenderer.invoke('ssh:disconnect'),
+  resumeSession: (args: { sessionId: string; projectPath: string }) =>
+    ipcRenderer.invoke('session:resume', args),
 })
 
 // Type declaration lives in src/env.d.ts for the renderer

@@ -36,5 +36,6 @@ interface Window {
     pickDirectory(): Promise<{ path: string; warning: string | null } | null>
     sshTestConnection(remote: unknown): Promise<{ success: boolean; message: string; banner?: string }>
     sshDisconnect(): Promise<void>
+    resumeSession(args: { sessionId: string; projectPath: string }): Promise<{ ok: true } | { ok: false; error: string }>
   }
 }

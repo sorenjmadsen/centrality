@@ -8,6 +8,7 @@ import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher, stopGitWatcher 
 import { startCodebaseWatcher, stopCodebaseWatcher, stopAllCodebaseWatchers } from './ipc/codebase-watcher'
 import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
+import { resumeSession } from './ipc/session-launcher'
 import {
   getProjectSettings, setProjectSettings,
   getGlobalSettings, setGlobalSettings,
@@ -92,6 +93,10 @@ function registerIpcHandlers(): void {
     cachedRemotePassword = ''
     disconnectRemote()
   })
+
+  ipcMain.handle('session:resume', (_event, args: { sessionId: string; projectPath: string }) =>
+    resumeSession(args)
+  )
 
   ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) => {
     setGlobalSettings(settings)

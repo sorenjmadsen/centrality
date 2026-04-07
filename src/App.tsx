@@ -4,6 +4,7 @@ import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
 import { SettingsButton } from './components/TopBar/SettingsButton'
+import { ResumeButton } from './components/TopBar/ResumeButton'
 import { ContextBreakdownButton } from './components/TopBar/ContextBreakdownButton'
 import { CodebaseGraph } from './components/Graph/CodebaseGraph'
 import { ChatPanel } from './components/ChatPanel/ChatPanel'
@@ -107,6 +108,8 @@ function SessionView(): React.ReactElement {
         <SettingsButton />
         <div className="h-4 w-px bg-zinc-700 shrink-0" />
         <ExportMenu />
+        <div className="h-4 w-px bg-zinc-700 shrink-0" />
+        <ResumeButton />
       </header>
 
       {/* Main content */}

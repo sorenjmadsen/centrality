@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, FolderOpen, Settings, TerminalSquare } from 'lucide-react'
 import centralityLogo from '../../assets/centrality-logo-512.png'
 import { useSessionStore, type ProjectInfo, type SessionInfo } from '../../stores/session-store'
 import { useTabsStore } from '../../stores/tabs-store'
@@ -40,6 +40,22 @@ export function Dashboard() {
     }
     setExpandedProject(project.encodedName)
     await loadSessionsForProject(project)
+  }
+
+  const handleResumeSession = async (
+    e: React.MouseEvent,
+    project: ProjectInfo,
+    session: SessionInfo,
+  ) => {
+    e.stopPropagation()
+    const result = await window.api.resumeSession({
+      sessionId: session.sessionId,
+      projectPath: project.projectPath,
+    })
+    if (!result.ok) {
+      console.error('Resume failed:', result.error)
+      alert(`Could not resume session: ${result.error}`)
+    }
   }
 
   const handleOpenSession = (project: ProjectInfo, session: SessionInfo) => {
@@ -151,7 +167,7 @@ export function Dashboard() {
           </h2>
 
           {isLoadingProjects ? (
-            <div className="text-sm text-zinc-600 animate-pulse py-4">Scanning ~/.claude/projects/…</div>
+            <div className="text-sm text-zinc-600 animate-pulse py-4">Scanning {globalSettings.claudeDir ?? '~/.claude'}/projects/…</div>
           ) : sortedProjects.length === 0 ? (
             <div className="text-sm text-zinc-600 py-4">
               No projects found in <code className="text-zinc-500">{globalSettings.claudeDir ?? '~/.claude'}/projects/</code>
@@ -199,12 +215,23 @@ export function Dashboard() {
                           const timeStr = dt.toLocaleTimeString(undefined, {
                             hour: '2-digit', minute: '2-digit',
                           })
+                          const isRemote = project.projectPath.startsWith('ssh:')
+                          const platformSupported = window.api.platform === 'darwin' || window.api.platform === 'win32'
+                          const resumeDisabled = isRemote || !platformSupported
                           return (
-                            <button
+                            <div
                               key={session.sessionId}
+                              role="button"
+                              tabIndex={0}
                               onClick={() => handleOpenSession(project, session)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  handleOpenSession(project, session)
+                                }
+                              }}
                               className="w-full flex items-center gap-3 pl-10 pr-4 py-2 hover:bg-zinc-900
-                                text-left transition-colors group"
+                                text-left transition-colors group cursor-pointer"
                             >
                               <div className="flex-1 min-w-0">
                                 <span className="font-mono text-xs text-zinc-400 group-hover:text-zinc-200 transition-colors">
@@ -214,7 +241,24 @@ export function Dashboard() {
                               <span className="text-xs text-zinc-600 shrink-0">
                                 {dateStr} · {timeStr}
                               </span>
-                            </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handleResumeSession(e, project, session)}
+                                disabled={resumeDisabled}
+                                title={
+                                  !platformSupported
+                                    ? 'Resume is only supported on macOS and Windows'
+                                    : isRemote
+                                      ? 'Remote resume not yet supported'
+                                      : 'Resume this session in Terminal'
+                                }
+                                className="shrink-0 p-1.5 rounded hover:bg-zinc-800 text-zinc-500
+                                  hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent
+                                  disabled:cursor-not-allowed transition-colors"
+                              >
+                                <TerminalSquare className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           )
                         })}
                       </div>

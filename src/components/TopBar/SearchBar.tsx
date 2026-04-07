@@ -35,8 +35,8 @@ export function SearchBar() {
   const hasQuery = query.length > 0
 
   return (
-    <div className="flex items-center gap-1 w-[200px] relative">
-      <div className="flex items-center gap-1 flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1
+    <div className="flex items-center gap-1 w-[200px] shrink-0 relative">
+      <div className="flex items-center gap-1 flex-1 min-w-0 bg-zinc-800 border border-zinc-700 rounded px-2 py-1
         focus-within:border-zinc-500 transition-colors">
         <Search size={13} className="text-zinc-500 shrink-0" />
         <input
