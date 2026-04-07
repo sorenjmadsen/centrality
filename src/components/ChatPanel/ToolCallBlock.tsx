@@ -20,6 +20,24 @@ interface ToolCallBlockProps {
   toolCall: ToolCallEntry
 }
 
+const RESULT_MAX_LINES = 500
+
+function ResultViewer({ text }: { text: string }) {
+  const allLines = text.split('\n')
+  const lines = allLines.slice(0, RESULT_MAX_LINES)
+  const truncated = allLines.length > RESULT_MAX_LINES
+  return (
+    <div className="font-mono text-[10px] rounded bg-zinc-950 border border-zinc-800 scrollable overflow-x-auto overflow-y-auto max-h-96 whitespace-pre">
+      {lines.map((line, i) => (
+        <div key={i} className="px-2 leading-4 text-zinc-400">{line || '\u00A0'}</div>
+      ))}
+      {truncated && (
+        <div className="px-2 py-1 text-zinc-600 italic">…truncated ({allLines.length - RESULT_MAX_LINES} more lines)</div>
+      )}
+    </div>
+  )
+}
+
 export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   const [open, setOpen] = useState(false)
   const [inlineDiff, setInlineDiff] = useState<string | null>(null)
@@ -85,10 +103,10 @@ export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
               <DiffViewer unified={inlineDiff} />
             </div>
           )}
-          {toolCall.result !== undefined && (
-            <div className="border-t border-zinc-800 pt-1 text-zinc-500 font-mono text-[10px] max-h-32 overflow-y-auto scrollable">
-              <span className="text-zinc-600">result: </span>
-              {toolCall.result.slice(0, 500)}{toolCall.result.length > 500 ? '…' : ''}
+          {toolCall.result !== undefined && !isEditTool && (
+            <div className="mt-1">
+              <div className="text-zinc-600 font-mono text-[10px] mb-0.5">result:</div>
+              <ResultViewer text={toolCall.result} />
             </div>
           )}
         </div>

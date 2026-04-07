@@ -32,6 +32,7 @@ export function DiffViewer({ unified, maxLines = 200 }: DiffViewerProps) {
 
   return (
     <div className="font-mono text-[10px] overflow-x-auto overflow-y-auto max-h-72 rounded bg-zinc-950 border border-zinc-800 scrollable">
+      <div className="min-w-full w-max">
       {lines.map((line, i) => {
         let bg = ''
         let text = 'text-zinc-400'
@@ -55,6 +56,7 @@ export function DiffViewer({ unified, maxLines = 200 }: DiffViewerProps) {
       {truncated && (
         <div className="px-2 py-1 text-zinc-600 italic">…diff truncated</div>
       )}
+      </div>
     </div>
   )
 }
