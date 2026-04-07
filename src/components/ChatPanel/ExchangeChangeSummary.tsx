@@ -7,21 +7,26 @@ import type { ToolCallEntry } from '../../types/session'
 import { ToolCallBlock } from './ToolCallBlock'
 import { useUiStore } from '../../stores/tab-stores'
 
+interface ChangeItem {
+  label: string
+  fullPath?: string  // absolute file path, present for file items
+}
+
 interface ChangeGroup {
   label: string
   icon: React.ReactNode
   color: string
-  items: string[]
+  items: ChangeItem[]
 }
 
 function groupToolCalls(toolCalls: ToolCallEntry[]): ChangeGroup[] {
-  const edited = new Set<string>()
-  const created = new Set<string>()
-  const read = new Set<string>()
-  const commands: string[] = []
-  const searches: string[] = []
-  const agents: string[] = []
-  const web: string[] = []
+  const edited = new Map<string, string>() // short -> full
+  const created = new Map<string, string>()
+  const read = new Map<string, string>()
+  const commands: ChangeItem[] = []
+  const searches: ChangeItem[] = []
+  const agents: ChangeItem[] = []
+  const web: ChangeItem[] = []
 
   for (const tc of toolCalls) {
     const fp = tc.input['file_path'] as string | undefined
@@ -30,47 +35,50 @@ function groupToolCalls(toolCalls: ToolCallEntry[]): ChangeGroup[] {
     switch (tc.toolName) {
       case 'Edit':
       case 'MultiEdit':
-        if (short) edited.add(short)
+        if (short && fp) edited.set(short, fp)
         break
       case 'Write':
-        if (short) created.add(short)
+        if (short && fp) created.set(short, fp)
         break
       case 'Read':
-        if (short) read.add(short)
+        if (short && fp) read.set(short, fp)
         break
       case 'Bash': {
         const cmd = tc.input['command'] as string | undefined
-        if (cmd) commands.push(cmd.slice(0, 80).split('\n')[0])
+        if (cmd) commands.push({ label: cmd.slice(0, 80).split('\n')[0] })
         break
       }
       case 'Grep': {
         const pattern = tc.input['pattern'] as string | undefined
-        if (pattern) searches.push(`grep: ${pattern.slice(0, 60)}`)
+        if (pattern) searches.push({ label: `grep: ${pattern.slice(0, 60)}` })
         break
       }
       case 'Glob': {
         const pattern = tc.input['pattern'] as string | undefined
-        if (pattern) searches.push(`glob: ${pattern.slice(0, 60)}`)
+        if (pattern) searches.push({ label: `glob: ${pattern.slice(0, 60)}` })
         break
       }
       case 'LS': {
         const path = tc.input['path'] as string | undefined
-        if (path) searches.push(`ls: ${path.slice(0, 60)}`)
+        if (path) searches.push({ label: `ls: ${path.slice(0, 60)}` })
         break
       }
       case 'Agent': {
         const desc = tc.input['description'] as string | undefined
-        agents.push(desc?.slice(0, 80) ?? 'sub-agent')
+        agents.push({ label: desc?.slice(0, 80) ?? 'sub-agent' })
         break
       }
       case 'WebFetch':
       case 'WebSearch': {
         const url = (tc.input['url'] ?? tc.input['query']) as string | undefined
-        web.push(url?.slice(0, 80) ?? tc.toolName)
+        web.push({ label: url?.slice(0, 80) ?? tc.toolName })
         break
       }
     }
   }
+
+  const fileItems = (m: Map<string, string>): ChangeItem[] =>
+    [...m.entries()].map(([short, full]) => ({ label: short, fullPath: full }))
 
   const groups: ChangeGroup[] = []
 
@@ -79,7 +87,7 @@ function groupToolCalls(toolCalls: ToolCallEntry[]): ChangeGroup[] {
       label: 'Modified',
       icon: <FilePen size={11} />,
       color: 'text-yellow-400',
-      items: [...edited],
+      items: fileItems(edited),
     })
 
   if (created.size > 0)
@@ -87,7 +95,7 @@ function groupToolCalls(toolCalls: ToolCallEntry[]): ChangeGroup[] {
       label: 'Created',
       icon: <FilePlus size={11} />,
       color: 'text-green-400',
-      items: [...created],
+      items: fileItems(created),
     })
 
   if (read.size > 0)
@@ -95,7 +103,7 @@ function groupToolCalls(toolCalls: ToolCallEntry[]): ChangeGroup[] {
       label: 'Read',
       icon: <FileSearch size={11} />,
       color: 'text-blue-400',
-      items: [...read],
+      items: fileItems(read),
     })
 
   if (commands.length > 0)
@@ -139,7 +147,7 @@ interface ExchangeChangeSummaryProps {
 
 export function ExchangeChangeSummary({ toolCalls }: ExchangeChangeSummaryProps) {
   const [showRaw, setShowRaw] = useState(false)
-  const { setSelectedNode } = useUiStore()
+  const { focusNode, selectedProjectPath } = useUiStore()
 
   if (toolCalls.length === 0) return null
 
@@ -157,20 +165,23 @@ export function ExchangeChangeSummary({ toolCalls }: ExchangeChangeSummaryProps)
             <span className={`shrink-0 font-medium w-14 ${group.color}`}>{group.label}</span>
             <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-zinc-400 font-mono leading-snug min-w-0 overflow-hidden">
               {group.items.map((item, i) => {
-                // For file items (Modified/Created/Read), make them clickable
-                const isFile = group.label === 'Modified' || group.label === 'Created' || group.label === 'Read'
-                return isFile ? (
-                  <span
-                    key={i}
-                    className="hover:text-zinc-200 cursor-pointer truncate max-w-full"
-                    onClick={e => { e.stopPropagation(); setSelectedNode(item) }}
-                    title={item}
-                  >
-                    {item}
-                  </span>
-                ) : (
-                  <span key={i} className="text-zinc-500 break-all">{item}</span>
-                )
+                if (item.fullPath) {
+                  const root = selectedProjectPath?.replace(/\/$/, '')
+                  const rel = root && item.fullPath.startsWith(root + '/')
+                    ? item.fullPath.slice(root.length + 1)
+                    : item.fullPath
+                  return (
+                    <span
+                      key={i}
+                      className="hover:text-zinc-200 cursor-pointer truncate max-w-full"
+                      onClick={e => { e.stopPropagation(); focusNode(rel) }}
+                      title={item.fullPath}
+                    >
+                      {item.label}
+                    </span>
+                  )
+                }
+                return <span key={i} className="text-zinc-500 break-all">{item.label}</span>
               })}
             </div>
           </div>

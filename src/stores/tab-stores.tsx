@@ -32,6 +32,9 @@ export interface UiStore {
   selectedSessionPath: string | null
   selectedNodeId: string | null
   selectedExchangeId: string | null
+  focusNodeId: string | null
+  focusNodeNonce: number
+  focusNode(id: string): void
   playbackIndex: number | null
   activeNodeIds: Set<string>
   actionTypeFilter: Set<string>
@@ -130,6 +133,8 @@ function makeUiStore(): StoreApi<UiStore> {
     selectedSessionPath: null,
     selectedNodeId: null,
     selectedExchangeId: null,
+    focusNodeId: null,
+    focusNodeNonce: 0,
     playbackIndex: null,
     activeNodeIds: new Set(),
     actionTypeFilter: new Set(),
@@ -151,6 +156,7 @@ function makeUiStore(): StoreApi<UiStore> {
       activeNodeIds: new Set(),
     }),
     setSelectedNode: id => set({ selectedNodeId: id }),
+    focusNode: id => set(s => ({ focusNodeId: id, focusNodeNonce: s.focusNodeNonce + 1, selectedNodeId: id })),
     setSelectedExchange: id => set({ selectedExchangeId: id }),
     setPlaybackIndex: i => set({ playbackIndex: i }),
     setActiveNodeIds: ids => set({ activeNodeIds: ids }),

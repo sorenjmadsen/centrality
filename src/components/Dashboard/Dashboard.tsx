@@ -94,7 +94,7 @@ export function Dashboard() {
             </button>
           </div>
           <p className="text-sm text-zinc-500 ml-[26px]">
-            Visualize Claude Code sessions as interactive code graphs
+            A live map of your codebase that connects you to how Claude Code navigates and modifies your projects
           </p>
         </div>
 

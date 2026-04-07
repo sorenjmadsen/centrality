@@ -23,7 +23,7 @@ interface ToolCallBlockProps {
 export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
   const [open, setOpen] = useState(false)
   const [inlineDiff, setInlineDiff] = useState<string | null>(null)
-  const { setSelectedNode } = useUiStore()
+  const { focusNode, selectedProjectPath } = useUiStore()
   const colors = TOOL_COLORS[toolCall.toolName] ?? 'text-zinc-400 border-zinc-700'
 
   const filePath = toolCall.input['file_path'] as string | undefined
@@ -33,7 +33,10 @@ export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
 
   function handleFileClick(e: React.MouseEvent) {
     e.stopPropagation()
-    if (filePath) setSelectedNode(filePath)
+    if (!filePath) return
+    const root = selectedProjectPath?.replace(/\/$/, '')
+    const rel = root && filePath.startsWith(root + '/') ? filePath.slice(root.length + 1) : filePath
+    focusNode(rel)
   }
 
   async function handleToggle() {

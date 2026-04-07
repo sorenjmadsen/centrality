@@ -114,11 +114,11 @@ function MinimapTrace() {
 
 function GraphCanvas() {
   const { nodes, edges } = useGraphStore()
-  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange, setPlaybackIndex } = useUiStore()
+  const { selectedNodeId, selectedProjectPath, selectedSessionPath, granularity, activeNodeIds, playbackIndex, setSelectedNode, setSelectedExchange, setPlaybackIndex, focusNodeId, focusNodeNonce } = useUiStore()
   const { exchanges } = useChatStore()
   const tabId = useTabId()
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
-  const { setViewport, fitView } = useReactFlow()
+  const { setViewport, fitView, setCenter } = useReactFlow()
   const { graph: graphStore } = useTabStores()
   const [isDraggable, setIsDraggable] = useState(false)
 
@@ -156,6 +156,18 @@ function GraphCanvas() {
       savePositions(selectedSessionPath, granularity, existing)
     }
   }, [selectedSessionPath, granularity, graphStore])
+
+  // Pan/zoom to focused node — only when an explicit focus request is issued
+  // (e.g. clicking a filepath in chat). Plain selection changes do NOT trigger this.
+  useEffect(() => {
+    if (!focusNodeId) return
+    const node = nodes.find(n => n.id === focusNodeId)
+    if (!node) return
+    const w = (node.style?.width as number | undefined) ?? node.measured?.width ?? 230
+    const h = node.measured?.height ?? 68
+    setCenter(node.position.x + w / 2, node.position.y + h / 2, { zoom: 1.2, duration: 600 })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNodeNonce])
 
   const mappedNodes = useMemo(
     () => nodes.map(n => ({ ...n, selected: n.id === selectedNodeId })),

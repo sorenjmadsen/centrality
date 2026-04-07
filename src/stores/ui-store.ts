@@ -7,6 +7,11 @@ interface UiStore {
   selectedNodeId: string | null
   selectedExchangeId: string | null
 
+  // Incrementing nonce — bumped when something requests the graph pan/zoom to focusNodeId
+  focusNodeId: string | null
+  focusNodeNonce: number
+  focusNode(id: string): void
+
   // Playback index — null = show all exchanges; set by clicking an exchange
   playbackIndex: number | null
 
@@ -42,6 +47,9 @@ export const useUiStore = create<UiStore>((set) => ({
   selectedSessionPath: null,
   selectedNodeId: null,
   selectedExchangeId: null,
+  focusNodeId: null,
+  focusNodeNonce: 0,
+  focusNode: id => set(s => ({ focusNodeId: id, focusNodeNonce: s.focusNodeNonce + 1, selectedNodeId: id })),
   playbackIndex: null,
   activeNodeIds: new Set(),
   actionTypeFilter: new Set(),
