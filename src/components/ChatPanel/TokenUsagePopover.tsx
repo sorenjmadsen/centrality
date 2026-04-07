@@ -45,7 +45,7 @@ interface Row {
   colorClass: string
 }
 
-export function TokenUsagePopover({ usage, model, thinkingTokens }: { usage: TokenUsage; model?: string; thinkingTokens?: number }) {
+export function TokenUsagePopover({ usage, model, hasThinking }: { usage: TokenUsage; model?: string; hasThinking?: boolean }) {
   const [visible, setVisible] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const ref = useRef<HTMLSpanElement>(null)
@@ -123,11 +123,11 @@ export function TokenUsagePopover({ usage, model, thinkingTokens }: { usage: Tok
                     <span className="text-zinc-500 leading-tight">{row.desc}</span>
                     <span className="text-zinc-300 tabular-nums text-right">{row.count.toLocaleString()}</span>
                   </div>
-                  {row.label === 'Output' && thinkingTokens && thinkingTokens > 0 && (
+                  {row.label === 'Output' && hasThinking && (
                     <div className="grid grid-cols-[80px_1fr_auto] items-baseline gap-2 pl-3">
                       <span className="font-medium text-violet-400">↳ Thinking</span>
-                      <span className="text-zinc-500 leading-tight">Extended thinking (estimated)</span>
-                      <span className="text-violet-400 tabular-nums text-right">~{thinkingTokens.toLocaleString()}</span>
+                      <span className="text-zinc-500 leading-tight">Extended thinking was used (token count redacted)</span>
+                      <span className="text-violet-400 tabular-nums text-right">—</span>
                     </div>
                   )}
                 </React.Fragment>

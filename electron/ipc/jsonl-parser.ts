@@ -41,8 +41,8 @@ export interface ChatMessage {
   toolCalls: ToolCallEntry[]
   model?: string
   tokenUsage?: { input: number; output: number; cacheRead?: number; cacheWrite?: number }
-  /** Estimated thinking output tokens (derived at flush time) */
-  thinkingTokens?: number
+  /** Whether thinking blocks were present (content/count is redacted from JSONL) */
+  hasThinking?: boolean
   /** Final API call's usage — context size at exchange completion */
   contextUsage?: { input: number; output: number; cacheRead: number; cacheWrite: number }
 }
@@ -288,9 +288,10 @@ export async function parseSession(filePath: string): Promise<ParsedSession> {
       model: pendingAssistantModel,
       tokenUsage: pendingAssistantUsage,
       contextUsage,
-      thinkingTokens: pendingHasThinking
-        ? Math.max(0, (pendingAssistantUsage?.output ?? 0) - Math.ceil(pendingAssistantText.trim().length / 4))
-        : undefined,
+      // Thinking tokens are redacted from JSONL: content is empty and output_tokens
+      // excludes them entirely. No separate field reports them. We can only note
+      // whether thinking occurred, not how many tokens it used.
+      hasThinking: pendingHasThinking || undefined,
     }
     const exchangeActions = pendingAssistantToolCalls
       .map(tc => {

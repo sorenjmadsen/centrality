@@ -202,7 +202,7 @@ export function ChatPanel() {
               <ChatMessageBubble message={exchange.assistantMessage} isHighlighted={isPlaybackCurrent || isSelected} />
               {usage && (
                 <div className="mt-1.5 flex items-center text-xs">
-                  <TokenUsagePopover usage={usage} model={exchange.assistantMessage.model} thinkingTokens={exchange.assistantMessage.thinkingTokens} />
+                  <TokenUsagePopover usage={usage} model={exchange.assistantMessage.model} hasThinking={exchange.assistantMessage.hasThinking} />
                 </div>
               )}
             </div>
