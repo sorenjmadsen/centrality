@@ -34,5 +34,7 @@ interface Window {
     exportSettings(): Promise<{ success: boolean; cancelled: boolean }>
     importSettings(): Promise<unknown>
     pickDirectory(): Promise<{ path: string; warning: string | null } | null>
+    sshTestConnection(remote: unknown): Promise<{ success: boolean; message: string; banner?: string }>
+    sshDisconnect(): Promise<void>
   }
 }

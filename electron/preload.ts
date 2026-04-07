@@ -8,6 +8,8 @@ export type IpcChannels =
   | 'settings:export'
   | 'settings:import'
   | 'settings:pick-directory'
+  | 'ssh:test-connection'
+  | 'ssh:disconnect'
   | 'projects:list'
   | 'session:list'
   | 'session:load'
@@ -66,6 +68,8 @@ contextBridge.exposeInMainWorld('api', {
   exportSettings: () => ipcRenderer.invoke('settings:export'),
   importSettings: () => ipcRenderer.invoke('settings:import'),
   pickDirectory: () => ipcRenderer.invoke('settings:pick-directory'),
+  sshTestConnection: (remote: unknown) => ipcRenderer.invoke('ssh:test-connection', remote),
+  sshDisconnect: () => ipcRenderer.invoke('ssh:disconnect'),
 })
 
 // Type declaration lives in src/env.d.ts for the renderer
