@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Plus } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useTabStores, useUiStore } from '../../stores/tab-stores'
+import { preScanCheck } from '../../lib/pre-scan-check'
 import type { ProjectSettings } from '../../types/settings'
 import { DEFAULT_PROJECT_SETTINGS } from '../../types/settings'
 
@@ -57,6 +58,9 @@ export function ProjectSettingsModal({ encodedName, onClose }: Props) {
     // Close first, then trigger rescan (fire-and-forget)
     onClose()
     if (selectedProjectPath) {
+      // Check if updated settings result in a large unfiltered project
+      const checkResult = await preScanCheck(selectedProjectPath, encodedName)
+      if (checkResult === 'cancelled') return
       tabStores.codebase.getState().scanProject(selectedProjectPath, encodedName)
       tabStores.git.getState().loadCommits(selectedProjectPath, encodedName)
     }

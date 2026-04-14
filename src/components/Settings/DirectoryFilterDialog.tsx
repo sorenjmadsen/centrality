@@ -170,12 +170,8 @@ export function DirectoryFilterDialog() {
     }
     setUncheckedDirs(initialUnchecked)
 
-    // Expand top-level directories by default
-    const initialExpanded = new Set<string>([''])
-    for (const child of dirTree.children) {
-      initialExpanded.add(child.relPath)
-    }
-    setExpandedDirs(initialExpanded)
+    // Start with all directories collapsed
+    setExpandedDirs(new Set())
   }, [isOpen, dirTree, currentExcludePatterns])
 
   // Close on Escape
