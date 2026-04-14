@@ -39,6 +39,8 @@ export interface RemoteSettings {
   remoteClaudeDir: string
 }
 
+export type EditorChoice = 'auto' | 'vscode' | 'cursor' | 'zed' | 'sublime' | 'webstorm' | 'vim' | 'neovim'
+
 export interface GlobalSettings {
   /** Override for the Claude base directory. null = ~/.claude */
   claudeDir: string | null
@@ -48,6 +50,8 @@ export interface GlobalSettings {
   showDockIcon: boolean
   /** UI color theme */
   colorTheme: 'dark' | 'light' | 'terracotta'
+  /** Preferred editor for "Open in Editor" deep linking */
+  preferredEditor: EditorChoice
   /** Remote SSH connection settings */
   remote: RemoteSettings
   /** Directories excluded from scanning/watching across all projects */
@@ -75,6 +79,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   launchAtLogin: false,
   showDockIcon: true,
   colorTheme: 'dark',
+  preferredEditor: 'auto',
   remote: DEFAULT_REMOTE_SETTINGS,
   defaultExcludePatterns: [...DEFAULT_EXCLUDE_PATTERNS],
 }

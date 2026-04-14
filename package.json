@@ -14,6 +14,7 @@
     "@types/ssh2": "^1.15.5",
     "@xyflow/react": "^12.0.0",
     "chokidar": "^4.0.0",
+    "electron-updater": "^6.8.3",
     "elkjs": "^0.9.0",
     "ignore": "^7.0.5",
     "lucide-react": "^0.511.0",

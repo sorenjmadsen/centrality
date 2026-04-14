@@ -1,1 +1,2 @@
-// TODO Phase 1
+export { FileDetailPanel } from '../FileDetail/FileDetailPanel'
+export { FileDetailModal } from '../FileDetail/FileDetailModal'

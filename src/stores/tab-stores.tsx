@@ -40,6 +40,7 @@ export interface UiStore {
   actionTypeFilter: Set<string>
   granularity: 'files' | 'symbols'
   isContextBreakdownOpen: boolean
+  isFileDetailOpen: boolean
   setSelectedProject(encoded: string, projectPath: string): void
   setSelectedSession(path: string): void
   setSelectedNode(id: string | null): void
@@ -50,6 +51,7 @@ export interface UiStore {
   clearActionTypeFilter(): void
   setGranularity(g: 'files' | 'symbols'): void
   setContextBreakdownOpen(v: boolean): void
+  setFileDetailOpen(v: boolean): void
 }
 
 export interface ChatStore {
@@ -140,6 +142,7 @@ function makeUiStore(): StoreApi<UiStore> {
     actionTypeFilter: new Set(),
     granularity: 'files',
     isContextBreakdownOpen: false,
+    isFileDetailOpen: false,
 
     setSelectedProject: (encoded, projectPath) => set({
       selectedProjectEncoded: encoded,
@@ -168,6 +171,7 @@ function makeUiStore(): StoreApi<UiStore> {
     clearActionTypeFilter: () => set({ actionTypeFilter: new Set() }),
     setGranularity: g => set({ granularity: g }),
     setContextBreakdownOpen: v => set({ isContextBreakdownOpen: v }),
+    setFileDetailOpen: v => set({ isFileDetailOpen: v }),
   }))
 }
 

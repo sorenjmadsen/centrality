@@ -8,6 +8,7 @@ import { ResumeButton } from './components/TopBar/ResumeButton'
 import { ContextBreakdownButton } from './components/TopBar/ContextBreakdownButton'
 import { CodebaseGraph } from './components/Graph/CodebaseGraph'
 import { ChatPanel } from './components/ChatPanel/ChatPanel'
+import { FileDetailModal } from './components/FileDetail/FileDetailModal'
 import { ContextBreakdownModal } from './components/ChatPanel/ContextBreakdownModal'
 import { useGraphSync } from './lib/use-graph-sync'
 import { GranularityControl } from './components/Controls/GranularityControl'
@@ -140,6 +141,7 @@ function SessionView(): React.ReactElement {
           </div>
         </div>
         <ContextBreakdownModal />
+        <FileDetailModal />
       </div>
     </>
   )
