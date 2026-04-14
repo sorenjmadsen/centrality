@@ -1,4 +1,4 @@
-import { execFile } from 'child_process'
+import { spawn } from 'child_process'
 import * as fs from 'fs'
 import { REMOTE_PATH_PREFIX } from './ssh-manager'
 
@@ -13,6 +13,26 @@ export interface OpenInEditorArgs {
 export type OpenInEditorResult =
   | { ok: true }
   | { ok: false; error: string }
+
+/** Spawn a fully detached child process so macOS doesn't return focus to
+ *  Electron when the editor CLI exits. */
+function spawnDetached(bin: string, args: string[]): Promise<OpenInEditorResult> {
+  return new Promise(resolve => {
+    try {
+      const child = spawn(bin, args, {
+        detached: true,
+        stdio: 'ignore',
+      })
+      child.unref()
+      // Give it a moment to fail (e.g. ENOENT) before resolving success.
+      child.on('error', (err) => resolve({ ok: false, error: err.message }))
+      // If no error fires within a short window, assume success.
+      setTimeout(() => resolve({ ok: true }), 200)
+    } catch (err: unknown) {
+      resolve({ ok: false, error: (err as Error).message })
+    }
+  })
+}
 
 /** Opens a file in the user's preferred editor, optionally at a specific line.
  *  Validates inputs before shelling out. Supports macOS and Windows. */
@@ -52,13 +72,7 @@ export function openInEditor(args: OpenInEditorArgs): Promise<OpenInEditorResult
 function openWithDefault(filePath: string): Promise<OpenInEditorResult> {
   const cmd = process.platform === 'darwin' ? 'open' : 'cmd.exe'
   const cmdArgs = process.platform === 'darwin' ? [filePath] : ['/c', 'start', '', filePath]
-
-  return new Promise(resolve => {
-    execFile(cmd, cmdArgs, (err) => {
-      if (err) resolve({ ok: false, error: err.message })
-      else resolve({ ok: true })
-    })
-  })
+  return spawnDetached(cmd, cmdArgs)
 }
 
 interface EditorDef {
@@ -87,12 +101,7 @@ function openEditorMac(filePath: string, line: number | undefined, editor: Exclu
   }
 
   const args = line ? def.lineArg(filePath, line) : def.noLineArg(filePath)
-  return new Promise(resolve => {
-    execFile(def.bin, args, (err) => {
-      if (err) resolve({ ok: false, error: err.message })
-      else resolve({ ok: true })
-    })
-  })
+  return spawnDetached(def.bin, args)
 }
 
 function openInTerminalMac(bin: string, args: string[]): Promise<OpenInEditorResult> {
@@ -108,12 +117,7 @@ function openInTerminalMac(bin: string, args: string[]): Promise<OpenInEditorRes
     'end run',
   ].join('\n')
 
-  return new Promise(resolve => {
-    execFile('osascript', ['-e', script], (err) => {
-      if (err) resolve({ ok: false, error: err.message })
-      else resolve({ ok: true })
-    })
-  })
+  return spawnDetached('osascript', ['-e', script])
 }
 
 function openEditorWindows(filePath: string, line: number | undefined, editor: Exclude<EditorChoice, 'auto'>): Promise<OpenInEditorResult> {
@@ -123,19 +127,9 @@ function openEditorWindows(filePath: string, line: number | undefined, editor: E
   // vim/neovim on Windows — open in a new cmd window
   if (editor === 'vim' || editor === 'neovim') {
     const editorArgs = line ? def.lineArg(filePath, line) : def.noLineArg(filePath)
-    return new Promise(resolve => {
-      execFile('cmd.exe', ['/c', 'start', '', def.bin, ...editorArgs], { windowsHide: true }, (err) => {
-        if (err) resolve({ ok: false, error: err.message })
-        else resolve({ ok: true })
-      })
-    })
+    return spawnDetached('cmd.exe', ['/c', 'start', '', def.bin, ...editorArgs])
   }
 
   const args = line ? def.lineArg(filePath, line) : def.noLineArg(filePath)
-  return new Promise(resolve => {
-    execFile(def.bin, args, (err) => {
-      if (err) resolve({ ok: false, error: err.message })
-      else resolve({ ok: true })
-    })
-  })
+  return spawnDetached(def.bin, args)
 }

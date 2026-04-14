@@ -105,9 +105,10 @@ export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, pr
 
   return (
     <div className="border border-zinc-800 rounded text-xs">
-      <button
+      <div
         onClick={handleToggle}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-left hover:bg-zinc-800/50 transition-colors"
+        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-left hover:bg-zinc-800/50 transition-colors cursor-pointer select-none"
+        role="button"
       >
         {open ? <ChevronDown size={11} className="text-zinc-500 shrink-0" /> : <ChevronRight size={11} className="text-zinc-500 shrink-0" />}
         <span className="text-zinc-500 font-mono text-[10px] shrink-0">{formatTime(action.timestamp)}</span>
@@ -130,7 +131,7 @@ export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, pr
             <ExternalLink size={10} />
           </button>
         )}
-      </button>
+      </div>
 
       {open && (
         <div className="border-t border-zinc-800 px-2 py-1.5 space-y-1">
