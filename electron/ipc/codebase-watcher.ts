@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import { BrowserWindow } from 'electron'
 import chokidar from 'chokidar'
 import { scanCodebase } from './codebase-scanner'
-import { getProjectSettings } from './settings-manager'
+import { getProjectSettings, getGlobalSettings } from './settings-manager'
 
 interface WatcherEntry {
   watcher: ReturnType<typeof chokidar.watch>
@@ -25,7 +25,9 @@ export function startCodebaseWatcher(projectPath: string, encodedName: string): 
   if (watchers.has(projectPath)) return
   if (!fs.existsSync(projectPath)) return
 
+  const { defaultExcludePatterns } = getGlobalSettings()
   const { excludePatterns } = getProjectSettings(encodedName)
+  const allExcludePatterns = [...defaultExcludePatterns, ...excludePatterns]
 
   // Extensions we actually care about for source-change detection.
   // Anything not in this set (binaries, datasets, media, …) is ignored
@@ -61,8 +63,8 @@ export function startCodebaseWatcher(projectPath: string, encodedName: string): 
         'wandb', 'mlruns', 'runs',
       ].includes(first) || first.startsWith('.')) return true
 
-      // For user-supplied patterns (from project settings), do a simple substring match
-      for (const pat of excludePatterns) {
+      // For user-supplied patterns (from project + global settings), do a simple substring match
+      for (const pat of allExcludePatterns) {
         if (rel.includes(pat)) return true
       }
 

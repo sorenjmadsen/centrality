@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Settings, Wifi, WifiOff, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal, Loader2, AlertTriangle } from 'lucide-react'
+import { Settings, Wifi, WifiOff, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal, Loader2, AlertTriangle, Plus, X } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useSessionStore } from '../../stores/session-store'
 import type { GlobalSettings, RemoteSettings, SshAuthMethod } from '../../types/settings'
@@ -61,6 +61,18 @@ function Section({ title, description, children }: {
 
 function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch: Partial<GlobalSettings>): void }) {
   const [dirWarning, setDirWarning] = useState<string | null>(null)
+  const [excludeInput, setExcludeInput] = useState('')
+
+  function addExcludePattern() {
+    const trimmed = excludeInput.trim()
+    if (!trimmed || draft.defaultExcludePatterns.includes(trimmed)) return
+    onChange({ defaultExcludePatterns: [...draft.defaultExcludePatterns, trimmed] })
+    setExcludeInput('')
+  }
+
+  function removeExcludePattern(pattern: string) {
+    onChange({ defaultExcludePatterns: draft.defaultExcludePatterns.filter(p => p !== pattern) })
+  }
 
   async function handlePickDirectory() {
     const result = await window.api.pickDirectory()
@@ -191,6 +203,47 @@ function GeneralTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch
               </button>
             )
           })}
+        </div>
+      </Section>
+
+      <Section
+        title="Default Exclude Patterns"
+        description="Directories excluded from scanning and file watching across all projects."
+      >
+        <div className="flex flex-wrap gap-2 mb-3">
+          {draft.defaultExcludePatterns.map(p => (
+            <span
+              key={p}
+              className="flex items-center gap-1 bg-zinc-800 text-zinc-300 text-xs px-2 py-1 rounded"
+            >
+              {p}
+              <button
+                onClick={() => removeExcludePattern(p)}
+                className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+          {draft.defaultExcludePatterns.length === 0 && (
+            <span className="text-xs text-zinc-600">No patterns — all directories will be scanned.</span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={excludeInput}
+            onChange={e => setExcludeInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') addExcludePattern() }}
+            placeholder="e.g. vendor, .DS_Store"
+            className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+          />
+          <button
+            onClick={addExcludePattern}
+            className="p-1.5 bg-zinc-800 border border-zinc-700 rounded text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
+          >
+            <Plus size={14} />
+          </button>
         </div>
       </Section>
     </div>

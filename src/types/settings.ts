@@ -1,5 +1,16 @@
+/** Default directories excluded from scanning and watching. Visible in
+ *  Project Settings so users can see (and override) what's filtered out. */
+export const DEFAULT_EXCLUDE_PATTERNS: string[] = [
+  'node_modules', '.git', 'dist', 'build', 'out', '__pycache__',
+  '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
+  '.mypy_cache', '.pytest_cache', '.ruff_cache',
+  'artifacts', 'data', 'dataset', 'datasets', 'raw_data',
+  'models', 'weights', 'checkpoints', 'ckpt', 'logs',
+  'wandb', 'mlruns', 'runs',
+]
+
 export interface ProjectSettings {
-  /** Additional dirs/files to exclude beyond the hardcoded EXCLUDE set */
+  /** Directories/files to exclude from scanning and watching */
   excludePatterns: string[]
   /** Load git commits from this many days back. null = use default --max-count=10 */
   gitHistoryDays: number | null
@@ -39,6 +50,8 @@ export interface GlobalSettings {
   colorTheme: 'dark' | 'light' | 'terracotta'
   /** Remote SSH connection settings */
   remote: RemoteSettings
+  /** Directories excluded from scanning/watching across all projects */
+  defaultExcludePatterns: string[]
 }
 
 export const DEFAULT_REMOTE_SETTINGS: RemoteSettings = {
@@ -63,4 +76,5 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   showDockIcon: true,
   colorTheme: 'dark',
   remote: DEFAULT_REMOTE_SETTINGS,
+  defaultExcludePatterns: [...DEFAULT_EXCLUDE_PATTERNS],
 }

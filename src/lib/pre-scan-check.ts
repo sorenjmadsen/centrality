@@ -1,7 +1,6 @@
 import { useDirectoryFilterStore } from '../stores/directory-filter-store'
 import { useSettingsStore } from '../stores/settings-store'
 import type { DirTreeNode } from '../types/codebase'
-import type { ProjectSettings } from '../types/settings'
 
 const FILE_COUNT_THRESHOLD = 5000
 
@@ -25,7 +24,9 @@ export async function preScanCheck(
 
     if (countResult.totalFiles <= FILE_COUNT_THRESHOLD) return 'continue'
 
-    const settings = await useSettingsStore.getState().loadProjectSettings(encodedName)
+    const globalSettings = useSettingsStore.getState().globalSettings
+    const projectSettings = await useSettingsStore.getState().loadProjectSettings(encodedName)
+    const combinedPatterns = [...globalSettings.defaultExcludePatterns, ...projectSettings.excludePatterns]
 
     try {
       const newPatterns = await useDirectoryFilterStore.getState().promptFilter({
@@ -33,11 +34,14 @@ export async function preScanCheck(
         encodedName,
         dirTree: countResult.root,
         totalFiles: countResult.totalFiles,
-        currentExcludePatterns: settings.excludePatterns,
+        currentExcludePatterns: combinedPatterns,
       })
+      // Only save project-specific patterns (exclude global defaults)
+      const globalSet = new Set(globalSettings.defaultExcludePatterns)
+      const projectOnlyPatterns = newPatterns.filter(p => !globalSet.has(p))
       await useSettingsStore.getState().saveProjectSettings(encodedName, {
-        ...settings,
-        excludePatterns: newPatterns,
+        ...projectSettings,
+        excludePatterns: projectOnlyPatterns,
       })
       return 'continue'
     } catch {

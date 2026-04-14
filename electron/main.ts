@@ -245,8 +245,10 @@ function registerIpcHandlers(): void {
   )
 
   ipcMain.handle('codebase:scan', (_event, projectPath: string, encodedName: string) => {
+    const { defaultExcludePatterns } = getGlobalSettings()
     const { excludePatterns } = getProjectSettings(encodedName)
-    return scanCodebase(projectPath, excludePatterns.length ? excludePatterns : undefined)
+    const combined = [...defaultExcludePatterns, ...excludePatterns]
+    return scanCodebase(projectPath, combined.length ? combined : undefined)
   })
 
   ipcMain.handle('git:log', (_event, projectPath: string, encodedName: string) => {
