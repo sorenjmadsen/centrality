@@ -61,6 +61,101 @@ function getLanguage(filename: string): string | undefined {
   return ext ? LANG_MAP[ext] : undefined
 }
 
+export interface DirTreeNode {
+  /** Relative path from project root (empty string for root) */
+  relPath: string
+  name: string
+  /** Number of direct file children in this directory */
+  fileCount: number
+  /** Recursive total: files in this dir + all subdirs */
+  totalFileCount: number
+  children: DirTreeNode[]
+}
+
+/**
+ * Lightweight directory tree walk that only counts files — no content reads,
+ * no tree-sitter.  Respects the hardcoded EXCLUDE set and .gitignore files
+ * but intentionally ignores user excludePatterns so the dialog can show the
+ * full picture and let the user re-include previously excluded directories.
+ */
+export async function countDirectoryTree(
+  projectPath: string,
+): Promise<{ root: DirTreeNode; totalFiles: number }> {
+  try {
+    await fsp.access(projectPath)
+  } catch {
+    return { root: { relPath: '', name: path.basename(projectPath), fileCount: 0, totalFileCount: 0, children: [] }, totalFiles: 0 }
+  }
+
+  const igStack: Array<{ baseRel: string; ig: Ignore }> = []
+  const rootIg = await loadGitignoreAt(projectPath)
+  if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
+
+  function isIgnoredByGit(relPath: string): boolean {
+    for (const { baseRel, ig } of igStack) {
+      const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath
+      if (ig.ignores(rel)) return true
+    }
+    return false
+  }
+
+  async function walkCount(absPath: string, relPath: string): Promise<DirTreeNode> {
+    let pushedIg = false
+    if (relPath !== '') {
+      const dirIg = await loadGitignoreAt(absPath)
+      if (dirIg) {
+        igStack.push({ baseRel: relPath, ig: dirIg })
+        pushedIg = true
+      }
+    }
+
+    const node: DirTreeNode = {
+      relPath,
+      name: relPath === '' ? path.basename(projectPath) : path.basename(relPath),
+      fileCount: 0,
+      totalFileCount: 0,
+      children: [],
+    }
+
+    let entries: fs.Dirent[]
+    try {
+      entries = await fsp.readdir(absPath, { withFileTypes: true })
+    } catch {
+      if (pushedIg) igStack.pop()
+      return node
+    }
+
+    const subdirs: Array<{ childAbs: string; childRel: string }> = []
+
+    for (const entry of entries) {
+      if (EXCLUDE.has(entry.name) || entry.name.startsWith('.')) continue
+
+      const childRel = relPath ? `${relPath}/${entry.name}` : entry.name
+      if (isIgnoredByGit(childRel)) continue
+
+      if (entry.isDirectory()) {
+        subdirs.push({ childAbs: path.join(absPath, entry.name), childRel })
+      } else if (entry.isFile()) {
+        node.fileCount++
+      }
+    }
+
+    // Recurse sequentially to keep igStack consistent
+    for (const { childAbs, childRel } of subdirs) {
+      const child = await walkCount(childAbs, childRel)
+      node.children.push(child)
+    }
+
+    node.totalFileCount = node.fileCount + node.children.reduce((sum, c) => sum + c.totalFileCount, 0)
+
+    if (pushedIg) igStack.pop()
+    return node
+  }
+
+  const root = await walkCount(projectPath, '')
+  return { root, totalFiles: root.totalFileCount }
+}
+
 export async function scanCodebase(projectPath: string, extraExclude?: string[]): Promise<FsNode[]> {
   try {
     await fsp.access(projectPath)

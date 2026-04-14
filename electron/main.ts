@@ -1,8 +1,8 @@
-import { app, BrowserWindow, dialog, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, shell, ipcMain, Menu } from 'electron'
 import * as fs from 'fs'
 import { join } from 'path'
 import { listProjects, listSessions, parseSession } from './ipc/jsonl-parser'
-import { scanCodebase } from './ipc/codebase-scanner'
+import { scanCodebase, countDirectoryTree } from './ipc/codebase-scanner'
 import { startSessionWatcher } from './ipc/session-watcher'
 import { getGitLog, getGitDiff, makeInlineDiff, startGitWatcher, stopGitWatcher } from './ipc/git-integration'
 import { startCodebaseWatcher, stopCodebaseWatcher, stopAllCodebaseWatchers } from './ipc/codebase-watcher'
@@ -45,6 +45,64 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow.show())
+
+  // Build an application menu that intercepts Cmd/Ctrl+W to close a tab
+  // instead of the window. Other standard accelerators are preserved.
+  const template: Electron.MenuItemConstructorOptions[] = [
+    ...(process.platform === 'darwin'
+      ? [{
+          label: app.name,
+          submenu: [
+            { role: 'about' as const },
+            { type: 'separator' as const },
+            { role: 'hide' as const },
+            { role: 'hideOthers' as const },
+            { role: 'unhide' as const },
+            { type: 'separator' as const },
+            { role: 'quit' as const },
+          ],
+        }]
+      : []),
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Close Tab',
+          accelerator: 'CommandOrControl+W',
+          click: () => {
+            const win = BrowserWindow.getFocusedWindow()
+            if (win) win.webContents.send('tab:close')
+          },
+        },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -181,6 +239,10 @@ function registerIpcHandlers(): void {
 
     return results
   })
+
+  ipcMain.handle('codebase:count-dirs', (_event, projectPath: string) =>
+    countDirectoryTree(projectPath)
+  )
 
   ipcMain.handle('codebase:scan', (_event, projectPath: string, encodedName: string) => {
     const { excludePatterns } = getProjectSettings(encodedName)

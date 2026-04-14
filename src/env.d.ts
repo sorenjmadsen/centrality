@@ -9,6 +9,7 @@ interface Window {
     listSessions(encodedName: string): Promise<unknown>
     loadSession(filePath: string): Promise<unknown>
     readClaudeMd(projectPath: string): Promise<unknown>
+    countDirectoryTree(projectPath: string): Promise<unknown>
     scanCodebase(projectPath: string, encodedName: string): Promise<unknown>
     onSessionUpdate(callback: (data: unknown) => void): () => void
     watchCodebase(projectPath: string, encodedName: string): Promise<void>
@@ -37,5 +38,6 @@ interface Window {
     sshTestConnection(remote: unknown): Promise<{ success: boolean; message: string; banner?: string }>
     sshDisconnect(): Promise<void>
     resumeSession(args: { sessionId: string; projectPath: string }): Promise<{ ok: true } | { ok: false; error: string }>
+    onCloseTab(callback: () => void): () => void
   }
 }

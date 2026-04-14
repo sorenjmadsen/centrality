@@ -1,10 +1,13 @@
 import { useTabsStore } from '../stores/tabs-store'
 import { useTabCacheStore } from '../stores/tab-cache-store'
 import { tabStoreMap, createTabStores } from '../stores/tab-stores'
+import { useDirectoryFilterStore } from '../stores/directory-filter-store'
 import type { ClaudeAction } from '../types/actions'
 import type { ChatExchange, ChatMarker } from '../types/chat'
-import type { CodebaseNode } from '../types/codebase'
+import type { CodebaseNode, DirTreeNode } from '../types/codebase'
 import type { GitCommit } from '../types/git'
+
+const FILE_COUNT_THRESHOLD = 5000
 
 // Dedup in-flight codebase scans across tabs: if Tab 2 opens the same project
 // while Tab 1's scan is still running, Tab 2 awaits the same promise instead
@@ -128,9 +131,44 @@ export function useOpenSession() {
         if (sharedNodes && sharedRootIds) {
           scanPromise = Promise.resolve({ nodes: sharedNodes, rootIds: sharedRootIds })
         } else {
-          // Start a fresh scan and register it so concurrent opens share it
+          // Pre-scan: count files and prompt filter dialog for large projects
           tabStores.codebase.getState().clear()
           tabStores.codebase.setState({ isLoading: true })
+
+          try {
+            const countResult = await window.api.countDirectoryTree(params.projectPath) as {
+              root: DirTreeNode
+              totalFiles: number
+            }
+            const settings = await window.api.getProjectSettings(params.projectEncoded) as {
+              excludePatterns: string[]
+              gitHistoryDays: number | null
+            }
+
+            if (countResult.totalFiles > FILE_COUNT_THRESHOLD) {
+              try {
+                const newPatterns = await useDirectoryFilterStore.getState().promptFilter({
+                  projectPath: params.projectPath,
+                  encodedName: params.projectEncoded,
+                  dirTree: countResult.root,
+                  totalFiles: countResult.totalFiles,
+                  currentExcludePatterns: settings.excludePatterns,
+                })
+                await window.api.setProjectSettings(params.projectEncoded, {
+                  ...settings,
+                  excludePatterns: newPatterns,
+                })
+              } catch {
+                // User cancelled — don't scan
+                tabStores.codebase.setState({ isLoading: false })
+                return
+              }
+            }
+          } catch {
+            // Count failed — proceed with scan anyway
+          }
+
+          // Start a fresh scan and register it so concurrent opens share it
           const p = window.api.scanCodebase(params.projectPath, params.projectEncoded)
             .then((raw: unknown) => {
               const nodes = new Map((raw as CodebaseNode[]).map(n => [n.id, n]))

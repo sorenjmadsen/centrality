@@ -14,6 +14,7 @@ import { GranularityControl } from './components/Controls/GranularityControl'
 import { TabBar } from './components/TabBar/TabBar'
 import { Dashboard } from './components/Dashboard/Dashboard'
 import { SettingsPage } from './components/Settings/SettingsPage'
+import { DirectoryFilterDialog } from './components/Settings/DirectoryFilterDialog'
 import { useTabsStore } from './stores/tabs-store'
 import { tabStoreMap, TabStoresProvider, useUiStore, useSessionStore, useChatStore } from './stores/tab-stores'
 import { useSettingsStore } from './stores/settings-store'
@@ -214,6 +215,51 @@ function AppInner(): React.ReactElement {
     })
   }, [])
 
+  // Cmd/Ctrl+W → close active tab (instead of the window)
+  React.useEffect(() => {
+    return window.api.onCloseTab(() => {
+      const { tabs: currentTabs, activeTabId: currentActive, settingsTabOpen } = useTabsStore.getState()
+
+      // Settings tab is active → close it
+      if (currentActive === '__settings__' && settingsTabOpen) {
+        useTabsStore.getState().closeSettings()
+        return
+      }
+
+      // No session tab active → nothing to close
+      if (!currentActive || currentActive === '__settings__') return
+
+      const idx = currentTabs.findIndex(t => t.id === currentActive)
+      if (idx === -1) return
+
+      // Switch to an adjacent tab, or fall back to dashboard
+      const remaining = currentTabs.filter(t => t.id !== currentActive)
+      if (remaining.length > 0) {
+        const next = idx > 0 ? remaining[idx - 1] : remaining[0]
+        useTabsStore.getState().setActiveTab(next.id)
+      } else {
+        useTabsStore.getState().setActiveTab(null)
+      }
+
+      // Stop the codebase watcher if no other tab uses the same project
+      const closingStores = tabStoreMap.get(currentActive)
+      if (closingStores) {
+        const projectPath = closingStores.ui.getState().selectedProjectPath
+        if (projectPath) {
+          const stillUsed = currentTabs.some(
+            t => t.id !== currentActive && tabStoreMap.get(t.id)?.ui.getState().selectedProjectPath === projectPath
+          )
+          if (!stillUsed) {
+            window.api.unwatchCodebase(projectPath)
+          }
+        }
+      }
+
+      useTabsStore.getState().closeTab(currentActive)
+      tabStoreMap.delete(currentActive)
+    })
+  }, [])
+
   // Live codebase update listener — rescans triggered by file changes in the project directory
   React.useEffect(() => {
     return window.api.onCodebaseUpdate((data: unknown) => {
@@ -251,6 +297,8 @@ function AppInner(): React.ReactElement {
           </TabStoresProvider>
         </div>
       ))}
+
+      <DirectoryFilterDialog />
     </div>
   )
 }

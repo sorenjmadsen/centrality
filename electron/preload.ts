@@ -14,6 +14,7 @@ export type IpcChannels =
   | 'session:list'
   | 'session:load'
   | 'session:watch'
+  | 'codebase:count-dirs'
   | 'codebase:scan'
   | 'codebase:watch'
   | 'codebase:unwatch'
@@ -32,6 +33,8 @@ contextBridge.exposeInMainWorld('api', {
   listSessions: (encodedName: string) => ipcRenderer.invoke('session:list', encodedName),
   loadSession: (sessionPath: string) => ipcRenderer.invoke('session:load', sessionPath),
   readClaudeMd: (projectPath: string) => ipcRenderer.invoke('session:read-claude-md', projectPath),
+  countDirectoryTree: (projectPath: string) =>
+    ipcRenderer.invoke('codebase:count-dirs', projectPath),
   scanCodebase: (projectPath: string, encodedName: string) => ipcRenderer.invoke('codebase:scan', projectPath, encodedName),
   onSessionUpdate: (callback: (data: unknown) => void) => {
     ipcRenderer.on('session:update', (_event, data) => callback(data))
@@ -73,6 +76,10 @@ contextBridge.exposeInMainWorld('api', {
   sshDisconnect: () => ipcRenderer.invoke('ssh:disconnect'),
   resumeSession: (args: { sessionId: string; projectPath: string }) =>
     ipcRenderer.invoke('session:resume', args),
+  onCloseTab: (callback: () => void) => {
+    ipcRenderer.on('tab:close', () => callback())
+    return () => ipcRenderer.removeAllListeners('tab:close')
+  },
 })
 
 // Type declaration lives in src/env.d.ts for the renderer
