@@ -22,6 +22,7 @@ export type IpcChannels =
   | 'export:markdown'
   | 'export:screenshot'
   | 'session:resume'
+  | 'editor:open'
 
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform,
@@ -76,6 +77,8 @@ contextBridge.exposeInMainWorld('api', {
   sshDisconnect: () => ipcRenderer.invoke('ssh:disconnect'),
   resumeSession: (args: { sessionId: string; projectPath: string }) =>
     ipcRenderer.invoke('session:resume', args),
+  openInEditor: (args: { filePath: string; line?: number; editor: string }) =>
+    ipcRenderer.invoke('editor:open', args),
   onCloseTab: (callback: () => void) => {
     ipcRenderer.on('tab:close', () => callback())
     return () => ipcRenderer.removeAllListeners('tab:close')

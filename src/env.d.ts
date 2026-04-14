@@ -38,6 +38,7 @@ interface Window {
     sshTestConnection(remote: unknown): Promise<{ success: boolean; message: string; banner?: string }>
     sshDisconnect(): Promise<void>
     resumeSession(args: { sessionId: string; projectPath: string }): Promise<{ ok: true } | { ok: false; error: string }>
+    openInEditor(args: { filePath: string; line?: number; editor: string }): Promise<{ ok: true } | { ok: false; error: string }>
     onCloseTab(callback: () => void): () => void
   }
 }

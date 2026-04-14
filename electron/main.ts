@@ -9,6 +9,7 @@ import { startCodebaseWatcher, stopCodebaseWatcher, stopAllCodebaseWatchers } fr
 import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
 import { resumeSession } from './ipc/session-launcher'
+import { openInEditor, type OpenInEditorArgs } from './ipc/editor-launcher'
 import {
   getProjectSettings, setProjectSettings,
   getGlobalSettings, setGlobalSettings,
@@ -156,30 +157,48 @@ function registerIpcHandlers(): void {
     resumeSession(args)
   )
 
+  ipcMain.handle('editor:open', (_event, args: OpenInEditorArgs) =>
+    openInEditor(args)
+  )
+
   ipcMain.handle('settings:set-global', (_event, settings: GlobalSettings) => {
+    const prev = getGlobalSettings()
     setGlobalSettings(settings)
-    // Apply system-level effects
-    try {
-      app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin ?? false })
-    } catch {
-      // Unsupported on this platform — ignore
-    }
-    if (app.dock) {
-      if (settings.showDockIcon ?? true) {
-        app.dock.show()
-      } else {
-        app.dock.hide()
+
+    // Apply system-level effects — only when the relevant setting actually
+    // changed, so routine saves don't steal focus or trigger OS side-effects.
+    const wantLogin = settings.launchAtLogin ?? false
+    const hadLogin = prev.launchAtLogin ?? false
+    if (wantLogin !== hadLogin) {
+      try {
+        app.setLoginItemSettings({ openAtLogin: wantLogin })
+      } catch {
+        // Unsupported on this platform — ignore
       }
     }
+
+    if (app.dock) {
+      const wantDock = settings.showDockIcon ?? true
+      const hadDock = prev.showDockIcon ?? true
+      if (wantDock !== hadDock) {
+        if (wantDock) app.dock.show()
+        else app.dock.hide()
+      }
+    }
+
     // Remember any freshly-supplied password so the SFTP session can keep
     // using it after settings are written to disk (where it's stripped).
     if (settings.remote?.password) cachedRemotePassword = settings.remote.password
-    // Restart the remote watcher so it picks up new auth / host settings.
-    // Always tear down the cached SSH client first — its config may be stale.
-    closeRemoteConnection()
-    const active = getActiveRemote()
-    if (active?.enabled) startRemoteWatcher(active)
-    else stopRemoteWatcher()
+
+    // Only restart the remote watcher when remote config actually changed.
+    const remoteChanged =
+      JSON.stringify(settings.remote ?? null) !== JSON.stringify(prev.remote ?? null)
+    if (remoteChanged) {
+      closeRemoteConnection()
+      const active = getActiveRemote()
+      if (active?.enabled) startRemoteWatcher(active)
+      else stopRemoteWatcher()
+    }
   })
 
   ipcMain.handle('projects:list', () => {
