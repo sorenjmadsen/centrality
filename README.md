@@ -6,6 +6,10 @@ A desktop application for tracing and visualizing how Claude Code interacts with
 
 Centrality reads Claude Code session files and renders an interactive graph of your project — directories, files, and code symbols — overlaid with every tool call Claude made during a session. You can see exactly which files were read, written, or edited, replay actions chronologically, and correlate AI-assisted changes with git history.
 
+## Screenshot Overview
+
+![Centrality screenshot](centrality-screenshot.png)
+
 ## Features
 
 - **Interactive codebase graph** — visualize your project as a network of directories, files, and symbols (functions, classes, types)
