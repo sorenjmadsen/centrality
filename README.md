@@ -10,7 +10,7 @@ Centrality reads Claude Code session files and renders an interactive graph of y
 
 - **Interactive codebase graph** — visualize your project as a network of directories, files, and symbols (functions, classes, types)
 - **Action tracking** — map every Claude tool call (Read, Write, Edit, Bash, Grep, etc.) to the exact nodes it touched
-- **Playback mode** — replay a session step-by-step at adjustable speed to follow Claude's reasoning
+- **Playback mode** — replay a session step-by-step to follow Claude's reasoning
 - **Git integration** — view commits and diffs alongside session activity to see what actually changed
 - **Multi-tab sessions** — open and compare multiple Claude Code sessions simultaneously
 - **Chat panel** — read the full conversation with per-exchange token usage and cache statistics
