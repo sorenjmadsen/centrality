@@ -261,3 +261,24 @@ export async function extractSymbols(absPath: string, language: string): Promise
     return []
   }
 }
+
+/** Parse symbols from an already-loaded content string.
+ *  Used when the file is on a remote filesystem (no local path available).
+ *  `fileId` is used as the symbol id prefix — pass the relative path so ids
+ *  are consistent with those produced by extractSymbols via scanCodebase. */
+export async function extractSymbolsFromContent(content: string, fileId: string, language: string): Promise<SymbolInfo[]> {
+  if (content.length > 500_000) return []
+  try {
+    await ensureInit()
+    const lang = await getLanguage(language)
+    if (!lang) return []
+    const parser = new Parser()
+    parser.setLanguage(lang)
+    const tree = parser.parse(content)
+    const ctx: WalkCtx = { fileId, symbols: [] }
+    walk(tree.rootNode, ctx, language)
+    return ctx.symbols
+  } catch {
+    return []
+  }
+}

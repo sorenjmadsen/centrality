@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { RefreshCw, X } from 'lucide-react'
 import { FilterBar } from './components/TopBar/FilterBar'
 import { SearchBar } from './components/TopBar/SearchBar'
 import { ExportMenu } from './components/TopBar/ExportMenu'
@@ -147,6 +147,37 @@ function SessionView(): React.ReactElement {
   )
 }
 
+function UpdateBanner() {
+  const [updateVersion, setUpdateVersion] = useState<string | null>(null)
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    return window.api.onAutoUpdateEvent((status) => {
+      if (status.event === 'downloaded') {
+        setUpdateVersion(status.version ?? null)
+        setDismissed(false)
+      }
+    })
+  }, [])
+
+  if (!updateVersion || dismissed) return null
+
+  return (
+    <div className="flex items-center justify-center gap-3 px-3 py-1.5 bg-accent/15 border-b border-accent/30 text-sm shrink-0">
+      <span className="text-zinc-300">
+        Centrality v{updateVersion} is ready — quit and reopen to update
+      </span>
+      <button
+        onClick={() => setDismissed(true)}
+        className="p-0.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+        title="Dismiss"
+      >
+        <X size={12} />
+      </button>
+    </div>
+  )
+}
+
 function AppInner(): React.ReactElement {
   const tabs = useTabsStore(s => s.tabs)
   const activeTabId = useTabsStore(s => s.activeTabId)
@@ -279,6 +310,7 @@ function AppInner(): React.ReactElement {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-zinc-950 text-zinc-100 overflow-hidden">
+      <UpdateBanner />
       <TabBar />
 
       {/* Dashboard — shown when no tab is active */}

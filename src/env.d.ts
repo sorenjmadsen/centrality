@@ -40,5 +40,13 @@ interface Window {
     resumeSession(args: { sessionId: string; projectPath: string }): Promise<{ ok: true } | { ok: false; error: string }>
     openInEditor(args: { filePath: string; line?: number; editor: string }): Promise<{ ok: true } | { ok: false; error: string }>
     onCloseTab(callback: () => void): () => void
+    checkForUpdates(): Promise<void>
+    onAutoUpdateEvent(callback: (status: {
+      event: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+      version?: string
+      releaseNotes?: string
+      progress?: { percent: number; bytesPerSecond: number; transferred: number; total: number }
+      message?: string
+    }) => void): () => void
   }
 }

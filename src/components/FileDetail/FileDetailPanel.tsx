@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { FileText, ExternalLink, X } from 'lucide-react'
 import { useUiStore, useChatStore, useCodebaseStore, useSessionStore } from '../../stores/tab-stores'
 import { useSettingsStore } from '../../stores/settings-store'
 import { ActionBadge } from '../Graph/overlays/ActionBadge'
 import { FileActionItem } from './FileActionItem'
+import { RemoteFileWarning } from './RemoteFileWarning'
 import type { ToolCallEntry } from '../../types/session'
 
 interface ActionIndex {
@@ -17,12 +18,15 @@ interface FileDetailPanelProps {
 }
 
 export function FileDetailPanel({ onClose }: FileDetailPanelProps) {
+  const [showRemoteWarning, setShowRemoteWarning] = useState(false)
   const selectedNodeId = useUiStore(s => s.selectedNodeId)
   const selectedProjectPath = useUiStore(s => s.selectedProjectPath)
+  const selectedSessionPath = useUiStore(s => s.selectedSessionPath)
   const node = useCodebaseStore(s => selectedNodeId ? s.nodes.get(selectedNodeId) : undefined)
   const allActions = useSessionStore(s => s.actions)
   const exchanges = useChatStore(s => s.exchanges)
   const { globalSettings } = useSettingsStore()
+  const isRemoteSession = selectedSessionPath?.startsWith('ssh:') ?? false
 
   // Absolute path for this file, used to match against action.filePath
   const absPath = selectedProjectPath && selectedNodeId
@@ -69,6 +73,7 @@ export function FileDetailPanel({ onClose }: FileDetailPanelProps) {
 
   async function handleOpenInEditor() {
     if (!absPath) return
+    if (isRemoteSession) { setShowRemoteWarning(true); return }
     const result = await window.api.openInEditor({
       filePath: absPath,
       editor: globalSettings.preferredEditor,
@@ -90,6 +95,8 @@ export function FileDetailPanel({ onClose }: FileDetailPanelProps) {
   const filePath = node?.path ?? selectedNodeId
 
   return (
+    <>
+    {showRemoteWarning && <RemoteFileWarning onClose={() => setShowRemoteWarning(false)} />}
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="px-3 py-2 border-b border-zinc-800 shrink-0">
@@ -156,5 +163,6 @@ export function FileDetailPanel({ onClose }: FileDetailPanelProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }

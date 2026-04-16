@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Settings, Wifi, WifiOff, Download, Upload, FolderOpen, ExternalLink, SlidersHorizontal, Loader2, AlertTriangle, Plus, X } from 'lucide-react'
+import { Settings, Wifi, WifiOff, Download, Upload, FolderOpen, SlidersHorizontal, Loader2, AlertTriangle, Plus, X } from 'lucide-react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useSessionStore } from '../../stores/session-store'
 import type { GlobalSettings, RemoteSettings, SshAuthMethod } from '../../types/settings'
@@ -480,15 +480,20 @@ function RemoteTab({ draft, onChange }: { draft: GlobalSettings; onChange(patch:
 
 // ─── Configuration Tab ────────────────────────────────────────────────────────
 
-// TODO: Replace with actual GitHub repo URL once published
-const GITHUB_RELEASES_URL = 'https://github.com/OWNER/centrality/releases'
-const GITHUB_LATEST_API = 'https://api.github.com/repos/OWNER/centrality/releases/latest'
+type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'up-to-date' }
+  | { state: 'available'; version: string }
+  | { state: 'downloading'; percent: number }
+  | { state: 'downloaded'; version: string }
+  | { state: 'error'; message: string }
 
 function ConfigurationTab({ onReset }: { onReset(): void }) {
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [updateCheck, setUpdateCheck] = useState<{ status: 'checking' | 'up-to-date' | 'update-available' | 'error'; latest?: string }>({ status: 'checking' })
-  const { loadGlobalSettings, saveGlobalSettings } = useSettingsStore()
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+  const { globalSettings, loadGlobalSettings, saveGlobalSettings } = useSettingsStore()
 
   async function handleExport() {
     setExportStatus('idle')
@@ -516,20 +521,29 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
   }
 
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(GITHUB_LATEST_API)
-        if (!res.ok || cancelled) return
-        const data = await res.json()
-        const latest = (data.tag_name as string).replace(/^v/, '')
-        if (cancelled) return
-        setUpdateCheck(latest === version ? { status: 'up-to-date', latest } : { status: 'update-available', latest })
-      } catch {
-        if (!cancelled) setUpdateCheck({ status: 'error' })
+    const unsubscribe = window.api.onAutoUpdateEvent((status) => {
+      switch (status.event) {
+        case 'checking':
+          setUpdateStatus({ state: 'checking' })
+          break
+        case 'available':
+          setUpdateStatus({ state: 'available', version: status.version! })
+          break
+        case 'not-available':
+          setUpdateStatus({ state: 'up-to-date' })
+          break
+        case 'downloading':
+          setUpdateStatus({ state: 'downloading', percent: Math.round(status.progress?.percent ?? 0) })
+          break
+        case 'downloaded':
+          setUpdateStatus({ state: 'downloaded', version: status.version! })
+          break
+        case 'error':
+          setUpdateStatus({ state: 'error', message: status.message ?? 'Unknown error' })
+          break
       }
-    })()
-    return () => { cancelled = true }
+    })
+    return unsubscribe
   }, [])
 
   return (
@@ -580,6 +594,60 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
         </button>
       </Section>
 
+      <Section
+        title="Updates"
+        description="Automatically check for and install updates from GitHub."
+      >
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm text-zinc-300">Automatic updates</label>
+          <Toggle
+            checked={globalSettings.autoUpdateEnabled}
+            onChange={async (v) => {
+              await saveGlobalSettings({ ...globalSettings, autoUpdateEnabled: v })
+              await loadGlobalSettings()
+            }}
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.api.checkForUpdates()}
+            disabled={updateStatus.state === 'checking' || updateStatus.state === 'downloading'}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm bg-zinc-800 border border-zinc-700 rounded hover:border-zinc-500 hover:bg-zinc-700 text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {updateStatus.state === 'checking' ? (
+              <><Loader2 size={13} className="animate-spin" /> Checking…</>
+            ) : (
+              <>Check for updates</>
+            )}
+          </button>
+          {updateStatus.state === 'up-to-date' && (
+            <span className="text-xs text-green-400">Up to date</span>
+          )}
+          {updateStatus.state === 'available' && (
+            <span className="text-xs text-blue-400">v{updateStatus.version} available — downloading…</span>
+          )}
+          {updateStatus.state === 'downloading' && (
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full transition-all"
+                  style={{ width: `${updateStatus.percent}%` }}
+                />
+              </div>
+              <span className="text-xs text-zinc-400">{updateStatus.percent}%</span>
+            </div>
+          )}
+          {updateStatus.state === 'error' && (
+            <span className="text-xs text-red-400">{updateStatus.message}</span>
+          )}
+        </div>
+        {updateStatus.state === 'downloaded' && (
+          <div className="mt-3 text-sm text-accent">
+            v{updateStatus.version} is ready — it will be installed the next time you quit Centrality.
+          </div>
+        )}
+      </Section>
+
       <Section title="About">
         <div className="flex items-center gap-3">
           <img src={centralityLogo} alt="Centrality" className="w-10 h-10" />
@@ -587,34 +655,6 @@ function ConfigurationTab({ onReset }: { onReset(): void }) {
             <div className="text-sm font-medium text-zinc-300">Centrality</div>
             <div className="text-xs text-zinc-500 font-mono">v{version}</div>
           </div>
-          <div className="flex-1" />
-          {updateCheck.status === 'checking' && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
-              Checking for updates…
-            </div>
-          )}
-          {updateCheck.status === 'up-to-date' && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
-              Up to date
-            </div>
-          )}
-          {updateCheck.status === 'update-available' && (
-            <a
-              href={GITHUB_RELEASES_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded hover:border-zinc-500 hover:bg-zinc-700 text-zinc-300 transition-colors"
-            >
-              <Download size={12} />
-              Download v{updateCheck.latest}
-              <ExternalLink size={10} />
-            </a>
-          )}
-          {updateCheck.status === 'error' && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-500">
-              Could not check for updates
-            </div>
-          )}
         </div>
       </Section>
     </div>

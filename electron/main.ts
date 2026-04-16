@@ -10,6 +10,7 @@ import { scanDeps } from './ipc/dep-scanner'
 import { exportMarkdown, captureScreenshot, type ExchangeExportItem } from './ipc/exporter'
 import { resumeSession } from './ipc/session-launcher'
 import { openInEditor, type OpenInEditorArgs } from './ipc/editor-launcher'
+import { initAutoUpdater, stopAutoUpdater } from './ipc/auto-updater'
 import {
   getProjectSettings, setProjectSettings,
   getGlobalSettings, setGlobalSettings,
@@ -17,6 +18,7 @@ import {
 import {
   testConnection as sshTestConnection,
   listRemoteProjects, listRemoteSessions, loadRemoteSession,
+  scanRemoteCodebase, scanRemoteDeps,
   startRemoteWatcher, stopRemoteWatcher, closeRemoteConnection,
   disconnectRemote, isRemotePath,
 } from './ipc/ssh-manager'
@@ -32,7 +34,7 @@ try {
   // Older Node / unsupported platform — proceed with system default
 }
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -115,6 +117,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 // In-memory cache of the remote SSH password / key passphrase. We deliberately
@@ -267,6 +271,8 @@ function registerIpcHandlers(): void {
     const { defaultExcludePatterns } = getGlobalSettings()
     const { excludePatterns } = getProjectSettings(encodedName)
     const combined = [...defaultExcludePatterns, ...excludePatterns]
+    const active = getActiveRemote()
+    if (active?.enabled) return scanRemoteCodebase(active, projectPath, combined.length ? combined : undefined)
     return scanCodebase(projectPath, combined.length ? combined : undefined)
   })
 
@@ -300,9 +306,11 @@ function registerIpcHandlers(): void {
     setImmediate(() => stopCodebaseWatcher(projectPath))
   })
 
-  ipcMain.handle('dep:scan', (_event, projectPath: string, filePaths: string[]) =>
-    scanDeps(projectPath, filePaths)
-  )
+  ipcMain.handle('dep:scan', (_event, projectPath: string, filePaths: string[]) => {
+    const active = getActiveRemote()
+    if (active?.enabled) return scanRemoteDeps(active, projectPath, filePaths)
+    return scanDeps(projectPath, filePaths)
+  })
 
   ipcMain.handle('export:markdown', (
     _event,
@@ -383,8 +391,14 @@ function registerIpcHandlers(): void {
 
 app.whenReady().then(() => {
   registerIpcHandlers()
-  createWindow()
+  const mainWindow = createWindow()
   const stopSessionWatcher = startSessionWatcher()
+
+  // Auto-updater: only runs in packaged builds (electron-updater
+  // silently no-ops in dev mode, but we skip it entirely to avoid noise)
+  if (app.isPackaged) {
+    initAutoUpdater(mainWindow)
+  }
 
   // If remote mode was enabled in the persisted config, try to start polling.
   // Password auth can't resume automatically because we never persist the
@@ -410,6 +424,7 @@ app.whenReady().then(() => {
   // the app either hangs on quit or exits with an error.
   app.on('before-quit', () => {
     stopSessionWatcher()
+    stopAutoUpdater()
     stopGitWatcher()
     stopAllCodebaseWatchers()
     stopRemoteWatcher()

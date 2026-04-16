@@ -13,9 +13,36 @@ files:
   - '!**/*.map'
 asarUnpack:
   - resources/**
+publish:
+  provider: github
+  owner: sorenjmadsen
+  repo: centrality
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.developer-tools
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+win:
+  target:
+    - nsis
+  publisherName: Centrality
 linux:
   target:
     - AppImage
     - deb
   maintainer: centrality
   category: Development
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false

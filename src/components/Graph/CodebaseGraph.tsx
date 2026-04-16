@@ -16,7 +16,7 @@ import {
   type NodeChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useGraphStore, useUiStore, useChatStore, useTabId, useTabStores } from '../../stores/tab-stores'
+import { useGraphStore, useUiStore, useChatStore, useCodebaseStore, useTabId, useTabStores } from '../../stores/tab-stores'
 import { useTabsStore } from '../../stores/tabs-store'
 import { DirectoryNode } from './nodes/DirectoryNode'
 import { FileNode } from './nodes/FileNode'
@@ -257,6 +257,20 @@ function GraphCanvas() {
 
 export function CodebaseGraph() {
   const { nodes } = useGraphStore()
+  const isLoading = useCodebaseStore(s => s.isLoading)
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-2 text-zinc-500 text-sm">
+        <div className="flex gap-1">
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce" />
+        </div>
+        Scanning codebase…
+      </div>
+    )
+  }
 
   if (nodes.length === 0) {
     return (

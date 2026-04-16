@@ -4,6 +4,7 @@ import type { ClaudeAction } from '../../types/actions'
 import type { ToolCallEntry } from '../../types/session'
 import { ActionBadge } from '../Graph/overlays/ActionBadge'
 import { DiffViewer } from '../Diff/DiffViewer'
+import { RemoteFileWarning } from './RemoteFileWarning'
 import { useUiStore } from '../../stores/tab-stores'
 import { useSettingsStore } from '../../stores/settings-store'
 
@@ -66,8 +67,10 @@ function getLineNumber(action: ClaudeAction): number | undefined {
 export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, projectPath }: FileActionItemProps) {
   const [open, setOpen] = useState(false)
   const [inlineDiff, setInlineDiff] = useState<string | null>(null)
-  const { setSelectedExchange, setPlaybackIndex } = useUiStore()
+  const [showRemoteWarning, setShowRemoteWarning] = useState(false)
+  const { setSelectedExchange, setPlaybackIndex, selectedSessionPath } = useUiStore()
   const { globalSettings } = useSettingsStore()
+  const isRemoteSession = selectedSessionPath?.startsWith('ssh:') ?? false
 
   const isEditTool = action.toolName === 'Edit' || action.toolName === 'MultiEdit'
   const oldStr = action.input['old_string'] as string | undefined
@@ -83,6 +86,7 @@ export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, pr
   async function handleOpenInEditor(e: React.MouseEvent) {
     e.stopPropagation()
     if (!action.filePath) return
+    if (isRemoteSession) { setShowRemoteWarning(true); return }
     const line = getLineNumber(action)
     const result = await window.api.openInEditor({
       filePath: action.filePath,
@@ -104,6 +108,8 @@ export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, pr
   }
 
   return (
+    <>
+    {showRemoteWarning && <RemoteFileWarning onClose={() => setShowRemoteWarning(false)} />}
     <div className="border border-zinc-800 rounded text-xs">
       <div
         onClick={handleToggle}
@@ -164,5 +170,6 @@ export function FileActionItem({ action, toolCall, exchangeIndex, exchangeId, pr
         </div>
       )}
     </div>
+    </>
   )
 }

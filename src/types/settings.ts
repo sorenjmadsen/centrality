@@ -56,6 +56,8 @@ export interface GlobalSettings {
   remote: RemoteSettings
   /** Directories excluded from scanning/watching across all projects */
   defaultExcludePatterns: string[]
+  /** Automatically check for and download updates */
+  autoUpdateEnabled: boolean
 }
 
 export const DEFAULT_REMOTE_SETTINGS: RemoteSettings = {
@@ -82,4 +84,5 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   preferredEditor: 'auto',
   remote: DEFAULT_REMOTE_SETTINGS,
   defaultExcludePatterns: [...DEFAULT_EXCLUDE_PATTERNS],
+  autoUpdateEnabled: true,
 }

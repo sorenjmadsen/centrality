@@ -9,8 +9,8 @@ export interface DepEdge {
 const TS_JS_IMPORT_RE = /(?:import|export)\s+(?:.*?\s+from\s+)?['"]([^'"]+)['"]/g
 const TS_JS_REQUIRE_RE = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 
-const TS_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']
-const PY_EXTENSIONS = ['.py']
+export const TS_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']
+export const PY_EXTENSIONS = ['.py']
 
 function resolveRelativeImport(
   sourceFile: string,
@@ -41,7 +41,7 @@ function resolveRelativeImport(
   return null
 }
 
-function parseTsJsImports(
+export function parseTsJsImports(
   sourceFile: string,
   content: string,
   projectPath: string,
@@ -70,7 +70,7 @@ function parseTsJsImports(
   return edges
 }
 
-function parsePyImports(
+export function parsePyImports(
   sourceFile: string,
   content: string,
   projectPath: string,

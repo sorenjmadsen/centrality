@@ -80,20 +80,31 @@ function resolveProjectPath(encoded: string): string {
 
 function tryResolve(base: string, remaining: string): string | null {
   if (!remaining) return base
-  let searchFrom = 0
-  while (true) {
-    const dashIdx = remaining.indexOf('-', searchFrom)
+
+  // Collect all dash positions and add a -1 sentinel for "no split" (whole string).
+  // We iterate in reverse so the longest possible segment is tried first.
+  // This prefers treating dashes as part of directory names (e.g. "claude-vertex")
+  // over treating them as path separators, which avoids false-positive matches when
+  // an unrelated shorter-named directory coincidentally exists alongside the project.
+  const splits: number[] = [-1]
+  let i = remaining.indexOf('-')
+  while (i !== -1) {
+    splits.push(i)
+    i = remaining.indexOf('-', i + 1)
+  }
+
+  for (let s = 0; s < splits.length; s++) {
+    const dashIdx = splits[splits.length - 1 - s] // longest segment first
     const segment = dashIdx === -1 ? remaining : remaining.slice(0, dashIdx)
-    if (!segment) { searchFrom = dashIdx + 1; if (dashIdx === -1) break; continue }
+    if (!segment) continue
     const candidate = path.join(base, segment)
     if (fs.existsSync(candidate)) {
       if (dashIdx === -1) return candidate
       const deeper = tryResolve(candidate, remaining.slice(dashIdx + 1))
       if (deeper !== null) return deeper
     }
-    if (dashIdx === -1) break
-    searchFrom = dashIdx + 1
   }
+
   return null
 }
 

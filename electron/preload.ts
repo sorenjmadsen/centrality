@@ -23,6 +23,7 @@ export type IpcChannels =
   | 'export:screenshot'
   | 'session:resume'
   | 'editor:open'
+  | 'autoupdate:check'
 
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform,
@@ -82,6 +83,11 @@ contextBridge.exposeInMainWorld('api', {
   onCloseTab: (callback: () => void) => {
     ipcRenderer.on('tab:close', () => callback())
     return () => ipcRenderer.removeAllListeners('tab:close')
+  },
+  checkForUpdates: () => ipcRenderer.invoke('autoupdate:check'),
+  onAutoUpdateEvent: (callback: (status: unknown) => void) => {
+    ipcRenderer.on('autoupdate:status', (_event, status) => callback(status))
+    return () => ipcRenderer.removeAllListeners('autoupdate:status')
   },
 })
 

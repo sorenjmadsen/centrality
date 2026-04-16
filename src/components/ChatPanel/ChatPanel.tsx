@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react'
 import { Minimize2, RefreshCcw, Terminal } from 'lucide-react'
-import { useChatStore, useUiStore, useGitStore, useSearchStore, useTabId } from '../../stores/tab-stores'
+import { useChatStore, useUiStore, useGitStore, useSearchStore, useSessionStore, useTabId } from '../../stores/tab-stores'
 import { useTabsStore } from '../../stores/tabs-store'
 import { ChatMessageBubble } from './ChatMessage'
 import { TokenUsagePopover } from './TokenUsagePopover'
@@ -51,6 +51,7 @@ export function ChatPanel() {
   const { selectedExchangeId, playbackIndex, setSelectedExchange, setPlaybackIndex, selectedProjectPath } = useUiStore()
   const { selectCommit } = useGitStore()
   const { results, activeIdx } = useSearchStore()
+  const isLoadingSession = useSessionStore(s => s.isLoadingSession)
   const tabId = useTabId()
   const saveTabViewState = useTabsStore(s => s.saveTabViewState)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -95,6 +96,19 @@ export function ChatPanel() {
     const el = itemRefs.current.get(activeId)
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [activeId])
+
+  if (isLoadingSession) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-2 text-zinc-500 text-sm">
+        <div className="flex gap-1">
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-2 h-2 rounded-full bg-zinc-500 animate-bounce" />
+        </div>
+        Loading session…
+      </div>
+    )
+  }
 
   if (exchanges.length === 0) {
     return (

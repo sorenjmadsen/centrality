@@ -2,6 +2,8 @@
   "name": "centrality",
   "version": "0.1.0",
   "main": "out/main/main.js",
+  "author": "Soren Madsen <soren.j.madsen@gmail.com>",
+  "description": "Visualize how Claude Code interacts with your codebase",
   "scripts": {
     "dev": "electron-vite dev -- --no-sandbox",
     "build": "electron-vite build",
@@ -46,5 +48,46 @@
     "typescript": "^5.8.0",
     "vite": "^6.0.0",
     "vitest": "^3.0.0"
+  },
+  "build": {
+    "appId": "com.centrality.app",
+    "productName": "Centrality",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": ["dmg"],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   }
 }

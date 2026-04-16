@@ -7,6 +7,11 @@ import { Client, type ConnectConfig, type SFTPWrapper, type FileEntryWithStats }
 import type { RemoteSettings, SshAuthMethod } from '../../src/types/settings'
 import type { ProjectInfo, SessionInfo, ParsedSession } from './jsonl-parser'
 import { parseSession } from './jsonl-parser'
+import type { FsNode } from './codebase-scanner'
+import type { DepEdge } from './dep-scanner'
+import { parseTsJsImports, parsePyImports, TS_EXTENSIONS, PY_EXTENSIONS } from './dep-scanner'
+import { extractSymbolsFromContent } from './tree-sitter-pool'
+import ignore from 'ignore'
 
 /** Prefix used to tag remote session file paths so the rest of the app
  *  can tell local and remote sessions apart without extra metadata. */
@@ -312,19 +317,59 @@ function resolveRemoteBase(conn: ActiveConnection, settings: RemoteSettings): st
   return override
 }
 
-// Naive project-name decoder for remote paths: we cannot probe the remote
-// filesystem cheaply to disambiguate dashes, so we fall back to the simple
-// `-` → `/` replacement. Users whose project names contain literal dashes
-// may see merged segments, same as the local fallback path.
-function decodeRemoteProjectName(encoded: string): string {
-  if (!encoded.startsWith('-')) return encoded.replace(/-/g, '/')
-  return '/' + encoded.slice(1).replace(/-/g, '/')
+function statSftp(sftp: SFTPWrapper, p: string): Promise<boolean> {
+  return new Promise(resolve => sftp.stat(p, err => resolve(!err)))
 }
 
 function readdirSftp(sftp: SFTPWrapper, dir: string): Promise<FileEntryWithStats[]> {
   return new Promise((resolve, reject) =>
     sftp.readdir(dir, (err, list) => err ? reject(err) : resolve(list))
   )
+}
+
+function readFileSftp(sftp: SFTPWrapper, remotePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    const stream = sftp.createReadStream(remotePath)
+    stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+    stream.on('error', reject)
+  })
+}
+
+// Mirror of the local tryResolve in jsonl-parser.ts, but uses SFTP stat instead
+// of fs.existsSync so it works with remote filesystems over SSH.
+// Tries the longest possible segment first so that literal dashes in directory
+// names (e.g. "claude-vertex") are preferred over treating them as separators.
+async function tryResolveRemote(sftp: SFTPWrapper, base: string, remaining: string): Promise<string | null> {
+  if (!remaining) return base
+
+  const splits: number[] = [-1] // -1 = no split, try whole remaining string
+  let i = remaining.indexOf('-')
+  while (i !== -1) {
+    splits.push(i)
+    i = remaining.indexOf('-', i + 1)
+  }
+
+  for (let s = 0; s < splits.length; s++) {
+    const dashIdx = splits[splits.length - 1 - s] // longest segment first
+    const segment = dashIdx === -1 ? remaining : remaining.slice(0, dashIdx)
+    if (!segment) continue
+    const candidate = posixJoin(base, segment)
+    if (await statSftp(sftp, candidate)) {
+      if (dashIdx === -1) return candidate
+      const deeper = await tryResolveRemote(sftp, candidate, remaining.slice(dashIdx + 1))
+      if (deeper !== null) return deeper
+    }
+  }
+
+  return null
+}
+
+async function resolveRemoteProjectPath(sftp: SFTPWrapper, encoded: string): Promise<string> {
+  if (!encoded.startsWith('-')) return encoded.replace(/-/g, '/')
+  const rest = encoded.slice(1)
+  return (await tryResolveRemote(sftp, '/', rest)) ?? ('/' + rest.replace(/-/g, '/'))
 }
 
 export async function listRemoteProjects(settings: RemoteSettings): Promise<ProjectInfo[]> {
@@ -336,13 +381,210 @@ export async function listRemoteProjects(settings: RemoteSettings): Promise<Proj
   } catch {
     return []
   }
-  return entries
-    .filter(e => (e.attrs.mode & 0o170000) === 0o040000) // S_IFDIR
-    .map(e => {
-      const projectPath = decodeRemoteProjectName(e.filename)
+  const dirs = entries.filter(e => (e.attrs.mode & 0o170000) === 0o040000) // S_IFDIR
+  return Promise.all(
+    dirs.map(async e => {
+      const projectPath = await resolveRemoteProjectPath(conn.sftp, e.filename)
       return { encodedName: e.filename, projectPath, displayName: projectPath }
     })
+  )
 }
+
+// ─── Remote codebase scanner ─────────────────────────────────────────────────
+// Mirrors the logic in codebase-scanner.ts / dep-scanner.ts but uses SFTP
+// for all filesystem operations instead of local fs calls.
+
+const REMOTE_EXCLUDE = new Set([
+  'node_modules', '.git', 'dist', 'build', 'out', '__pycache__',
+  '.next', '.nuxt', 'coverage', '.cache', '.venv', 'venv',
+])
+
+const REMOTE_LANG_MAP: Record<string, string> = {
+  ts: 'typescript', tsx: 'typescript',
+  js: 'javascript', jsx: 'javascript',
+  py: 'python', rs: 'rust',
+  c: 'c', cpp: 'cpp', cc: 'cpp', h: 'c', hpp: 'cpp',
+  go: 'go', rb: 'ruby', java: 'java',
+  json: 'json', yaml: 'yaml', yml: 'yaml',
+  md: 'markdown', toml: 'toml', sh: 'shell',
+  css: 'css', scss: 'css', html: 'html',
+}
+const REMOTE_PARSEABLE = new Set(['typescript', 'javascript', 'python', 'rust', 'c', 'cpp'])
+
+function remoteLanguage(filename: string): string | undefined {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ext ? REMOTE_LANG_MAP[ext] : undefined
+}
+
+export async function scanRemoteCodebase(
+  settings: RemoteSettings,
+  projectPath: string,
+  extraExclude?: string[],
+): Promise<FsNode[]> {
+  const conn = await acquireConnection(settings)
+  const sftp = conn.sftp
+
+  if (!await statSftp(sftp, projectPath)) return []
+
+  const extraIg = extraExclude?.length ? ignore().add(extraExclude) : null
+  const nodes: FsNode[] = []
+  const filesToParse: Array<{ relPath: string; language: string }> = []
+
+  const rootName = projectPath.split('/').filter(Boolean).pop() ?? projectPath
+  nodes.push({ id: '', type: 'directory', name: rootName, path: '', children: [] })
+
+  const igStack: Array<{ baseRel: string; ig: ReturnType<typeof ignore> }> = []
+
+  async function loadRemoteGitignore(absPath: string): Promise<ReturnType<typeof ignore> | null> {
+    try {
+      const content = await readFileSftp(sftp, posixJoin(absPath, '.gitignore'))
+      return ignore().add(content)
+    } catch {
+      return null
+    }
+  }
+
+  const rootIg = await loadRemoteGitignore(projectPath)
+  if (rootIg) igStack.push({ baseRel: '', ig: rootIg })
+
+  function isIgnored(relPath: string): boolean {
+    if (extraIg?.ignores(relPath)) return true
+    for (const { baseRel, ig } of igStack) {
+      const rel = baseRel ? relPath.slice(baseRel.length + 1) : relPath
+      if (ig.ignores(rel)) return true
+    }
+    return false
+  }
+
+  async function walkRemote(absPath: string, relPath: string, parentId: string | undefined) {
+    let pushedIg = false
+    if (relPath !== '') {
+      const dirIg = await loadRemoteGitignore(absPath)
+      if (dirIg) { igStack.push({ baseRel: relPath, ig: dirIg }); pushedIg = true }
+    }
+
+    let entries: FileEntryWithStats[]
+    try {
+      entries = await readdirSftp(sftp, absPath)
+    } catch {
+      if (pushedIg) igStack.pop()
+      return
+    }
+
+    const children: string[] = []
+    const subdirs: Array<{ childAbs: string; childRel: string }> = []
+
+    for (const entry of entries) {
+      if (REMOTE_EXCLUDE.has(entry.filename) || entry.filename.startsWith('.')) continue
+      const childRel = relPath ? `${relPath}/${entry.filename}` : entry.filename
+      const childAbs = posixJoin(absPath, entry.filename)
+      if (isIgnored(childRel)) continue
+
+      const mode = entry.attrs.mode
+      const isDir  = (mode & 0o170000) === 0o040000 // S_IFDIR
+      const isFile = (mode & 0o170000) === 0o100000 // S_IFREG
+
+      if (isDir) {
+        nodes.push({ id: childRel, type: 'directory', name: entry.filename, path: childRel, parent: parentId, children: [] })
+        children.push(childRel)
+        subdirs.push({ childAbs, childRel })
+      } else if (isFile) {
+        const language = remoteLanguage(entry.filename)
+        nodes.push({ id: childRel, type: 'file', name: entry.filename, path: childRel, parent: parentId, children: [], language })
+        children.push(childRel)
+        if (language && REMOTE_PARSEABLE.has(language)) filesToParse.push({ relPath: childRel, language })
+      }
+    }
+
+    if (parentId !== undefined) {
+      const parentNode = nodes.find(n => n.id === parentId)
+      if (parentNode) parentNode.children.push(...children)
+    }
+
+    for (const { childAbs, childRel } of subdirs) await walkRemote(childAbs, childRel, childRel)
+    if (pushedIg) igStack.pop()
+  }
+
+  await walkRemote(projectPath, '', '')
+
+  // Extract symbols from remote source files in batches
+  const CONCURRENCY = 8
+  const nodeMap = new Map<string, FsNode>(nodes.map(n => [n.id, n]))
+
+  async function processRemoteFile(info: { relPath: string; language: string }) {
+    let content: string
+    try { content = await readFileSftp(sftp, posixJoin(projectPath, info.relPath)) } catch { return }
+
+    const symbols = await extractSymbolsFromContent(content, info.relPath, info.language)
+    if (symbols.length === 0) return
+
+    const fileNode = nodeMap.get(info.relPath)
+    if (!fileNode) return
+
+    const symNodeMap = new Map<string, FsNode>()
+    for (const sym of symbols) {
+      const nodeId = `${info.relPath}::${sym.id.slice(info.relPath.length + 2)}`
+      const parentNodeId = sym.parent ? `${info.relPath}::${sym.parent.slice(info.relPath.length + 2)}` : undefined
+      const symNode: FsNode = {
+        id: nodeId, type: sym.kind, name: sym.name, path: info.relPath,
+        parent: parentNodeId ?? info.relPath, children: [],
+        language: info.language, startLine: sym.startLine, endLine: sym.endLine,
+      }
+      nodes.push(symNode)
+      nodeMap.set(nodeId, symNode)
+      symNodeMap.set(sym.id, symNode)
+
+      if (parentNodeId) {
+        const parentSym = symNodeMap.get(sym.parent!)
+        if (parentSym) parentSym.children.push(nodeId)
+        else fileNode.children.push(nodeId)
+      } else {
+        fileNode.children.push(nodeId)
+      }
+    }
+  }
+
+  for (let i = 0; i < filesToParse.length; i += CONCURRENCY) {
+    await Promise.all(filesToParse.slice(i, i + CONCURRENCY).map(processRemoteFile))
+  }
+
+  return nodes
+}
+
+export async function scanRemoteDeps(
+  settings: RemoteSettings,
+  projectPath: string,
+  filePaths: string[],
+): Promise<DepEdge[]> {
+  const conn = await acquireConnection(settings)
+  const sftp = conn.sftp
+  const knownFiles = new Set(filePaths)
+  const seen = new Set<string>()
+  const allEdges: DepEdge[] = []
+
+  await Promise.all(filePaths.map(async relPath => {
+    const ext = relPath.includes('.') ? `.${relPath.split('.').pop()}` : ''
+    const isTsJs = TS_EXTENSIONS.includes(ext)
+    const isPy = PY_EXTENSIONS.includes(ext)
+    if (!isTsJs && !isPy) return
+
+    let content: string
+    try { content = await readFileSftp(sftp, posixJoin(projectPath, relPath)) } catch { return }
+
+    const edges = isTsJs
+      ? parseTsJsImports(relPath, content, projectPath, knownFiles)
+      : parsePyImports(relPath, content, projectPath, knownFiles)
+
+    for (const edge of edges) {
+      const key = `${edge.source}→${edge.target}`
+      if (!seen.has(key)) { seen.add(key); allEdges.push(edge) }
+    }
+  }))
+
+  return allEdges
+}
+
+// ─── Session listing & loading ───────────────────────────────────────────────
 
 export async function listRemoteSessions(settings: RemoteSettings, encodedName: string): Promise<SessionInfo[]> {
   const conn = await acquireConnection(settings)
