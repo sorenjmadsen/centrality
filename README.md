@@ -57,7 +57,7 @@ npm run build
 5. Use the chat panel on the right to read the conversation and click any exchange to jump to that point in the graph.
 6. Open **Settings** to configure file exclusion patterns (e.g. `node_modules`, `dist`) or add an SSH remote.
 
-Note: Due to File Descriptor restrictions, Centrality will recommend that you add patterns to the exclusion list.
+Note: Due to File Descriptor restrictions, Centrality will recommend that you add patterns to the exclusion list if your codebase exceeds ~5,000 files.
 
 ## Contributing
 
