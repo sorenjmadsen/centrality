@@ -40,7 +40,7 @@ Pre-built binaries are available on the [GitHub Releases](../../releases) page:
 Requires Node.js 20 or later.
 
 ```bash
-git clone https://github.com/sorenmadsen/centrality.git
+git clone https://github.com/sorenjmadsen/centrality.git
 cd centrality
 npm install
 npm run dev
