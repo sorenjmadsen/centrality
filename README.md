@@ -31,7 +31,7 @@ Pre-built binaries are available on the [GitHub Releases](../../releases) page:
 
 | Platform | Format |
 |----------|--------|
-| macOS | `.dmg` (universal) |
+| macOS | `.dmg` (Apple Silicon and Intel) |
 | Windows | `.exe` (NSIS installer) |
 | Linux | `.AppImage` / `.deb` |
 
